@@ -1,0 +1,9 @@
+
+include Makefile.dirs.vars
+include Makefile.paths
+include Makefile.srcs
+
+CPPCHECK_OUTPUT=$(RUN_DIR)/cppcheck.xml
+
+cppcheck: $(ALL_SRCS)
+	@cppcheck -v --enable=all $(LOCAL_INC_PATHS) --xml $(ALL_SRCS) 2> $(CPPCHECK_OUTPUT)

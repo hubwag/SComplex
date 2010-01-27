@@ -1,0 +1,51 @@
+include Makefile.dirs.vars
+include Makefile.srcs.vars
+include Makefile.compile.vars
+include Makefile.tests.vars
+include .depend
+
+APP_NAME=CrHomS
+SCOMPLEX_LIB=$(LIBS_DIR)/libSComplex.a
+
+APP_LIBS = -lcapd -lSComplex
+
+INIT_FILE=$(BUILD_DIR)/.init.build
+
+$(INIT_FILE):
+	$(MAKE) -f $(MAKEFILES_DIR)/Makefile.dirs init
+	@touch $(BUILD_DIR)/.init.build
+
+init: $(INIT_FILE)
+
+apps: $(BINS_DIR)/$(APP_NAME)
+
+libs: $(SCOMPLEX_LIB)
+
+compile: $(ALL_OBJS)
+
+test: $(BINS_DIR)/$(UNIT_TEST_APP_NAME)
+
+performance_test: init $(BINS_DIR)/$(PERFORMANCE_TEST_APP_NAME)
+
+$(SCOMPLEX_LIB): $(INIT_FILE) $(LIB_OBJS)
+	@echo $(AR) $(SCOMPLEX_LIB)
+	$(AR) rcs $(SCOMPLEX_LIB) $(LIB_OBJS) 
+
+$(BINS_DIR)/$(APP_NAME): $(INIT_FILE) libs $(APP_OBJS)
+	@echo $(APP_NAME)
+	@$(CC) $(COMP_FLAGS) -o $(APP_NAME) $(APP_OBJS) $(LIB_PATHS) $(APP_LIBS)
+
+$(BINS_DIR)/$(UNIT_TEST_APP_NAME): $(INIT_FILE) $(SCOMPLEX_LIB) $(UNIT_TEST_OBJS)
+	@echo $(UNIT_TEST_APP_NAME)
+	@$(CC) $(COMP_FLAGS) -o $(BINS_DIR)/$(UNIT_TEST_APP_NAME) $(LIB_PATHS) $(UNIT_TEST_OBJS) $(UNIT_TEST_LIBS) 
+
+$(BINS_DIR)/$(PERFORMANCE_TEST_APP_NAME): $(INIT_FILE) $(SCOMPLEX_LIB) $(PERFORMANCE_TEST_OBJS)
+	@echo $(PERFORMANCE_TEST_APP_NAME)
+	@$(CC) $(COMP_FLAGS) -o $(BINS_DIR)/$(PERFORMANCE_TEST_APP_NAME) $(LIB_PATHS) $(PERFORMANCE_TEST_OBJS) $(PERFORMANCE_TEST_LIBS)
+
+
+$(OBJS_DIR)/%.o: %.cpp $(INIT_FILE)
+	@echo $(CC) $<
+	@$(CC) $(COMP_FLAGS) -c $< -o $@
+
+

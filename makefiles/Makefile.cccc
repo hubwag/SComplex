@@ -1,0 +1,12 @@
+include Makefile.dirs.vars
+
+CCCC_DIR=$(RUN_DIR)/cccc
+
+$(CCCC_DIR)/init:
+	$(MKDIR) $(CCCC_DIR)
+	@touch $(CCCC_DIR)/init
+
+init: $(CCCC_DIR)/init
+
+cccc: init $(ALL_SRCS)
+	@cccc --outdir=$(CCCC_DIR) $(ALL_SRCS)
