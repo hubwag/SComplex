@@ -1,9 +1,17 @@
 
 include Makefile.dirs.vars
-include Makefile.paths
-include Makefile.srcs
+include Makefile.paths.vars
+include Makefile.srcs.vars
 
 CPPCHECK_OUTPUT=$(RUN_DIR)/cppcheck.xml
+INIT_FILE=$(RUN_DIR)/.init.cppcheck
 
-cppcheck: $(ALL_SRCS)
+$(INIT_FILE):
+	$(MAKE) -f $(MAKEFILES_DIR)/Makefile.dirs init
+	@touch $(INIT_FILE)
+
+init: $(INIT_FILE)
+
+
+cppcheck: $(INIT_FILE) $(ALL_SRCS)
 	@cppcheck -v --enable=all $(LOCAL_INC_PATHS) --xml $(ALL_SRCS) 2> $(CPPCHECK_OUTPUT)

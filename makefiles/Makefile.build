@@ -2,7 +2,9 @@ include Makefile.dirs.vars
 include Makefile.srcs.vars
 include Makefile.compile.vars
 include Makefile.tests.vars
-include .depend
+include Makefile.depend.vars
+
+include $(DEPEND_FILE)
 
 APP_NAME=CrHomS
 SCOMPLEX_LIB=$(LIBS_DIR)/libSComplex.a
@@ -33,7 +35,7 @@ $(SCOMPLEX_LIB): $(INIT_FILE) $(LIB_OBJS)
 
 $(BINS_DIR)/$(APP_NAME): $(INIT_FILE) libs $(APP_OBJS)
 	@echo $(APP_NAME)
-	@$(CC) $(COMP_FLAGS) -o $(APP_NAME) $(APP_OBJS) $(LIB_PATHS) $(APP_LIBS)
+	@$(CC) $(COMP_FLAGS) -o $(BINS_DIR)/$(APP_NAME) $(APP_OBJS) $(LIB_PATHS) $(APP_LIBS)
 
 $(BINS_DIR)/$(UNIT_TEST_APP_NAME): $(INIT_FILE) $(SCOMPLEX_LIB) $(UNIT_TEST_OBJS)
 	@echo $(UNIT_TEST_APP_NAME)

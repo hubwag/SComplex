@@ -1,12 +1,11 @@
 include Makefile.dirs.vars
 include Makefile.srcs.vars
 include Makefile.paths.vars
-
-
-DEPEND_FILE=$(MAKEFILES_DIR)/.depend
+include Makefile.depend.vars
 
 $(DEPEND_FILE): $(ALL_SRCS)
 	@touch $(DEPEND_FILE)
+	$(MAKE) -f $(MAKEFILES_DIR)/Makefile.dirs init
 	makedepend  -p$(OBJS_DIR)/ $(LOCAL_INC_PATHS) -f $(DEPEND_FILE) $^
 
 depend: $(DEPEND_FILE)
