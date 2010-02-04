@@ -7,15 +7,21 @@
 
 #include <boost/iterator/filter_iterator.hpp>
 #include <boost/iterator/indirect_iterator.hpp>
+#include <boost/iterator/transform_iterator.hpp>
 #include <boost/optional.hpp>
+
+#include <boost/ref.hpp>
+
+#include "SimplexCell.hpp"
 
 using namespace std;
 
 class SimplexSComplex;
+class SimplexCell;
+
 
 struct Simplex
 {
-	typedef Simplex Cell;
     typedef char Color;
     Color color;
 
@@ -34,15 +40,10 @@ struct Simplex
 
     void debug_output__()
     {
-    	int border_size = distance(border_begin(), border_end());
-    	int coborder_size = distance(coborder_begin(), coborder_end());
+    	// int border_size = distance(border_begin(), border_end());
+    	// int coborder_size = distance(coborder_begin(), coborder_end());
 
-    	cout << "border: " << border_size << " coborder: " << coborder_size << endl;
-    }
-
-    size_t get_dim()
-    {
-        return nrs.size();
+    	// cout << "border: " << border_size << " coborder: " << coborder_size << endl;
     }
 
     int getColor() const
@@ -61,22 +62,6 @@ struct Simplex
         color = col;
     }
 
-    struct to_ref : public unary_function<Simplex*, Simplex&>
-    {
-    	Simplex& operator()(Simplex *s)
-    	{
-    		return *s;
-    	}
-    };
-
-    struct to_cref : public unary_function<Simplex*, const Simplex&>
-    {
-    	const Simplex& operator()(const Simplex *s)
-    	{
-    		return *s;
-    	}
-    };
-
     struct has_color
     {
         Color required_color;
@@ -91,7 +76,7 @@ struct Simplex
 
     int getDim() const
     {
-        return nrs.size();
+        return -1 + static_cast<int>(nrs.size());
     }
 
 /*
@@ -108,10 +93,10 @@ struct Simplex
     */
 
 
-    Cell& getElementaryCell()
+    /*Cell& getElementaryCell()
     {
     	return *this;
-    }
+    }*/
 /*
 	template<typename ComplexT>
     inline boost::optional<Cell> getUniqueCoFace(const ComplexT& complex)
@@ -144,56 +129,74 @@ struct Simplex
     typedef boost::filter_iterator<has_color, vector<Simplex*>::iterator> border_iterator_inner;
     typedef boost::filter_iterator<has_color, vector<Simplex*>::iterator> coborder_iterator_inner;
 
-    typedef boost::indirect_iterator<colored_iterator_inner> colored_iterator;
+	class to_cell : public unary_function<Simplex*, SimplexCell&>
+	{
+		mutable SimplexCell ret_cell;
+		public:
+		SimplexCell& operator()(Simplex *s) const
+		{
+			return ret_cell = SimplexCell(s);
+		}
+	};
+
+	typedef boost::transform_iterator<to_cell, colored_iterator_inner> colored_iterator;
+	typedef boost::transform_iterator<to_cell, colored_iterator_inner> border_iterator;
+	typedef boost::transform_iterator<to_cell, colored_iterator_inner> coborder_iterator;
+
+    /*typedef boost::indirect_iterator<colored_iterator_inner> colored_iterator;
     typedef boost::indirect_iterator<border_iterator_inner> border_iterator;
-    typedef boost::indirect_iterator<coborder_iterator_inner> coborder_iterator;
+    typedef boost::indirect_iterator<coborder_iterator_inner> coborder_iterator;*/
 
     typedef boost::filter_iterator<has_color, vector<Simplex*>::const_iterator> const_colored_iterator_inner;
     typedef boost::filter_iterator<has_color, vector<Simplex*>::const_iterator> const_border_iterator_inner;
     typedef boost::filter_iterator<has_color, vector<Simplex*>::const_iterator> const_coborder_iterator_inner;
 
-    typedef boost::indirect_iterator<const_colored_iterator_inner> const_colored_iterator;
+    typedef boost::transform_iterator<to_cell, const_colored_iterator_inner> const_colored_iterator;
+	typedef boost::transform_iterator<to_cell, const_colored_iterator_inner> const_border_iterator;
+	typedef boost::transform_iterator<to_cell, const_colored_iterator_inner> const_coborder_iterator;
+
+    /*typedef boost::indirect_iterator<const_colored_iterator_inner> const_colored_iterator;
     typedef boost::indirect_iterator<const_border_iterator_inner> const_border_iterator;
-    typedef boost::indirect_iterator<const_coborder_iterator_inner> const_coborder_iterator;
+    typedef boost::indirect_iterator<const_coborder_iterator_inner> const_coborder_iterator;*/
 
     border_iterator border_begin(int color = 1)
     {
-        return border_iterator( border_iterator_inner(has_color(color), border.begin(), border.end()) );
+        return border_iterator(border_iterator_inner(has_color(color), border.begin(), border.end()), to_cell() );
     }
 
     border_iterator border_end(int color = 1)
     {
-        return border_iterator( border_iterator_inner(has_color(color), border.end(), border.end()) );
+        return border_iterator( border_iterator_inner(has_color(color), border.end(), border.end()), to_cell() );
     }
 
     const_border_iterator border_begin(int color = 1) const
     {
-        return const_border_iterator( const_border_iterator_inner(has_color(color), border.begin(), border.end()) );
+        return const_border_iterator( const_border_iterator_inner(has_color(color), border.begin(), border.end()), to_cell() );
     }
 
     const_border_iterator border_end(int color = 1) const
     {
-        return const_border_iterator( const_border_iterator_inner(has_color(color), border.end(), border.end()) );
+        return const_border_iterator( const_border_iterator_inner(has_color(color), border.end(), border.end()), to_cell() );
     }
 
     coborder_iterator coborder_begin(Color color = 1)
     {
-        return coborder_iterator( coborder_iterator_inner(has_color(color), coborder.begin(), coborder.end()) );
+        return coborder_iterator( coborder_iterator_inner(has_color(color), coborder.begin(), coborder.end()), to_cell() );
     }
 
     coborder_iterator coborder_end(Color color = 1)
     {
-        return coborder_iterator( coborder_iterator_inner(has_color(color), coborder.end(), coborder.end()) );
+        return coborder_iterator( coborder_iterator_inner(has_color(color), coborder.end(), coborder.end()), to_cell() );
     }
 
     const_coborder_iterator coborder_begin(Color color = 1) const
     {
-        return const_coborder_iterator( const_coborder_iterator_inner(has_color(color), coborder.begin(), coborder.end()) );
+        return const_coborder_iterator( const_coborder_iterator_inner(has_color(color), coborder.begin(), coborder.end()), to_cell() );
     }
 
     const_coborder_iterator coborder_end(Color color = 1) const
     {
-        return const_coborder_iterator( const_coborder_iterator_inner(has_color(color), coborder.end(), coborder.end()) );
+        return const_coborder_iterator( const_coborder_iterator_inner(has_color(color), coborder.end(), coborder.end()), to_cell() );
     }
 };
 
@@ -242,6 +245,6 @@ void remove_simplex(simplex_t &s)
 }
 */
 
-typedef Simplex Cell; // ?
+// typedef Simplex Cell; // ?
 
 #endif

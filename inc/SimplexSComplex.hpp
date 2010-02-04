@@ -2,6 +2,7 @@
 #define SIMPLEXSCOMPLEX_HPP
 
 #include "simplex_iterators.hpp"
+#include "SimplexCell.hpp"
 
 #include <boost/iterator/transform_iterator.hpp>
 
@@ -14,7 +15,7 @@ public:
         return distance(all_begin(), all_end());
     }
 
-    typedef Simplex::Cell Cell;
+	typedef SimplexCell Cell;
 
     struct ColoredIterators
     {
@@ -92,19 +93,19 @@ public:
                 // typedef boost::filter_iterator<Simplex::has_color, vector<Simplex*>::iterator> iterator;
                 // typedef boost::filter_iterator<Simplex::has_color, vector<Simplex*>::const_iterator> const_iterator;
                 SimplexSComplex &comp;
-                const Cell &cell;
+                const Simplex &cell;
                 int color;
 
-                explicit CbdCells(SimplexSComplex &cmplx, const Cell &c, int col) : comp(cmplx), cell(c), color(col) {}
+                explicit CbdCells(SimplexSComplex &cmplx, const Simplex &c, int col) : comp(cmplx), cell(c), color(col) {}
 
                 iterator begin()
                 {
-                    return const_cast<Cell&>(cell).coborder_begin(color);
+                    return const_cast<Simplex&>(cell).coborder_begin(color);
                 }
 
                 iterator end()
                 {
-                    return const_cast<Cell&>(cell).coborder_end(color);
+                    return const_cast<Simplex&>(cell).coborder_end(color);
                 }
 
                 const_iterator begin() const
@@ -118,7 +119,7 @@ public:
                 }
             };
 
-            CbdCells cbdCells(const Cell &c)
+            CbdCells cbdCells(const Simplex &c)
             {
                 return CbdCells(comp, c, color);
             }
@@ -153,7 +154,7 @@ private:
 
     void simplex_added_event(Simplex &s)
     {
-        per_dimension[s.get_dim()].push_back(&s);
+        per_dimension[s.getDim()].push_back(&s);
         all_simplices.push_back(&s);
     }
 
@@ -271,11 +272,11 @@ public:
 
     inline bool getUniqueCoFace(const Cell& cell, Cell& coface) const
     {
-        int cnt = std::distance(cell.coborder_begin(1), cell.coborder_end(1));
+        int cnt = std::distance(cell.getImpl().coborder_begin(1), cell.getImpl().coborder_end(1));
 
         if (cnt == 1)
         {
-            coface = **(cell.coborder.begin());
+            coface = *(cell.getImpl().coborder_begin(1));
             return true;
         }
 
@@ -284,11 +285,11 @@ public:
 
     inline bool getUniqueFace(const Cell& cell, Cell& face) const
     {
-        int cnt = std::distance(cell.border_begin(1), cell.border_end(1));
+        int cnt = std::distance(cell.getImpl().border_begin(1), cell.getImpl().border_end(1));
 
         if (cnt == 1)
         {
-            face = **(cell.border.begin());
+            face = *(cell.getImpl().border_begin(1));
             return true;
         }
 
@@ -299,23 +300,22 @@ public:
 
     iterator all_begin(int color = 1)
     {
-        return Simplex::colored_iterator( Simplex::colored_iterator_inner(Simplex::has_color(color), all_simplices.begin(), all_simplices.end()) );
+        return Simplex::colored_iterator(Simplex::colored_iterator_inner(Simplex::has_color(color), all_simplices.begin(), all_simplices.end()) );
     }
 
     iterator all_end(int color = 1)
     {
-        return Simplex::colored_iterator( Simplex::colored_iterator_inner(Simplex::has_color(color), all_simplices.end(), all_simplices.end()) );
+        return Simplex::colored_iterator(Simplex::colored_iterator_inner(Simplex::has_color(color), all_simplices.end(), all_simplices.end()) );
     }
 
     iterator dim_begin(int dim, int color = 1)
     {
-        return Simplex::colored_iterator( Simplex::colored_iterator_inner(Simplex::has_color(color), per_dimension[dim].begin(), per_dimension[dim].end()) );
+        return Simplex::colored_iterator(Simplex::colored_iterator_inner(Simplex::has_color(color), per_dimension[dim].begin(), per_dimension[dim].end()) );
     }
 
     iterator dim_end(int dim, int color = 1)
     {
-        return Simplex::colored_iterator( Simplex::colored_iterator_inner(Simplex::has_color(color), per_dimension[dim].end(), per_dimension[dim].end()) );
-        // return Simplex::colored_iterator(Simplex::has_color(color), per_dimension[dim].end(), per_dimension[dim].end());
+        return Simplex::colored_iterator(Simplex::colored_iterator_inner(Simplex::has_color(color), per_dimension[dim].end(), per_dimension[dim].end()) );
     }
 
     Simplex* add_simplex(vertex_set &s)
