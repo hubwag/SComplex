@@ -195,7 +195,7 @@ private:
 
         set<int> tmp(s.begin(), s.end());
 
-        for (auto it = s.begin(); it != s.end(); ++it)
+        for (set<int>::const_iterator it = s.begin(); it != s.end(); ++it)
         {
             int val = *it;
 
@@ -203,8 +203,10 @@ private:
             Simplex *sub_simplex = add_simplex(tmp);
             tmp.insert(*it);
 
-            add_to_border(*root_simplex, *sub_simplex);
-            add_to_coborder(*sub_simplex, *root_simplex, val);
+            root_simplex->add_to_border(*sub_simplex);
+
+            // val is important, since we track numbers
+            sub_simplex->add_to_coborder(*root_simplex, val);
         }
 
         return root_simplex;
@@ -218,9 +220,8 @@ public:
 
     ~SimplexSComplex()
     {
-        for (auto it = per_dimension.begin(); it != per_dimension.end(); ++it)
-            for (auto inner = it->second.begin(); inner != it->second.end(); ++inner)
-                delete *inner;
+        for (per_dimension_storage_type::const_iterator it = all_simplices.begin(); it != all_simplices.end(); ++it)
+			delete *it;
     }
 
     Simplex* get_simplex(vertex_set &s)
@@ -228,7 +229,7 @@ public:
         assert(s.size() > 0);
         // vector<int> v(s.begin(), s.end()); // sorted
 
-        for (auto it = s.begin(); it != s.end(); ++it)
+        for (vertex_set::const_iterator it = s.begin(); it != s.end(); ++it)
         {
             int vert = *it;
 
@@ -236,7 +237,7 @@ public:
                 return 0;
         }
 
-        auto it = s.begin();
+        vertex_set::const_iterator it = s.begin();
         int vert = *it++;
 
         Simplex *simplex = base[vert];
