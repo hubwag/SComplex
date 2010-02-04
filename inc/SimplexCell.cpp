@@ -1,5 +1,4 @@
 #include "SimplexCell.hpp"
-
 #include "Simplex.hpp"
 
 int SimplexCell::getColor() const
