@@ -4,7 +4,10 @@
 #include "simplex_iterators.hpp"
 #include "SimplexCell.hpp"
 
+
 #include <boost/iterator/transform_iterator.hpp>
+
+class Simplex;
 
 class SimplexSComplex
 {

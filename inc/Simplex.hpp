@@ -19,6 +19,8 @@ using namespace std;
 class SimplexSComplex;
 class SimplexCell;
 
+
+
 struct Simplex
 {
     typedef char Color;
@@ -167,5 +169,8 @@ struct Simplex
         return const_coborder_iterator( const_coborder_iterator_inner(has_color(color), coborder.end(), coborder.end()), to_cell() );
     }
 };
+
+template<int col>
+void SimplexCell::setColor() { simp->setColor<col>(); }
 
 #endif

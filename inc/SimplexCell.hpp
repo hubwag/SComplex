@@ -43,10 +43,10 @@ public:
 
 	int getColor() const;
 
-    template<int col>
-    void setColor();
-
     void setColor(int col);
+
+    template<int color>
+    void setColor();
 
 	size_t getDim();
 };
