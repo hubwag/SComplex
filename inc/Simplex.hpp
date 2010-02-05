@@ -19,7 +19,6 @@ using namespace std;
 class SimplexSComplex;
 class SimplexCell;
 
-
 struct Simplex
 {
     typedef char Color;
