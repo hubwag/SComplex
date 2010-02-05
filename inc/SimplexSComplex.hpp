@@ -127,7 +127,6 @@ public:
 
     };
 
-
     ColoredIterators::Iterators iterators(int color)
     {
         return ColoredIterators::Iterators(*this, color);
@@ -144,7 +143,8 @@ private:
     typedef map<vector<int>, Simplex*> map_type;
     typedef vector<Simplex*> per_dimension_storage_type;
 
-    typedef set<int> vertex_set;
+    // typedef set<int> vertex_set;
+    typedef simple_set<int> vertex_set;
 
     map<int, per_dimension_storage_type> per_dimension;
     per_dimension_storage_type all_simplices;
@@ -193,20 +193,21 @@ private:
         Simplex* root_simplex = new Simplex(s.begin(), s.end());
         simplex_added_event(*root_simplex);
 
-        set<int> tmp(s.begin(), s.end());
+        vertex_set tmp(s.begin(), s.end());
 
-        for (set<int>::const_iterator it = s.begin(); it != s.end(); ++it)
+        int i = 0;
+
+        for (vertex_set::const_iterator it = s.begin(); it != s.end(); ++it, ++i)
         {
-            int val = *it;
+            const int &val = *it;
 
-            tmp.erase(*it);
+            tmp.erase_index(i, val);
             Simplex *sub_simplex = add_simplex(tmp);
-            tmp.insert(*it);
+            tmp.insert_index(i, val);
 
             root_simplex->add_to_border(*sub_simplex);
-
-            // val is important, since we track numbers
             sub_simplex->add_to_coborder(*root_simplex, val);
+            // {val} = root \ sub
         }
 
         return root_simplex;
@@ -224,12 +225,40 @@ public:
 			delete *it;
     }
 
-    Simplex* get_simplex(vertex_set &s)
+    typedef vector<Simplex*> memo_type;
+    memo_type memo;
+
+    long get_int(simple_set<int> &s)
     {
-        assert(s.size() > 0);
+    	return s.getInt();
+    }
+
+    long get_int(set<int> &s)
+    {
+    	return -1;
+    }
+
+	template<typename iterable_t>
+    Simplex* get_simplex(iterable_t &s)
+    {
+        // assert(s.size() > 0);
+
+        long cv = -1;
+
+        if (memo.size())
+        {
+        	cv = get_int(s);
+
+			// cout << "got: " << cv << " ";
+			if (cv >= 0 && memo[cv])
+			{
+				// cout << "found memo: " << cv << " ";
+				// return memo[cv];
+			}
+        }
         // vector<int> v(s.begin(), s.end()); // sorted
 
-        for (vertex_set::const_iterator it = s.begin(); it != s.end(); ++it)
+        for (typename iterable_t::const_iterator it = s.begin(), end = s.end(); it != end; ++it)
         {
             int vert = *it;
 
@@ -237,19 +266,23 @@ public:
                 return 0;
         }
 
-        vertex_set::const_iterator it = s.begin();
+        typename iterable_t::const_iterator it = s.begin();
         int vert = *it++;
 
         Simplex *simplex = base[vert];
 
-        for (size_t i = 1; i < s.size(); i++)
+        const size_t n = s.size();
+
+        for (size_t i = 1u; i < n; i++)
         {
-            assert(simplex->added_cells.size() == simplex->coborder.size());
+            // assert(simplex->added_cells.size() == simplex->coborder.size());
             const int new_vert = *it++;
 
             Simplex *coface = 0;
 
-            for (size_t j = 0; j < simplex->added_cells.size(); j++)
+            const size_t added_cells_size = simplex->added_cells.size();
+
+            for (size_t j = 0u; j < added_cells_size; j++)
             {
                 if (simplex->added_cells[j] == new_vert)
                 {
@@ -266,7 +299,8 @@ public:
             simplex = coface;
         }
 
-        // cerr << "found!!";
+        if (cv >= 0)
+			memo[cv] = simplex;
 
         return simplex;
     }
@@ -319,6 +353,8 @@ public:
         return Simplex::colored_iterator(Simplex::colored_iterator_inner(Simplex::has_color(color), per_dimension[dim].end(), per_dimension[dim].end()) );
     }
 
+    private:
+
     Simplex* add_simplex(vertex_set &s)
     {
         Simplex *found = get_simplex(s);
@@ -327,6 +363,20 @@ public:
             return found;
 
         return create_simplex_hierarchy(s);
+    }
+
+    public:
+
+    Simplex* add_simplex(set<int> &s)
+    {
+    	memo.resize(1u<<s.size(), 0);
+
+    	vertex_set faster(s.begin(), s.end());
+        Simplex *ret = add_simplex(faster);
+
+        memo.clear();
+
+        return ret;
     }
 };
 

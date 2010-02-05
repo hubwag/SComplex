@@ -1,12 +1,16 @@
-#ifndef simple_set_include_guard
-#define simple_set_include_guard
+#ifndef SIMPLESET_H
+#define SIMPLESET_H
+
+#include <vector>
+#include <boost/iterator/filter_iterator.hpp>
+
+using namespace std;
 
 template<typename t>
 class simple_set
 {
     vector<t> elems;
     vector<int> present;
-    size_t curr_size;
 
 public:
 
@@ -14,90 +18,81 @@ public:
     simple_set(iter_t _begin, iter_t _end) : elems(_begin, _end)
     {
         present.resize(elems.size(), true);
-        curr_size = elems.size();
     }
+
+    long getInt() const
+	{
+		long r = 0;
+		for (vector<int>::const_iterator it = present.begin(), end = present.end(); it != end; ++it)
+		{
+			r<<=1;
+			r|=*it;
+		}
+
+		return r;
+	}
 
     simple_set()
     {
-        curr_size = 0;
     }
 
     size_t size() const
     {
-        return curr_size;
+        return distance(begin(), end()); // :)
     }
 
     void insert(const t &val)
     {
         elems.push_back(val);
-        present.push_back(1);
-        curr_size++;
+        present.push_back(true);
     }
 
-    void revert(int index)
+    struct is_present
     {
-        curr_size += !present[index];
-        present[index] = 1;
-    }
+		const simple_set &ss;
 
-    void remove_index(int index)
-    {
-        curr_size -= !!present[index]; // !!
-        present[index] = 0;
-    }
+		is_present(const simple_set &s) : ss(s) {}
 
-	// friend class const_iterator;
-
-    class const_iterator
-    {
-        const simple_set &s;
-        typename vector<t>::const_iterator it;
-        size_t ind;
-
-        friend class simple_set;
-
-        const_iterator(const simple_set &_s, size_t _ind) : s(_s), it(_s.elems.begin()), ind(_ind)
-        {
-            while (ind < s.present.size() && s.present[ind] == 0)
-            {
-                ++ind;
-                ++it;
-            }
-        }
-
-    public:
-
-        bool operator!=(const const_iterator &other) const
-        {
-            return this->ind != other.ind;
-        }
-
-        const t& operator*() const
-        {
-            return *it;
-        }
-
-        const_iterator& operator++()
-        {
-            do
-            {
-                ++ind;
-                ++it;
-            }
-            while (ind < s.present.size() && s.present[ind] == 0);
-
-            return *this;
-        }
+    	bool operator()(const t &x) const
+    	{
+    		if (ss.elems.size() == 0)
+				return false;
+    		int off = &x - &ss.elems[0];
+    		return ss.present[off] == true;
+    	}
     };
+
+    typedef boost::filter_iterator<is_present, typename vector<t>::iterator> iterator;
+    typedef boost::filter_iterator<is_present, typename vector<t>::const_iterator> const_iterator;
+
+    void insert_index(int p, const t&)
+    {
+    	present[p] = true;
+    }
+
+	void erase_index(int p, const t&)
+    {
+    	present[p] = false;
+    }
+
+    iterator begin()
+    {
+        return iterator(is_present(*this), elems.begin(), elems.end());
+    }
+
+    iterator end()
+    {
+        return iterator(is_present(*this), elems.end(), elems.end());
+    }
 
     const_iterator begin() const
     {
-        return const_iterator(*this, 0);
+        return const_iterator(is_present(*this), elems.begin(), elems.end());
     }
 
     const_iterator end() const
     {
-        return const_iterator(*this, present.size());
+        return const_iterator(is_present(*this), elems.end(), elems.end());
     }
 };
 
