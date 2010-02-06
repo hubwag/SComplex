@@ -31,6 +31,8 @@ coverage: depend
 cppcheck:
 	$(MAKE) -I $(MAKEFILES_DIR)  -f $(MAKEFILES_DIR)/Makefile.cppcheck cppcheck
 
+cccc:
+	$(MAKE) -I $(MAKEFILES_DIR)  -f $(MAKEFILES_DIR)/Makefile.cccc cccc
 
 clean:
 	$(RM) -r $(BUILD_DIR)/*
