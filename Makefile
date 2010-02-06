@@ -2,7 +2,6 @@ export MAKEFILES_DIR=makefiles
 
 include $(MAKEFILES_DIR)/Makefile.dirs.vars
 
-
 .PHONY: init depend clean clean_obj libs apps all compile
 
 all: libs apps test
