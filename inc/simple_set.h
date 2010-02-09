@@ -49,30 +49,35 @@ public:
 
     struct is_present
     {
-		const simple_set &ss;
+		const simple_set *ss;
 
-		is_present(const simple_set &s) : ss(s) {}
+		is_present(const simple_set &s) : ss(&s) {}
 
     	bool operator()(const t &x) const
     	{
-    		if (ss.elems.size() == 0)
+    		if (ss->elems.size() == 0)
 				return false;
-    		int off = &x - &ss.elems[0];
-    		return ss.present[off] == true;
+    		int off = &x - &ss->elems[0];
+    		return ss->present[off] == true;
     	}
     };
 
     typedef boost::filter_iterator<is_present, typename vector<t>::iterator> iterator;
     typedef boost::filter_iterator<is_present, typename vector<t>::const_iterator> const_iterator;
 
-    void insert_index(int p, const t&)
+	template<typename iter_t>
+	void erase(iter_t it)
     {
-    	present[p] = true;
+    	int off = &(*it) - &elems[0];
+    	present[off] = false;
     }
 
-	void erase_index(int p, const t&)
+	template<typename iter_t>
+    pair<iter_t, bool> insert(iter_t it, const t&)
     {
-    	present[p] = false;
+    	int off = &(*it) - &elems[0];
+    	present[off] = true;
+    	return make_pair(it, true);
     }
 
     iterator begin()

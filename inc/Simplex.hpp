@@ -19,8 +19,6 @@ using namespace std;
 class SimplexSComplex;
 class SimplexCell;
 
-
-
 struct Simplex
 {
     typedef char Color;
@@ -30,7 +28,8 @@ struct Simplex
     vector<Simplex*> border;
 
     vector<Simplex*> coborder;
-    vector<int> added_cells;
+    vector<int> added_cells; // could use radix_map<int, Simplex*>  or radix_map<int, int>
+    // which would be useful if codorders are big
 
     template<typename iter_t>
     Simplex(iter_t b, iter_t e) : color(1), nrs(b, e) {}
@@ -52,14 +51,6 @@ struct Simplex
 
         if (added_cell != -1)
             added_cells.push_back(added_cell);
-    }
-
-    void debug_output__()
-    {
-        // int border_size = distance(border_begin(), border_end());
-        // int coborder_size = distance(coborder_begin(), coborder_end());
-
-        // cout << "border: " << border_size << " coborder: " << coborder_size << endl;
     }
 
     // colors
@@ -131,7 +122,7 @@ struct Simplex
 
     border_iterator border_begin(int color = 1)
     {
-        return border_iterator(border_iterator_inner(has_color(color), border.begin(), border.end()), to_cell() );
+        return border_iterator( border_iterator_inner(has_color(color), border.begin(), border.end()), to_cell() );
     }
 
     border_iterator border_end(int color = 1)

@@ -15,7 +15,7 @@ public:
 	}
 
 	template<typename dummy>
-	SimplexCell(dummy &) : simp(0)
+	explicit SimplexCell(dummy &) : simp(0)
 	{
 	}
 
