@@ -10,8 +10,6 @@
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/optional.hpp>
 
-#include <boost/ref.hpp>
-
 #include "SimplexCell.hpp"
 
 using namespace std;
