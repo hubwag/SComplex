@@ -20,7 +20,7 @@ public:
   
   AllCells allCells() const;
   DimCells dimCells(const Dim& dim) const;
-  CbdCells bdCells(const Cell& cell) const;
+  BdCells bdCells(const Cell& cell) const;
   CbdCells cbdCells(const Cell& cell) const;
   
 private:
