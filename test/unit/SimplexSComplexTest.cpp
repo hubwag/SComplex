@@ -61,23 +61,23 @@ std::set<int> make_int_set(int a, int b = -1, int c = -1, int d = -1)
 BOOST_AUTO_TEST_CASE(add_get_simple_test_2d) {
 	SimplexSComplex comp;
 
-	comp.add_simplex(make_int_set(0,1));
-	BOOST_CHECK(comp.get_simplex(make_int_set(0,1)) != 0);
-	BOOST_CHECK(comp.get_simplex(make_int_set(0)) != 0);
-	BOOST_CHECK(comp.get_simplex(make_int_set(1)) != 0);
+	comp.addSimplex(make_int_set(0,1));
+	BOOST_CHECK(comp.getSimplex(make_int_set(0,1)) != 0);
+	BOOST_CHECK(comp.getSimplex(make_int_set(0)) != 0);
+	BOOST_CHECK(comp.getSimplex(make_int_set(1)) != 0);
 }
 
 BOOST_AUTO_TEST_CASE(add_get_simple_test_3d) {
 	SimplexSComplex comp;
 
-	comp.add_simplex(make_int_set(0,1,2));
-	BOOST_CHECK(comp.get_simplex(make_int_set(0,1,2)) != 0);
-	BOOST_CHECK(comp.get_simplex(make_int_set(0,1)) != 0);
-	BOOST_CHECK(comp.get_simplex(make_int_set(1,2)) != 0);
-	BOOST_CHECK(comp.get_simplex(make_int_set(0,2)) != 0);
-	BOOST_CHECK(comp.get_simplex(make_int_set(0)) != 0);
-	BOOST_CHECK(comp.get_simplex(make_int_set(1)) != 0);
-	BOOST_CHECK(comp.get_simplex(make_int_set(2)) != 0);
+	comp.addSimplex(make_int_set(0,1,2));
+	BOOST_CHECK(comp.getSimplex(make_int_set(0,1,2)) != 0);
+	BOOST_CHECK(comp.getSimplex(make_int_set(0,1)) != 0);
+	BOOST_CHECK(comp.getSimplex(make_int_set(1,2)) != 0);
+	BOOST_CHECK(comp.getSimplex(make_int_set(0,2)) != 0);
+	BOOST_CHECK(comp.getSimplex(make_int_set(0)) != 0);
+	BOOST_CHECK(comp.getSimplex(make_int_set(1)) != 0);
+	BOOST_CHECK(comp.getSimplex(make_int_set(2)) != 0);
 }
 
 BOOST_AUTO_TEST_CASE(shave_and_coreduce_test) {
@@ -86,12 +86,12 @@ BOOST_AUTO_TEST_CASE(shave_and_coreduce_test) {
 	// An example from: COREDUCTION HOMOLOGY ALGORITHM
 	// MARIAN MROZEK AND BOGDAN BATKO
 
-	comp.add_simplex(make_int_set(1,2,3));
-	comp.add_simplex(make_int_set(0,1));
-	comp.add_simplex(make_int_set(0,3));
-	comp.add_simplex(make_int_set(0,4));
-	comp.add_simplex(make_int_set(3,4));
-	comp.add_simplex(make_int_set(0,5));
+	comp.addSimplex(make_int_set(1,2,3));
+	comp.addSimplex(make_int_set(0,1));
+	comp.addSimplex(make_int_set(0,3));
+	comp.addSimplex(make_int_set(0,4));
+	comp.addSimplex(make_int_set(3,4));
+	comp.addSimplex(make_int_set(0,5));
 
 	(ShaveAlgorithmFactory::createDefault(comp))();
 	BOOST_CHECK_EQUAL(9, comp.cardinality());

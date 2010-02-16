@@ -52,17 +52,13 @@ private:
     static const int MAX_VERTICES = 100000;
     vector<Simplex*> base;
 
-    void simplex_added_event(Simplex &s)
+    void simplexAddedEvent(Simplex &s)
     {
         per_dimension[s.getDim()].push_back(&s);
         all_simplices.push_back(&s);
     }
 
-    void simplex_removed_event(Simplex &s)
-    {
-    }
-
-    Simplex* make_base_simplex(vertex_set &s)
+    Simplex* makeBaseSimplex(vertex_set &s)
     {
         assert(s.size() == 1);
 
@@ -71,7 +67,7 @@ private:
         if (base[v] == 0)
         {
             Simplex *new_simplex = new Simplex(s.begin(), s.end());
-            simplex_added_event(*new_simplex);
+            simplexAddedEvent(*new_simplex);
             base[v] = new_simplex;
 
             return new_simplex;
@@ -80,7 +76,7 @@ private:
         return base[v];
     }
 
-    Simplex* create_simplex_hierarchy(vertex_set &s);
+    Simplex* createSimplexHierarchy(vertex_set &s);
 
 public:
 
@@ -97,18 +93,18 @@ public:
     typedef vector<Simplex*> memo_type;
     memo_type memo;
 
-    long get_int(const simple_set<int> &s)
+    long getInt(const simple_set<int> &s)
     {
         return s.getInt();
     }
 
-    long get_int(const set<int> &s)
+    long getInt(const set<int> &s)
     {
         return -1;
     }
 
     template<typename iterable_t>
-    Simplex* get_simplex(const iterable_t &s);
+    Simplex* getSimplex(const iterable_t &s);
 
     inline bool getUniqueCoFace(const Cell& cell, Cell& coface) const
     {
@@ -161,24 +157,24 @@ public:
 
 private:
 
-    Simplex* add_simplex(vertex_set &s)
+    Simplex* addSimplex(vertex_set &s)
     {
-        Simplex *found = get_simplex(s);
+        Simplex *found = getSimplex(s);
 
         if (found)
             return found;
 
-        return create_simplex_hierarchy(s);
+        return createSimplexHierarchy(s);
     }
 
 public:
 
-    Simplex* add_simplex(const set<int> &s)
+    Simplex* addSimplex(const set<int> &s)
     {
         memo.resize(1u<<s.size(), 0);
 
         vertex_set faster(s.begin(), s.end());
-        Simplex *ret = add_simplex(faster);
+        Simplex *ret = addSimplex(faster);
 
         memo.clear();
 
@@ -186,17 +182,17 @@ public:
     }
 };
 
-Simplex* SimplexSComplex::create_simplex_hierarchy(vertex_set &s)
+Simplex* SimplexSComplex::createSimplexHierarchy(vertex_set &s)
 {
     assert(s.size() > 0);
 
     if (s.size() == 1)
     {
-        return make_base_simplex(s);
+        return makeBaseSimplex(s);
     }
 
     Simplex* root_simplex = new Simplex(s.begin(), s.end());
-    simplex_added_event(*root_simplex);
+    simplexAddedEvent(*root_simplex);
 
     // set<int> probably can't be used as a drop-in replacement...
     for (vertex_set::iterator it = s.begin(), end = s.end(); it != end; )
@@ -206,11 +202,11 @@ Simplex* SimplexSComplex::create_simplex_hierarchy(vertex_set &s)
         ++new_it;
 
         s.erase(it);
-        Simplex *sub_simplex = add_simplex(s);
+        Simplex *sub_simplex = addSimplex(s);
         s.insert(it, val);
 
-        root_simplex->add_to_border(*sub_simplex);
-        sub_simplex->add_to_coborder(*root_simplex, val);
+        root_simplex->addToBorder(*sub_simplex);
+        sub_simplex->addToCoborder(*root_simplex, val);
         // {val} = root \ sub
 
         it = new_it;
@@ -220,7 +216,7 @@ Simplex* SimplexSComplex::create_simplex_hierarchy(vertex_set &s)
 }
 
 template<typename iterable_t>
-Simplex* SimplexSComplex::get_simplex(const iterable_t &s)
+Simplex* SimplexSComplex::getSimplex(const iterable_t &s)
 {
     // assert(s.size() > 0);
 
@@ -228,7 +224,7 @@ Simplex* SimplexSComplex::get_simplex(const iterable_t &s)
 
     if (memo.size())
     {
-        cv = get_int(s);
+        cv = getInt(s);
 
         if (cv >= 0 && memo[cv])
         {

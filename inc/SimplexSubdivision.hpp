@@ -58,7 +58,7 @@ int find_set(const vector<int> &v, int id)
 	return id;
 }
 
-vector<int> make_torus_welds()
+vector<int> makeTorusWelds()
 {
 	const int n = 16;
 	vector<int> x(n);
@@ -75,7 +75,7 @@ vector<int> make_torus_welds()
 	return x;
 }
 
-vector<int> make_klein_welds()
+vector<int> makeKleinWelds()
 {
 	const int n = 16;
 	vector<int> x(n);
@@ -92,7 +92,7 @@ vector<int> make_klein_welds()
 	return x;
 }
 
-vector<set<int> > make_space(const vector<int> &welds)
+vector<set<int> > makeSpaceFromWelds(const vector<int> &welds)
 {
 	const vector<int> &x = welds;
 
@@ -122,7 +122,26 @@ vector<set<int> > make_space(const vector<int> &welds)
 	return tris;
 }
 
-vector<set<int> > subdivide(const vector<set<int> > &v)
+// barycentric
+vector<set<int> > subdivide6(const vector<set<int> > &v)
+{
+	typedef vector<set<int> > simp_vec;
+	int next = 0;
+	for (simp_vec::const_iterator it = v.begin(); it != v.end(); ++it)
+	{
+		next = max(next, *max_element(it->begin(), it->end()));
+	}
+
+	++next;
+
+	vector<set<int> > ret;
+
+	throw std::runtime_error("not implemented!");
+
+	return ret;
+}
+
+vector<set<int> > subdivide3(const vector<set<int> > &v)
 {
 	typedef vector<set<int> > simp_vec;
 	int next = 0;
@@ -152,13 +171,13 @@ vector<set<int> > subdivide(const vector<set<int> > &v)
 
 int __main()
 {
-	vector<set<int> > comp = make_space(make_klein_welds());
+	vector<set<int> > comp = makeSpaceFromWelds(makeKleinWelds());
 
 	cout << comp.size() << endl;
 
 	for (int i = 0; i < 3; i++)
 	{
-		comp = subdivide(comp);
+		comp = subdivide3(comp);
 		cout << (dec) << comp.size() << endl;
 	}
 

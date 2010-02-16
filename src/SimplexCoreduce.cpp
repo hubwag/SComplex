@@ -68,14 +68,14 @@ void CrHomS_torus(int argc,char* argv[])
 
     CRef<SComplex> SComplexCR(new SComplex());
 
-    vector<set<int> > tris = make_space(make_klein_welds());
+    vector<set<int> > tris = makeSpaceFromWelds(makeKleinWelds());
 
-	for (int i = 0; i < 5; i++)
-		tris = subdivide(tris);
+	for (int i = 0; i < 0; i++)
+		tris = subdivide3(tris);
 
     for (size_t i = 0; i < tris.size(); i++)
     {
-    	SComplexCR().add_simplex(tris[i]);
+    	SComplexCR().addSimplex(tris[i]);
     }
 
     cout << " --- generated klein-bottle simplicial complex --- \n cardinality: " << SComplexCR().cardinality() << endl;
@@ -124,7 +124,7 @@ void CrHomS(int argc,char* argv[])
             s.insert(rand()%mod);
         }
 
-        SComplexCR().add_simplex(s);
+        SComplexCR().addSimplex(s);
     }
 
 /*

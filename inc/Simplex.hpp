@@ -38,12 +38,12 @@ struct Simplex
 
     // border, coborder operations
 
-    void add_to_border(Simplex &to_be_added)
+    void addToBorder(Simplex &to_be_added)
     {
         border.push_back(&to_be_added);
     }
 
-    void add_to_coborder(Simplex &to_be_added, int added_cell = -1)
+    void addToCoborder(Simplex &to_be_added, int added_cell = -1)
     {
         coborder.push_back(&to_be_added);
 
@@ -98,11 +98,11 @@ struct Simplex
 
     class to_cell : public unary_function<Simplex*, SimplexCell&>
     {
-        mutable SimplexCell ret_cell;
+        mutable SimplexCell retCell;
     public:
         SimplexCell& operator()(Simplex *s) const
         {
-            return ret_cell = SimplexCell(s);
+            return retCell = SimplexCell(s);
         }
     };
 
