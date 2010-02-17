@@ -19,7 +19,7 @@ public:
   int tmp;
   
   class Cell;
-  typedef int Dim;
+  typedef size_t Dim;
   typedef int Color;
 
 private:
@@ -87,6 +87,11 @@ public:
   
   Dim getBaseDimension() const;
 
+  int coincidenceIndex(const Cell &a, const Cell &b) const
+  {
+	 return 0;
+  }
+  
 protected:
   CRef<BCubCellSet> bCubCellSetCR;
   Dim baseDimension;

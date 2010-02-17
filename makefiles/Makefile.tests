@@ -1,0 +1,16 @@
+include Makefile.tests.vars
+include Makefile.dirs.vars
+include Makefile.paths.vars
+
+.PHONY: test performance_test
+
+test_compile:
+	$(MAKE) -f $(MAKEFILES_DIR)/Makefile.build test
+
+test: test_compile
+	@time (LD_LIBRARY_PATH=$(BOOST_HOME)/lib $(PWD)/$(BINS_DIR)/$(UNIT_TEST_APP_NAME) $(TEST_APP_ARGS))
+
+performance_test:
+	$(MAKE) -f $(MAKEFILES_DIR)/Makefile.build performance_test
+	@time (LD_LIBRARY_PATH=$(BOOST_HOME)/lib $(BINS_DIR)/$(PERFORMANCE_TEST_APP_NAME) $(TEST_APP_ARGS))
+

@@ -39,13 +39,13 @@ using namespace std;
 
 #include <capd/homologicalAlgebra/embeddingDim.h>
 
-// #include <capd/vectalg/MatrixSlice.h>
-// #include <capd/matrixAlgorithms/intMatrixAlgorithms.hpp>
+#include <capd/vectalg/MatrixSlice.h>
+#include <capd/matrixAlgorithms/intMatrixAlgorithms.hpp>
 
 #include <capd/homologicalAlgebra/homologicalAlgebra.hpp>
-// #include <capd/homologicalAlgebra/homAlgFunctors.hpp>
-// #include <capd/homologicalAlgebra/cubSetFunctors.hpp>
-// #include <capd/homologicalAlgebra/ReducibleFreeChainComplex.hpp>
+#include <capd/homologicalAlgebra/homAlgFunctors.hpp>
+#include <capd/homologicalAlgebra/cubSetFunctors.hpp>
+#include <capd/homologicalAlgebra/ReducibleFreeChainComplex.hpp>
 
 //#include "CubSComplex.hpp"
 
@@ -54,10 +54,10 @@ ofstreamcout fcout; // ?
 #include "SComplexAlgs.hpp"
 
 // typedef ElementaryCell ElementaryCellType;
-// typedef int ScalarType;
-// typedef FreeModule<int,capd::vectalg::Matrix<int,0,0> > FreeModuleType;
-// typedef FreeChainComplex<FreeModuleType> FreeChainComplexType;
-// typedef ReducibleFreeChainComplex<FreeModuleType,int> ReducibleFreeChainComplexType;
+typedef int ScalarType;
+typedef FreeModule<int,capd::vectalg::Matrix<int,0,0> > FreeModuleType;
+typedef FreeChainComplex<FreeModuleType> FreeChainComplexType;
+typedef ReducibleFreeChainComplex<FreeModuleType,int> ReducibleFreeChainComplexType;
 
 #include "SimplexSubdivision.hpp"
 
@@ -68,9 +68,10 @@ void CrHomS_torus(int argc,char* argv[])
 
     CRef<SComplex> SComplexCR(new SComplex());
 
-    vector<set<int> > tris = makeSpaceFromWelds(makeKleinWelds());
+    //vector<set<int> > tris = makeSpaceFromWelds(makeKleinWelds());
+	 vector<set<int> > tris = makeSpaceFromWelds(makeTorusWelds());
 
-	for (int i = 0; i < 0; i++)
+	for (int i = 0; i < 3; i++)
 		tris = subdivide3(tris);
 
     for (size_t i = 0; i < tris.size(); i++)
@@ -82,7 +83,7 @@ void CrHomS_torus(int argc,char* argv[])
 
 //  SComplexAlgs<CubSComplex>::test(SComplexCR());
 
-    Stopwatch swComp,swRed;
+     Stopwatch swComp,swRed;
     (ShaveAlgorithmFactory::createDefault(SComplexCR()))();
     cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
 
@@ -90,18 +91,18 @@ void CrHomS_torus(int argc,char* argv[])
     (CoreductionAlgorithmFactory::createDefault(SComplexCR()))();
     cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
 
-/*
-      CRef<ReducibleFreeChainComplexType> RFCComplexCR=
-    		(ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SimplexSComplex, ReducibleFreeChainComplexType,ElementaryCellType>(SComplexCR()))();
-      cout << " --- RFCC constructed  " << endl;
 
-      CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
-      cout << " --- Computation completed in " << swComp  << std::endl;
-      cout << " --- Computed homology is: \n\n" << homSignCR()  << std::endl;
+	 CRef<ReducibleFreeChainComplexType> RFCComplexCR=
+		(ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SimplexSComplex, ReducibleFreeChainComplexType>(SComplexCR()))();
+	 cout << " --- RFCC constructed  " << endl;
 
-      */
+	 CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
+	 cout << " --- Computation completed in " << swComp  << std::endl;
+	 cout << " --- Computed homology is: \n\n" << homSignCR()  << std::endl;
 
-      cout << " --- Total computation time is: " << swTot  << std::endl;
+	 
+
+	 cout << " --- Total computation time is: " << swTot  << std::endl;
 
 }
 
@@ -126,7 +127,7 @@ void CrHomS(int argc,char* argv[])
     cout << SComplexCR().coincidenceIndex(SimplexCell(a), SimplexCell(b)) << endl;
 }
 
-    int n = 100000;
+    int n = 1000;
     int mod = n; // = 4
     unsigned d = 4;
 
@@ -164,23 +165,23 @@ void CrHomS(int argc,char* argv[])
 //  SComplexAlgs<CubSComplex>::test(SComplexCR());
 
     Stopwatch swComp,swRed;
-    (ShaveAlgorithmFactory::createDefault(SComplexCR()))();
-    cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
+    // (ShaveAlgorithmFactory::createDefault(SComplexCR()))();
+    // cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
 
-    Stopwatch swCoRed;
-    (CoreductionAlgorithmFactory::createDefault(SComplexCR()))();
-    cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
+    // Stopwatch swCoRed;
+    // (CoreductionAlgorithmFactory::createDefault(SComplexCR()))();
+    // cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
 
-/*
-      CRef<ReducibleFreeChainComplexType> RFCComplexCR=
-    		(ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SimplexSComplex, ReducibleFreeChainComplexType,ElementaryCellType>(SComplexCR()))();
+
+CRef<ReducibleFreeChainComplexType> RFCComplexCR=
+    		(ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SimplexSComplex, ReducibleFreeChainComplexType>(SComplexCR()))();
       cout << " --- RFCC constructed  " << endl;
 
       CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
       cout << " --- Computation completed in " << swComp  << std::endl;
       cout << " --- Computed homology is: \n\n" << homSignCR()  << std::endl;
 
-      */
+      
 
       cout << " --- Total computation time is: " << swTot  << std::endl;
 }

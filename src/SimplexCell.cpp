@@ -11,7 +11,11 @@ void SimplexCell::setColor(int col)
     simp->setColor(col);
 }
 
-size_t SimplexCell::getDim()
+size_t SimplexCell::getDim() const
 {
     return simp->getDim();
+}
+
+bool SimplexCell::operator<(const SimplexCell& b) const {
+  return (this->simp->nrs) < (b.simp->nrs);
 }

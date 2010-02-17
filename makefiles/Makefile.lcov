@@ -1,0 +1,25 @@
+include Makefile.dirs.vars
+include Makefile.srcs.vars
+include Makefile.compile.vars
+
+LCOV_DIR=$(RUN_DIR)/lcov
+UNIT_TEST_LCOV_OUTPUT=$(LCOV_DIR)/test.info
+INIT_FILE=$(LCOV_DIR)/.init
+
+$(INIT_FILE):
+	$(MAKE) -f $(MAKEFILES_DIR)/Makefile.dirs init
+	$(MKDIR) $(LCOV_DIR)
+	@touch $(INIT_FILE)
+
+init: $(INIT_FILE)
+
+coverage: $(INIT_FILE) 
+	@echo "Init info"
+	@$(MAKE) -f $(MAKEFILES_DIR)/Makefile.tests test_compile OPT_FLAGS="" DEBUG="$(DEBUG) -fprofile-arcs -ftest-coverage"
+	@lcov -o $(UNIT_TEST_LCOV_OUTPUT) -b ./ -c -i -d $(OBJS_DIR)
+	@echo "Run tests"
+	@$(MAKE) -f $(MAKEFILES_DIR)/Makefile.tests test OPT_FLAGS="" DEBUG="$(DEBUG) -fprofile-arcs -ftest-coverage"
+	@lcov -o $(UNIT_TEST_LCOV_OUTPUT) -d $(OBJS_DIR) -c -b ./
+	@lcov -o $(UNIT_TEST_LCOV_OUTPUT).tmp -d $(OBJS_DIR) -e $(UNIT_TEST_LCOV_OUTPUT) $(addprefix $(PWD)/, $(ALL_SRCS))
+	@echo "Generate report"
+	@genhtml -o $(LCOV_DIR) $(UNIT_TEST_LCOV_OUTPUT).tmp
