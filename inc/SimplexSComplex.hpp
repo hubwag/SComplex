@@ -171,13 +171,15 @@ public:
 
 	int coincidenceIndex(const Cell &a, const Cell &b) const
 	{
-		const Simplex *sigma = &a.getImpl();
-		const Simplex *tau = &b.getImpl();
-		int inter = -1;
-		assert(abs(sigma->getDim() - tau->getDim()) == 1);
-		if (sigma->nrs.size() < tau->nrs.size())
-			swap(sigma, tau);
+		const Simplex * const sigma = &a.getImpl();
+		const Simplex * const tau = &b.getImpl();
 
+		if (sigma->getDim() != 1 + tau->getDim())
+		{
+			return 0;
+		}
+
+		int inter = -1;
 		set_difference(sigma->nrs.begin(), sigma->nrs.end(), tau->nrs.begin(), tau->nrs.end(), &inter);
 		assert(inter != -1);
 
