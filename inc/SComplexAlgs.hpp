@@ -28,6 +28,14 @@ private:
   SComplex& s;
 };
 
+class MyClass {
+
+public:
+  bool operator<(const MyClass& m) const {
+	 return false;
+  }
+  
+};
 
 template<typename SComplex, typename FCComplex_P, typename SourceGenerator_P>
 inline CRef<FCComplex_P> ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SComplex, FCComplex_P, SourceGenerator_P>::operator()(){
@@ -35,13 +43,13 @@ inline CRef<FCComplex_P> ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SCo
   typedef typename FCComplex_P::GeneratorType GeneratorType;
 
   Stopwatch sw;
-  std::set<SourceGenerator_P> cells;
+  std::set<MyClass> cells;
 
 
   for (typename SComplex::ColoredIterators::Iterators::AllCells::iterator it = s.template iterators<1>().allCells().begin(),
 			end = s.template iterators<1>().allCells().end();
 		 it != end; ++it) {
-	 cells.insert(it->getElementaryCell());
+	 //	 cells.insert(it->getElementaryCell());
   }
 
   // -- MM std::cout << " rfccCR construction from " << cells.size() <<  " cells starting "  << std::endl;      // -- MM
