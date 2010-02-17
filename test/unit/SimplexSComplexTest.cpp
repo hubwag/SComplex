@@ -1,7 +1,9 @@
 #include <iostream>
 using namespace std;
 
-#include <boost/test/unit_test.hpp>
+#define BOOST_TEST_MAIN
+#include <boost/test/included/unit_test.hpp> // ?
+// #include <boost/test/unit_test.hpp>
 #include <boost/bind.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <algorithm>
@@ -65,6 +67,7 @@ BOOST_AUTO_TEST_CASE(add_get_simple_test_2d) {
 	BOOST_CHECK(comp.getSimplex(make_int_set(0,1)) != 0);
 	BOOST_CHECK(comp.getSimplex(make_int_set(0)) != 0);
 	BOOST_CHECK(comp.getSimplex(make_int_set(1)) != 0);
+	BOOST_CHECK_EQUAL(comp.cardinality(), 3);
 }
 
 BOOST_AUTO_TEST_CASE(add_get_simple_test_3d) {
@@ -78,6 +81,7 @@ BOOST_AUTO_TEST_CASE(add_get_simple_test_3d) {
 	BOOST_CHECK(comp.getSimplex(make_int_set(0)) != 0);
 	BOOST_CHECK(comp.getSimplex(make_int_set(1)) != 0);
 	BOOST_CHECK(comp.getSimplex(make_int_set(2)) != 0);
+	BOOST_CHECK_EQUAL(comp.cardinality(), 7);
 }
 
 BOOST_AUTO_TEST_CASE(shave_and_coreduce_test) {
@@ -100,4 +104,43 @@ BOOST_AUTO_TEST_CASE(shave_and_coreduce_test) {
 	BOOST_CHECK_EQUAL(2, comp.cardinality());
 }
 
+BOOST_AUTO_TEST_CASE(coincidence_index1) {
+	SimplexSComplex comp;
+
+    Simplex *a = comp.addSimplex(make_int_set(0,1,2));
+    Simplex *b = comp.addSimplex(make_int_set(0,2));
+
+	BOOST_CHECK_EQUAL(-1, comp.coincidenceIndex(SimplexCell(a), SimplexCell(b)));
+}
+
+BOOST_AUTO_TEST_CASE(coincidence_index2) {
+	SimplexSComplex comp;
+
+    Simplex *a = comp.addSimplex(make_int_set(0,1,2));
+    Simplex *b = comp.addSimplex(make_int_set(1,2));
+
+    BOOST_CHECK_EQUAL(1, comp.coincidenceIndex(SimplexCell(a), SimplexCell(b)));
+}
+
+BOOST_AUTO_TEST_CASE(coincidence_index3) {
+	SimplexSComplex comp;
+
+    Simplex *a = comp.addSimplex(make_int_set(1,2,3));
+    Simplex *b = comp.addSimplex(make_int_set(1,3));
+
+	BOOST_CHECK_EQUAL(-1, comp.coincidenceIndex(SimplexCell(a), SimplexCell(b)));
+}
+
+BOOST_AUTO_TEST_CASE(coincidence_index4) {
+	SimplexSComplex comp;
+
+    Simplex *a = comp.addSimplex(make_int_set(1,2,3));
+    Simplex *b = comp.addSimplex(make_int_set(2,3));
+
+    BOOST_CHECK_EQUAL(1, comp.coincidenceIndex(SimplexCell(a), SimplexCell(b)));
+}
+
 BOOST_AUTO_TEST_SUITE_END()
+
+
+

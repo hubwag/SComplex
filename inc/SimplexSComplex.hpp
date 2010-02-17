@@ -169,6 +169,22 @@ private:
 
 public:
 
+	int coincidenceIndex(const Cell &a, const Cell &b) const
+	{
+		const Simplex *sigma = &a.getImpl();
+		const Simplex *tau = &b.getImpl();
+		int inter = -1;
+		assert(abs(sigma->getDim() - tau->getDim()) == 1);
+		if (sigma->nrs.size() < sigma->nrs.size())
+			swap(sigma, tau);
+
+		set_difference(sigma->nrs.begin(), sigma->nrs.end(), tau->nrs.begin(), tau->nrs.end(), &inter);
+		int i = distance(sigma->nrs.begin(),
+						 find(sigma->nrs.begin(), sigma->nrs.end(), inter));
+
+		return (i % 2 == 0) ? 1 : -1; // (-1)**i
+	}
+
     Simplex* addSimplex(const set<int> &s)
     {
         memo.resize(1u<<s.size(), 0);

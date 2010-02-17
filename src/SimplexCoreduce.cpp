@@ -112,6 +112,20 @@ void CrHomS(int argc,char* argv[])
 
     CRef<SComplex> SComplexCR(new SComplex());
 
+{
+    Simplex *a = SComplexCR().addSimplex(make_int_set(1,2,3));
+    Simplex *b = SComplexCR().addSimplex(make_int_set(1,2));
+
+    cout << SComplexCR().coincidenceIndex(SimplexCell(a), SimplexCell(b)) << endl;
+}
+
+{
+    Simplex *a = SComplexCR().addSimplex(make_int_set(1,2,3));
+    Simplex *b = SComplexCR().addSimplex(make_int_set(1,3));
+
+    cout << SComplexCR().coincidenceIndex(SimplexCell(a), SimplexCell(b)) << endl;
+}
+
     int n = 100000;
     int mod = n; // = 4
     unsigned d = 4;
