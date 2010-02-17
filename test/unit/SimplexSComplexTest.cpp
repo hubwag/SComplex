@@ -139,5 +139,33 @@ BOOST_AUTO_TEST_CASE(coincidence_index4) {
     BOOST_CHECK_EQUAL(1, comp.coincidenceIndex(SimplexCell(a), SimplexCell(b)));
 }
 
+BOOST_AUTO_TEST_CASE(border_iterator) {
+	SimplexSComplex comp;
+
+    Simplex *a = comp.addSimplex(make_int_set(1,2,3));
+
+    typedef SimplexSComplex::ColoredIterators::Iterators::BdCells::iterator BdIt;
+
+    BdIt begin = comp.iterators<1>().bdCells(SimplexCell(a)).begin();
+    BdIt end = comp.iterators<1>().bdCells(SimplexCell(a)).end();
+
+    BOOST_CHECK_EQUAL(3, distance(begin, end));
+}
+
+BOOST_AUTO_TEST_CASE(border_iterator2) {
+	SimplexSComplex comp;
+
+    Simplex *a = comp.addSimplex(make_int_set(1,2,3));
+    comp.getSimplex(make_int_set(1,2))->setColor<2>();
+
+    typedef SimplexSComplex::ColoredIterators::Iterators::BdCells::iterator BdIt;
+
+    BdIt begin = comp.iterators<1>().bdCells(SimplexCell(a)).begin();
+    BdIt end = comp.iterators<1>().bdCells(SimplexCell(a)).end();
+
+    BOOST_CHECK_EQUAL(2, distance(begin, end));
+}
+
+
 BOOST_AUTO_TEST_SUITE_END()
 
