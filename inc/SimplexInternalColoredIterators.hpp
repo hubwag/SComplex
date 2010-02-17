@@ -39,11 +39,41 @@ struct ColoredIterators
         }
 
         struct BdCells
-        {
-            // typedef vector<> iterator;
-        };
+    {
+        typedef Simplex::border_iterator iterator;
+        typedef Simplex::const_border_iterator const_iterator;
 
-        BdCells bdCells();
+        SimplexSComplex &comp;
+        const Simplex &cell; // ?? really const ??
+        int color;
+
+        explicit BdCells(SimplexSComplex &cmplx, const Simplex &c, int col) : comp(cmplx), cell(c), color(col) {}
+
+        iterator begin()
+        {
+            return const_cast<Simplex&>(cell).border_begin(color);
+        }
+
+        iterator end()
+        {
+            return const_cast<Simplex&>(cell).border_end(color);
+        }
+
+        const_iterator begin() const
+        {
+            return cell.border_begin(color);
+        }
+
+        const_iterator end() const
+        {
+            return cell.border_end(color);
+        }
+    };
+
+    BdCells bdCells(const Simplex &c)
+    {
+        return BdCells(comp, c, color);
+    }
 
         struct AllCells
         {
