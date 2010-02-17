@@ -60,7 +60,7 @@ boost::tuple<int, int, int, std::string>  CrHomS(const std::string &fileName) {
   get<2>(result) = SComplexCR().cardinality();
   
   CRef<ReducibleFreeChainComplexType> RFCComplexCR=
-	 (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<CubSComplex, ReducibleFreeChainComplexType,ElementaryCellType>(SComplexCR()))();
+	 (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<CubSComplex, ReducibleFreeChainComplexType>(SComplexCR()))();
   BOOST_TEST_MESSAGE(" --- RFCC constructed  ");
 
   CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);

@@ -39,7 +39,9 @@ public:
 		return *simp;
 	}
 
-	SimplexCell& operator=(Simplex &s);
+  bool operator<(const SimplexCell& b) const;
+  
+  SimplexCell& operator=(Simplex &s);
 
 	int getColor() const;
 
@@ -48,7 +50,7 @@ public:
     template<int color>
     void setColor();
 
-	size_t getDim();
+	size_t getDim() const;
 };
 
 #endif
