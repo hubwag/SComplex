@@ -175,10 +175,12 @@ public:
 		const Simplex *tau = &b.getImpl();
 		int inter = -1;
 		assert(abs(sigma->getDim() - tau->getDim()) == 1);
-		if (sigma->nrs.size() < sigma->nrs.size())
+		if (sigma->nrs.size() < tau->nrs.size())
 			swap(sigma, tau);
 
 		set_difference(sigma->nrs.begin(), sigma->nrs.end(), tau->nrs.begin(), tau->nrs.end(), &inter);
+		assert(inter != -1);
+
 		int i = distance(sigma->nrs.begin(),
 						 find(sigma->nrs.begin(), sigma->nrs.end(), inter));
 

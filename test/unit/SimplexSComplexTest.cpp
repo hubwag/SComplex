@@ -129,6 +129,7 @@ BOOST_AUTO_TEST_CASE(coincidence_index3) {
     Simplex *b = comp.addSimplex(make_int_set(1,3));
 
 	BOOST_CHECK_EQUAL(-1, comp.coincidenceIndex(SimplexCell(a), SimplexCell(b)));
+	BOOST_CHECK_EQUAL(-1, comp.coincidenceIndex(SimplexCell(b), SimplexCell(a)));
 }
 
 BOOST_AUTO_TEST_CASE(coincidence_index4) {
@@ -138,6 +139,7 @@ BOOST_AUTO_TEST_CASE(coincidence_index4) {
     Simplex *b = comp.addSimplex(make_int_set(2,3));
 
     BOOST_CHECK_EQUAL(1, comp.coincidenceIndex(SimplexCell(a), SimplexCell(b)));
+    BOOST_CHECK_EQUAL(1, comp.coincidenceIndex(SimplexCell(b), SimplexCell(a)));
 }
 
 BOOST_AUTO_TEST_CASE(border_iterator) {
