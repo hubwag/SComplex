@@ -1,6 +1,7 @@
 #include <iostream>
 using namespace std;
 
+#define BOOST_TEST_MAIN
 #include <boost/test/included/unit_test.hpp> // ?
 // #include <boost/test/unit_test.hpp>
 #include <boost/bind.hpp>

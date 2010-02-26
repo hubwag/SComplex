@@ -25,15 +25,15 @@ public:
   typedef typename SComplex::Cell Cell;
 
   typedef ReducibleFreeChainComplexT ReducibleFreeChainComplex;
-  
+
   class SComplexChainCell {
 	 SComplex& complex;
 	 const Cell cell;
 	 const int embededDim;
-	 
+
   public:
 	 SComplexChainCell(SComplex& _complex, const Cell& _cell, int _embededDim): complex(_complex), cell(_cell), embededDim(_embededDim) {
-		
+
 	 }
 
 	 int embDim() const {
@@ -59,13 +59,13 @@ public:
 		return this->cell < b.cell;
 	 }
   };
-  
+
 public:
-  
+
 
   ReducibleFreeChainComplexOverZFromSComplexAlgorithm(SComplex& _s): s(_s) {}
   CRef<ReducibleFreeChainComplex> operator()();
-  
+
 private:
   SComplex& s;
 };
@@ -74,7 +74,7 @@ private:
 template<typename SComplexT, typename ReducibleFreeChainComplexT>
 inline CRef<ReducibleFreeChainComplexT> ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SComplexT, ReducibleFreeChainComplexT>::operator()(){
 
-  Stopwatch sw;
+  // Stopwatch sw;
   std::set<SComplexChainCell> cells;
 
   size_t maxDim = 0;
@@ -82,9 +82,9 @@ inline CRef<ReducibleFreeChainComplexT> ReducibleFreeChainComplexOverZFromSCompl
 			end = s.template iterators<1>().allCells().end();
 		 it != end; ++it) {
 
-	 maxDim = std::max(maxDim, it->getDim());
+	 maxDim = std::max<int>(maxDim, it->getDim());
   }
-  
+
   for (typename SComplex::ColoredIterators::Iterators::AllCells::iterator it = s.template iterators<1>().allCells().begin(),
 			end = s.template iterators<1>().allCells().end();
 		 it != end; ++it) {
@@ -93,7 +93,7 @@ inline CRef<ReducibleFreeChainComplexT> ReducibleFreeChainComplexOverZFromSCompl
 
   CRef<ReducibleFreeChainComplex> rfccCR( new ReducibleFreeChainComplex(cells));
 
-  fcout << "Reducible chain complex (over Z) construction of CubCelSet completed in " << sw  << std::endl;
+  // fcout << "Reducible chain complex (over Z) construction of CubCelSet completed in " << sw  << std::endl;
   return rfccCR;
 }
 

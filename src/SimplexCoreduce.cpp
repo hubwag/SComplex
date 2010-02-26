@@ -62,28 +62,36 @@ typedef ReducibleFreeChainComplex<FreeModuleType,int> ReducibleFreeChainComplexT
 #include "SimplexSubdivision.hpp"
 
 template<typename SComplex>
-void CrHomS_torus(int argc,char* argv[])
+void CrHomS_fromTris(const vector<set<int> > &tris, const string &description)
 {
     Stopwatch swTot;
 
     CRef<SComplex> SComplexCR(new SComplex());
 
-    //vector<set<int> > tris = makeSpaceFromWelds(makeKleinWelds());
-	 vector<set<int> > tris = makeSpaceFromWelds(makeTorusWelds());
-
-	for (int i = 0; i < 3; i++)
-		tris = subdivide3(tris);
-
     for (size_t i = 0; i < tris.size(); i++)
     {
-    	SComplexCR().addSimplex(tris[i]);
+        SComplexCR().addSimplex(tris[i]);
     }
 
-    cout << " --- generated klein-bottle simplicial complex --- \n cardinality: " << SComplexCR().cardinality() << endl;
+    cout << " --- generated " << description << " simplicial complex --- \n cardinality: " << SComplexCR().cardinality() << endl;
 
-//  SComplexAlgs<CubSComplex>::test(SComplexCR());
+    if (SComplexCR().cardinality() < 1000)
+    {
+        Stopwatch swAlgebra;
+        CRef<ReducibleFreeChainComplexType> RFCComplexCR=
+            (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SimplexSComplex, ReducibleFreeChainComplexType>(SComplexCR()))();
+        cout << " --- RFCC constructed  " << endl;
 
-     Stopwatch swComp,swRed;
+
+        CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
+        cout << " --- Computation completed in " << swAlgebra << std::endl;
+        cout << " --- Computed homology is: \n\n" << homSignCR() << std::endl;
+
+    }
+
+    //  SComplexAlgs<CubSComplex>::test(SComplexCR());
+
+    Stopwatch swComp,swRed;
     (ShaveAlgorithmFactory::createDefault(SComplexCR()))();
     cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
 
@@ -91,19 +99,27 @@ void CrHomS_torus(int argc,char* argv[])
     (CoreductionAlgorithmFactory::createDefault(SComplexCR()))();
     cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
 
+    CRef<ReducibleFreeChainComplexType> RFCComplexCR=
+        (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SimplexSComplex, ReducibleFreeChainComplexType>(SComplexCR()))();
+    cout << " --- RFCC constructed  " << endl;
 
-	 CRef<ReducibleFreeChainComplexType> RFCComplexCR=
-		(ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SimplexSComplex, ReducibleFreeChainComplexType>(SComplexCR()))();
-	 cout << " --- RFCC constructed  " << endl;
+    /*cout << "debug " << endl;
 
-	 CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
-	 cout << " --- Computation completed in " << swComp  << std::endl;
-	 cout << " --- Computed homology is: \n\n" << homSignCR()  << std::endl;
+    for (SimplexSComplex::iterator it = SComplexCR().all_begin(), end = SComplexCR().all_end(); it != end; ++it)
+    {
+        Simplex &s = (Simplex&)*it;
+        cout << distance(s.border_begin(1), s.border_end(1)) << endl;
+        cout << distance(s.coborder_begin(1), s.coborder_end(1)) << endl;
+    }
+    */
 
-	 
+    CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
+    cout << " --- Computation completed in " << swComp  << std::endl;
+    cout << " --- Computed homology is: \n\n" << homSignCR()  << std::endl;
 
-	 cout << " --- Total computation time is: " << swTot  << std::endl;
+    cout << " --- Total computation time is: " << swTot  << std::endl;
 
+    cout << "\n\n\n";
 }
 
 template<typename SComplex>
@@ -112,20 +128,6 @@ void CrHomS(int argc,char* argv[])
     Stopwatch swTot;
 
     CRef<SComplex> SComplexCR(new SComplex());
-
-{
-    Simplex *a = SComplexCR().addSimplex(make_int_set(1,2,3));
-    Simplex *b = SComplexCR().addSimplex(make_int_set(1,2));
-
-    cout << SComplexCR().coincidenceIndex(SimplexCell(a), SimplexCell(b)) << endl;
-}
-
-{
-    Simplex *a = SComplexCR().addSimplex(make_int_set(1,2,3));
-    Simplex *b = SComplexCR().addSimplex(make_int_set(1,3));
-
-    cout << SComplexCR().coincidenceIndex(SimplexCell(a), SimplexCell(b)) << endl;
-}
 
     int n = 1000;
     int mod = n; // = 4
@@ -142,24 +144,6 @@ void CrHomS(int argc,char* argv[])
         SComplexCR().addSimplex(s);
     }
 
-/*
-    add(SComplexCR(), 0, 1, 2)->debug_output__();
-    add(SComplexCR(), 1, 3);
-    add(SComplexCR(), 2, 3);
-    add(SComplexCR(), 3, 4);
-    add(SComplexCR(), 2, 4);
-    add(SComplexCR(), 3, 5);
-
-*/
-
-/*
-	add(SComplexCR(), 0, 1);
-	add(SComplexCR(), 0, 3);
-	add(SComplexCR(), 0, 4);
-	add(SComplexCR(), 1, 3);
-	add(SComplexCR(), 3, 4);
-*/
-
     cout << " --- generated random simplicial complex --- \n cardinality: " << SComplexCR().cardinality() << endl;
 
 //  SComplexAlgs<CubSComplex>::test(SComplexCR());
@@ -173,17 +157,16 @@ void CrHomS(int argc,char* argv[])
     // cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
 
 
-CRef<ReducibleFreeChainComplexType> RFCComplexCR=
-    		(ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SimplexSComplex, ReducibleFreeChainComplexType>(SComplexCR()))();
-      cout << " --- RFCC constructed  " << endl;
+    CRef<ReducibleFreeChainComplexType> RFCComplexCR=
+        (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SimplexSComplex, ReducibleFreeChainComplexType>(SComplexCR()))();
+    cout << " --- RFCC constructed  " << endl;
 
-      CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
-      cout << " --- Computation completed in " << swComp  << std::endl;
-      cout << " --- Computed homology is: \n\n" << homSignCR()  << std::endl;
+    CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
+    cout << " --- Computation completed in " << swComp  << std::endl;
+    cout << " --- Computed homology is: \n\n" << homSignCR()  << std::endl;
+    cout << " --- Total computation time is: " << swTot  << std::endl;
 
-      
-
-      cout << " --- Total computation time is: " << swTot  << std::endl;
+    cout << "\n\n\n";
 }
 
 int main(int argc,char* argv[])
@@ -192,10 +175,65 @@ int main(int argc,char* argv[])
     fcout.turnOn();
     fcout.open(outFname.c_str());
 
+    vector<set<int> > klein = makeSpaceFromWelds(makeKleinWelds());
+    vector<set<int> > torus = makeSpaceFromWelds(makeTorusWelds());
+    vector<set<int> > pspace = makeSpaceFromWelds(makeProjectiveSpaceWelds());
+
+    vector<set<int> > random;
+    int n = 1000;
+    int mod = n; // = 4
+    unsigned d = 4;
+
+    for (int i = 0; i < n; i++)
+    {
+        set<int> s;
+        while (s.size() < d)
+        {
+            s.insert(rand()%mod);
+        }
+
+        random.push_back(s);
+    }
+
+    vector<set<int> > small(1);
+    small.back().insert(0);
+    small.back().insert(1);
+    small.back().insert(2);
+
+
+    vector<set<int> > ex;
+    ex.push_back(make_int_set(1,2,3));
+    ex.push_back(make_int_set(0,1));
+    ex.push_back(make_int_set(0,3));
+    ex.push_back(make_int_set(0,4));
+    ex.push_back(make_int_set(3,4));
+    ex.push_back(make_int_set(0,5));
+
     try
     {
-        CrHomS_torus<SimplexSComplex>(argc,argv);
-        CrHomS<SimplexSComplex>(argc,argv);
+        CrHomS_fromTris<SimplexSComplex>(ex, "example from the article");
+
+        CrHomS_fromTris<SimplexSComplex>(small, "one triangle");
+        CrHomS_fromTris<SimplexSComplex>(klein, "klein bottle");
+        CrHomS_fromTris<SimplexSComplex>(pspace, "real projective space");
+
+        for (int i = 0; i < 1; i++)
+        {
+            klein = subdivide6(klein);
+            CrHomS_fromTris<SimplexSComplex>(klein, "klein bottle (after 3-subdivisions)");
+        }
+
+        CrHomS_fromTris<SimplexSComplex>(torus, "torus");
+
+        for (int i = 0; i < 0; i++)
+        {
+            torus = subdivide3(torus);
+            CrHomS_fromTris<SimplexSComplex>(torus, "torus (after 3-subdivisions)");
+        }
+
+        CrHomS_fromTris<SimplexSComplex>(random, "random complex");
+
+        // CrHomS<SimplexSComplex>(argc,argv);
     }
     catch (std::exception& e)
     {

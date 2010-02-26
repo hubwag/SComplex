@@ -85,15 +85,13 @@ struct Simplex
         return -1 + static_cast<int>(nrs.size());
     }
 
-  bool operator<(const Simplex& b) const {
-	 return this->nrs < b.nrs;
-  }
-    /*Cell& getElementaryCell()
+    bool operator<(const Simplex& b) const
     {
-    	return *this;
-    }*/
+        return this->nrs < b.nrs;
+    }
 
-	// iterators...
+
+    // iterators...
 
     typedef boost::filter_iterator<has_color, vector<Simplex*>::iterator> colored_iterator_inner;
     typedef boost::filter_iterator<has_color, vector<Simplex*>::iterator> border_iterator_inner;
@@ -163,6 +161,9 @@ struct Simplex
 };
 
 template<int col>
-void SimplexCell::setColor() { simp->setColor<col>(); }
+void SimplexCell::setColor()
+{
+    simp->setColor<col>();
+}
 
 #endif
