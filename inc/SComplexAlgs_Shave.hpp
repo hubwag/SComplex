@@ -7,11 +7,11 @@ template<typename StrategyT>
 class ShaveAlgorithm {
 
 public:
-  typedef StrategyT Strategy;  
+  typedef StrategyT Strategy;
   typedef typename Strategy::SComplex SComplex;
   typedef typename SComplex::Cell Cell;
   typedef typename Strategy::ReductionPair ReductionPair;
-  
+
   ShaveAlgorithm(Strategy* _strategy): strategy(_strategy) {}
 
   ~ShaveAlgorithm() {
@@ -43,7 +43,7 @@ inline void ShaveAlgorithm<StrategyT>::operator()(){
 			  end = strategy->getComplex().template iterators<1>().dimCells(d).end();
 			it != end; ++it) {
 
-		Cell& cell = *it;
+		Cell &cell = *it;
 		boost::optional<ReductionPair> reductionPair = strategy->getReductionPair(cell);
 		if (reductionPair) {
 		  strategy->reduce(*reductionPair);

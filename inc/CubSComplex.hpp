@@ -19,7 +19,7 @@ public:
   int tmp;
   
   class Cell;
-  typedef int Dim;
+  typedef size_t Dim;
   typedef int Color;
 
 private:
@@ -30,6 +30,7 @@ private:
   class CellNumerator;
   class CellDimNumerator;
   class CbdNumerator;
+  class BdNumerator;
 
   typedef unsigned long int cluster;
   typedef BitSetT<BitmapT<cluster> > BitSet;
@@ -87,6 +88,10 @@ public:
   
   Dim getBaseDimension() const;
 
+  int coincidenceIndex(const Cell &a, const Cell &b) const {
+	 throw std::logic_error("Not implemented");
+  }
+  
 protected:
   CRef<BCubCellSet> bCubCellSetCR;
   Dim baseDimension;

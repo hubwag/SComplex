@@ -20,10 +20,10 @@ BOOST_AUTO_TEST_CASE(init) {
   typedef SComplex<Util::Neighbours::ColorListNeighbourModel> Complex;
   const int colors = 3;
   
-  std::vector<std::pair<Complex::Id, Complex::Id> > pairs = pair_list_of(0, 1);  
-  Complex complex(colors, pairs.size() * 10, pairs);
+  Complex::KappaMap kappaMap = tuple_list_of(0, 1, 1);  
+  Complex complex(colors, kappaMap.size() * 10, kappaMap);
 
-  BOOST_CHECK_EQUAL(complex.cardinality(), pairs.size() * 10);
+  BOOST_CHECK_EQUAL(complex.cardinality(), kappaMap.size() * 10);
 
   size_t tmpSize = 0;
   for (Complex::Iterators::AllCells::iterator it= complex.iterators().allCells().begin(),
@@ -32,6 +32,55 @@ BOOST_AUTO_TEST_CASE(init) {
   }
   
   BOOST_CHECK_EQUAL(complex.cardinality(), tmpSize);  
+}
+
+BOOST_AUTO_TEST_CASE(coboundarySize) {
+  typedef SComplex<Util::Neighbours::ColorListNeighbourModel> Complex;
+  const int colors = 3;
+  
+  Complex::KappaMap kappaMap = tuple_list_of(0, 1, 1)(0, 2, 1)(1, 2, 1)(0, 3, 1);
+  std::vector<int> cbdSizes = list_of(0)(1)(2)(1);
+  
+  Complex complex(colors, kappaMap.size(), kappaMap);
+
+  boost::reference_wrapper<Complex::Cell> cells[] = {boost::ref(complex[0]), boost::ref(complex[1]), boost::ref(complex[2]), boost::ref(complex[3])};
+
+  std::vector<int> tmpCbdSizes;
+  BOOST_FOREACH( boost::reference_wrapper<Complex::Cell> cell, cells) {
+	 size_t tmpSize = 0;
+	 BOOST_FOREACH(Complex::Iterators::BdCells::iterator::value_type t,
+						complex.iterators().cbdCells(cell)) {
+		tmpSize++;
+	 }
+	 tmpCbdSizes.push_back(tmpSize);
+  }
+
+  BOOST_CHECK_EQUAL_COLLECTIONS(tmpCbdSizes.begin(), tmpCbdSizes.end(), cbdSizes.begin(), cbdSizes.end());
+}
+
+
+BOOST_AUTO_TEST_CASE(boundarySize) {
+  typedef SComplex<Util::Neighbours::ColorListNeighbourModel> Complex;
+  const int colors = 3;
+  
+  Complex::KappaMap kappaMap = tuple_list_of(0, 1, 1)(0, 2, 1)(1, 2, 1)(0, 3, 1);
+  std::vector<int> bdSizes = list_of(3)(1)(0)(0);
+  
+  Complex complex(colors, kappaMap.size(), kappaMap);
+
+  boost::reference_wrapper<Complex::Cell> cells[] = {boost::ref(complex[0]), boost::ref(complex[1]), boost::ref(complex[2]), boost::ref(complex[3])};
+
+  std::vector<int> tmpBdSizes;
+  BOOST_FOREACH( boost::reference_wrapper<Complex::Cell> cell, cells) {
+	 size_t tmpSize = 0;
+	 BOOST_FOREACH(Complex::Iterators::BdCells::iterator::value_type t,
+						complex.iterators().bdCells(cell)) {
+		tmpSize++;
+	 }
+	 tmpBdSizes.push_back(tmpSize);
+  }
+
+  BOOST_CHECK_EQUAL_COLLECTIONS(tmpBdSizes.begin(), tmpBdSizes.end(), bdSizes.begin(), bdSizes.end());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

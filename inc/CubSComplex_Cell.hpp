@@ -30,11 +30,15 @@ public:
 	 return ownDim();
   }
 	 
-  ElementaryCell getElementaryCell() const { //conversion operator doesn't work here, because of copy constructor in ElementaryCell
-	 int dim=this->embDim();
-	 return ElementaryCell(this->coords(),dim);
-  }
+  // ElementaryCell getElementaryCell() const { //conversion operator doesn't work here, because of copy constructor in ElementaryCell
+  // 	 int dim=this->embDim();
+  // 	 return ElementaryCell(this->coords(),dim);
+  // }
 
+  bool operator<(const Cell& b) const {
+	 return (BCubCellSet::BitCoordIterator)(*this) < ((BCubCellSet::BitCoordIterator) b);
+  }
+  
   bool getFaceCompanion(Cell& companion) {   // should be const, requires changes in isFreeCoFace to be const
 	 return reinterpret_cast<const BCubCelSet*>(this->itSet)->isFreeFace(*this,companion);
   }

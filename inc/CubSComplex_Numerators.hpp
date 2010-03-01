@@ -132,5 +132,60 @@ protected:
 
 };
 
+class CubSComplex::BdNumerator{
+public:
+	 typedef Cell value_type;
+		
+  BdNumerator(const Cell& c):center(c),i(0),downDir(true), dim(c.embDim()), cCell(c){
+		//		  cCell=false;
+	 }
+
+  void toEnd() {
+	 cCell.toEnd();
+  }
+		
+	 bool operator==(const BdNumerator& o) const {
+		  return this->cCell.wIt == o.cCell.wIt;
+	 }
+
+	 bool operator!=(const BdNumerator& o) const {
+		  return this->cCell.wIt != o.cCell.wIt;
+	 }
+
+	 bool MoveNext(){
+		  while(i < dim){
+            // process only directions in which cell is degenerate
+            if(!downDir || center.odd(i)){
+					 cCell=center;
+					 // First check the bottom face
+					 if(downDir){
+						  cCell.decInDir(i);
+						  downDir=false;
+						  // and now go to the top face
+					 }else{
+						  cCell.incInDir(i);;
+						  downDir=true;
+						  ++i;
+					 }
+					 return true;
+            }else{
+					 ++i;
+            }
+		  }
+		  //cCell=false;
+		  cCell.toEnd();
+		  return false;
+	 }
+	 Cell& Current(){
+		  return cCell;
+	 }
+protected:
+  const Cell& center;
+  int i;
+  bool downDir;
+  const int dim;
+  Cell cCell;
+
+};
 
 #endif // CUB_SCOMPLEX_NUMERATORS_HPP

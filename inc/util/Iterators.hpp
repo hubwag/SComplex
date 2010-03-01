@@ -6,25 +6,32 @@
 namespace Util {
   namespace Iterators {
 	 
-	 template<typename CollectionT, typename TransformF =
-				 std::_Identity<typename CollectionT::iterator> > // a problem with std::identity, where it is?
+	 template<typename CollectionT>
 	 class CollectionBeginEnd {
 	 public:
-		typedef typename TransformF::result_type iterator;
+		typedef typename CollectionT::iterator iterator;
+		typedef typename CollectionT::const_iterator const_iterator;
 		
-		explicit CollectionBeginEnd(CollectionT& _collection, const TransformF& _transform = TransformF()): collection(_collection), transform(_transform) {}
+		explicit CollectionBeginEnd(CollectionT& _collection): collection(_collection) {}
   
 		iterator begin() {
-		  return transform(collection.begin());
+		  return (collection.begin());
+		}
+
+		const_iterator begin() const {
+		  return (collection.begin());
 		}
 
 		iterator end() {
-		  return transform(collection.end());
+		  return (collection.end());
+		}
+
+		const_iterator end() const {
+		  return (collection.end());
 		}
 
 	 private:
 		CollectionT& collection;
-		TransformF transform;
 	 };
   }
 }
