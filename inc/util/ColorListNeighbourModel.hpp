@@ -4,11 +4,12 @@
 namespace Util {
   namespace Neighbours {
 	 
-	 template<typename ObjectRefT, typename Color>
+	 template<typename ObjectT, typename Color>
 	 class ColorListNeighbourModel {
+
 	 public:
 		
-		typedef ObjectRefT ObjectRef;
+		typedef ObjectT Object;
 
 		struct NeighbourLink;
 		
@@ -17,10 +18,10 @@ namespace Util {
 		typedef typename NeighbourLinkPtrsByColor::value_type::iterator NeighbourLinkPtrsIterator;
 		
 		struct NeighbourLink {
-		  ObjectRef objectRef;
+		  Object objectRef;
 		  NeighbourLinkPtrsIterator neighbourLinkPtrsIterator; //an iterator to NeighbourLinkPtrs not in this, but in an instance of the class for a netighbour.
 
-		  explicit NeighbourLink(ObjectRef _o) : objectRef(_o) {}
+		  explicit NeighbourLink(Object _o) : objectRef(_o) {}
 		};
 		
 		typedef typename std::vector<NeighbourLink> NeighbourLinks;		
@@ -41,7 +42,16 @@ namespace Util {
 		  return neighbours.end();
 		}
 
-		NeighbourLinkPtrsIterator add(const ObjectRef& object, const Color& color) {
+		const_iterator begin() const {
+		  return neighbours.begin();
+		}
+
+		const_iterator end() const {
+		  return neighbours.end();
+		}
+
+		
+		NeighbourLinkPtrsIterator add(const Object& object, const Color& color) {
 		  neighbours.push_back(NeighbourLink(object));
 		  return neighboursByColor[color].insert(neighboursByColor[color].end(), &(*(neighbours.end() - 1)));	 
 		}

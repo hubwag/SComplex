@@ -30,8 +30,17 @@ BOOST_AUTO_TEST_CASE(init) {
 			end = complex.iterators().allCells().end(); it != end; ++it) {
 	 ++tmpSize;
   }
+  BOOST_CHECK_EQUAL(complex.cardinality(), tmpSize);
   
-  BOOST_CHECK_EQUAL(complex.cardinality(), tmpSize);  
+  const Complex& refComplex = complex;
+  
+  tmpSize = 0;
+  for (Complex::Iterators::AllCells::const_iterator it= refComplex.iterators().allCells().begin(),
+			end = refComplex.iterators().allCells().end(); it != end; ++it) {
+	 ++tmpSize;
+  }
+  BOOST_CHECK_EQUAL(refComplex.cardinality(), tmpSize);
+
 }
 
 BOOST_AUTO_TEST_CASE(coboundarySize) {
@@ -56,6 +65,7 @@ BOOST_AUTO_TEST_CASE(coboundarySize) {
   }
 
   BOOST_CHECK_EQUAL_COLLECTIONS(tmpCbdSizes.begin(), tmpCbdSizes.end(), cbdSizes.begin(), cbdSizes.end());
+
 }
 
 
@@ -81,6 +91,19 @@ BOOST_AUTO_TEST_CASE(boundarySize) {
   }
 
   BOOST_CHECK_EQUAL_COLLECTIONS(tmpBdSizes.begin(), tmpBdSizes.end(), bdSizes.begin(), bdSizes.end());
+
+  tmpBdSizes = std::vector<int>();
+  BOOST_FOREACH( boost::reference_wrapper<Complex::Cell> cell, cells) {
+	 size_t tmpSize = 0;
+	 BOOST_FOREACH(Complex::Iterators::BdCells::const_iterator::value_type t,
+						((const Complex&)complex).iterators().bdCells(cell)) {
+		tmpSize++;
+	 }
+	 tmpBdSizes.push_back(tmpSize);
+  }
+
+  BOOST_CHECK_EQUAL_COLLECTIONS(tmpBdSizes.begin(), tmpBdSizes.end(), bdSizes.begin(), bdSizes.end());
+
 }
 
 BOOST_AUTO_TEST_SUITE_END()
