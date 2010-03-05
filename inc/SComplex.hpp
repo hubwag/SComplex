@@ -105,8 +105,8 @@ private:
 	 public:
 		explicit NeighboursModelCellExtractor(Complex* _complex): complex(_complex) {}
 		
-		//typename NeighboursModelCellExtractorFun::result_type operator()(typename NeighboursModelCellExtractorFun::argument_type  link) const {
-		typename NeighboursModelCellExtractorFun::result_type operator()(const typename NeighboursModel::NeighbourLink&  link) const {
+		typename NeighboursModelCellExtractorFun::result_type operator()(typename NeighboursModelCellExtractorFun::argument_type  link) const {
+		  //typename NeighboursModelCellExtractorFun::result_type operator()(const typename NeighboursModel::NeighbourLink&  link) const {
 		  return typename NeighboursModelCellExtractorFun::result_type(complex, link.objectRef.get_pointer());
 		}
 	 };
