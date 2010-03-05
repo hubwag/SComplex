@@ -41,8 +41,24 @@ BOOST_AUTO_TEST_CASE(setColorCheckNeighbours) {
   
   Complex complex(colors, kappaMap.size(), kappaMap);
 
-  boost::reference_wrapper<Complex::Cell> cells[] = {boost::ref(complex[0]), boost::ref(complex[1]), boost::ref(complex[2]), boost::ref(complex[3])};
+  Complex::Cell cells[] = {complex[0], complex[1], complex[2], complex[3]};
 
+
+  BOOST_FOREACH( Complex::Cell cell, cells) {
+	 BOOST_FOREACH(Complex::ConstIterators::BdCells::const_iterator::value_type t,
+						((const Complex&)complex).iterators().bdCells(cell)) {
+		//t.setColor(1);
+	 }
+  }
+
+  const Complex& refComplex = complex;
+ 
+  for (Complex::ConstIterators::AllCells::const_iterator it= refComplex.iterators().allCells().begin(),
+			end = refComplex.iterators().allCells().end(); it != end; ++it) {
+	 //it->setColor(0);
+  }
+
+  
 }
 
 BOOST_AUTO_TEST_SUITE_END()
