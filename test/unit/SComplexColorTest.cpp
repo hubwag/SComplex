@@ -45,9 +45,9 @@ BOOST_AUTO_TEST_CASE(setColorCheckNeighbours) {
 
 
   BOOST_FOREACH( Complex::Cell cell, cells) {
-	 BOOST_FOREACH(Complex::ConstIterators::BdCells::const_iterator::value_type t,
-						((const Complex&)complex).iterators().bdCells(cell)) {
-		//t.setColor(1);
+	 BOOST_FOREACH(Complex::Iterators::BdCells::iterator::value_type t,
+						complex.iterators().bdCells(cell)) {
+		t.setColor(1);
 	 }
   }
 

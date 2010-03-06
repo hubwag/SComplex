@@ -19,7 +19,7 @@ namespace Util {
 		
 		struct NeighbourLink {
 		  Object objectRef;
-		  NeighbourLinkPtrsIterator neighbourLinkPtrsIterator; //an iterator to NeighbourLinkPtrs not in this, but in an instance of the class for a netighbour.
+		  NeighbourLinkPtrsIterator neighbourLinkPtrsIterator; //an iterator to NeighbourLinkPtrs not in this, but in an instance of the class for a neighbour.
 
 		  explicit NeighbourLink(Object _o) : objectRef(_o) {}
 		};
