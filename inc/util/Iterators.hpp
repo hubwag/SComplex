@@ -35,7 +35,7 @@ namespace Util {
 		TransformT transform;
 	 };
 
-	 template<bool isConst, typename CollectionT, typename TransformT>
+	 template<bool isConst, typename CollectionT, typename TransformT = std::_Identity<typename CollectionT::value_type> >
 	 class BeginEnd {
 		typedef typename boost::mpl::if_c<isConst, typename CollectionT::const_iterator, typename CollectionT::iterator>::type CollectionIterator;
 		typedef typename boost::mpl::if_c<isConst,
@@ -48,7 +48,7 @@ namespace Util {
 		
 		typedef boost::transform_iterator<TransformT, typename CollectionT::const_iterator> const_iterator;
 		
-		explicit BeginEnd(Collection _collection, TransformT _transform): b(_collection.begin()), e(_collection.end()), transform(_transform) {}
+		explicit BeginEnd(Collection _collection, const TransformT& _transform = TransformT() ): b(_collection.begin()), e(_collection.end()), transform(_transform) {}
 		
 		iterator begin() const {
 		  return iterator(b, transform);
@@ -62,7 +62,42 @@ namespace Util {
 		CollectionIterator b, e;
 		TransformT transform;
 	 };
-	 
+
+	 template<typename CollectionT, typename TransformT>
+	 class RangeTransform {
+		typedef boost::sub_range<CollectionT> Range;
+		
+	 public:
+		
+		typedef boost::transform_iterator<TransformT, typename Range::iterator> iterator;
+		typedef boost::transform_iterator<TransformT, typename Range::const_iterator> const_iterator;
+
+		template<typename CollectionT_2>
+		RangeTransform(CollectionT_2& _collection, TransformT _transform): range(_collection), transform(_transform) {}
+
+		template<typename CollectionT_2>
+		RangeTransform(const CollectionT_2& _collection, TransformT _transform): range(_collection), transform(_transform) {}
+
+		iterator begin() {
+		  return iterator(range.begin(), transform);
+		}
+
+		iterator end() {
+		  return iterator(range.end(), transform);
+		}
+
+		const_iterator begin() const {
+		  return const_iterator(range.begin(), transform);
+		}
+
+		const_iterator end() const {
+		  return const_iterator(range.end(), transform);
+		}
+
+	 private:
+		Range range;
+		TransformT transform;
+	 };
   }
 }
 

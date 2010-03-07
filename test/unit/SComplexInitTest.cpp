@@ -26,8 +26,8 @@ BOOST_AUTO_TEST_CASE(init) {
   BOOST_CHECK_EQUAL(complex.cardinality(), kappaMap.size() * 10);
 
   size_t tmpSize = 0;
-  for (Complex::Iterators::AllCells::iterator it= complex.iterators().allCells().begin(),
-			end = complex.iterators().allCells().end(); it != end; ++it) {
+  BOOST_FOREACH(Complex::Iterators::AllCells::iterator::value_type v,
+					 complex.iterators().allCells()) {
 	 ++tmpSize;
   }
   BOOST_CHECK_EQUAL(complex.cardinality(), tmpSize);
@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(init) {
   const Complex& refComplex = complex;
   
   tmpSize = 0;
-  for (Complex::Iterators::AllCells::const_iterator it= refComplex.iterators().allCells().begin(),
+  for (Complex::ConstIterators::AllCells::const_iterator it= refComplex.iterators().allCells().begin(),
 			end = refComplex.iterators().allCells().end(); it != end; ++it) {
 	 ++tmpSize;
   }
@@ -51,7 +51,6 @@ BOOST_AUTO_TEST_CASE(coboundarySize) {
   std::vector<int> cbdSizes = list_of(0)(1)(2)(1);
   
   Complex complex(colors, kappaMap.size(), kappaMap);
-
   Complex::Cell cells[] = {complex[0], complex[1], complex[2], complex[3]} ;
 
   std::vector<int> tmpCbdSizes;
@@ -95,11 +94,11 @@ BOOST_AUTO_TEST_CASE(boundarySize) {
   tmpBdSizes = std::vector<int>();
   BOOST_FOREACH( Complex::Cell cell, cells) {
 	 size_t tmpSize = 0;
-	 BOOST_FOREACH(Complex::ConstIterators::BdCells::const_iterator::value_type t,
-						((const Complex&)complex).iterators().bdCells(cell)) {
-		tmpSize++;
-	 }
-	 tmpBdSizes.push_back(tmpSize);
+	 BOOST_FOREACH(Complex::ConstIterators::BdCells::iterator::value_type t,
+  						((const Complex&)complex).iterators().bdCells(cell)) {
+  		tmpSize++;
+  	 }
+  	 tmpBdSizes.push_back(tmpSize);
   }
 
   BOOST_CHECK_EQUAL_COLLECTIONS(tmpBdSizes.begin(), tmpBdSizes.end(), bdSizes.begin(), bdSizes.end());

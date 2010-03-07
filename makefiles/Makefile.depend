@@ -5,7 +5,7 @@ include Makefile.depend.vars
 
 $(DEPEND_FILE): $(ALL_SRCS)
 	@touch $(DEPEND_FILE)
-	$(MAKE) -f $(MAKEFILES_DIR)/Makefile.dirs init
-	makedepend  -p$(OBJS_DIR)/ $(LOCAL_INC_PATHS) -f $(DEPEND_FILE) $^
+	@$(MAKE) -f $(MAKEFILES_DIR)/Makefile.dirs init
+	makedepend  -p$(OBJS_DIR)/ $(LOCAL_INC_PATHS) -f $(DEPEND_FILE) $^ > /dev/null
 
 depend: $(DEPEND_FILE)

@@ -28,7 +28,7 @@ public:
   typedef size_t Id;
   class Cell_impl;
   
-  typedef std::vector<Cell_impl> Cells;
+  typedef std::vector<Cell_impl*> Cells;
 
   class Cell_impl {
 
@@ -86,66 +86,98 @@ public:
   typedef NeighboursModelT<boost::reference_wrapper<Cell_impl>, Color> NeighboursModel;
 
 private:
+
+  template<typename CellType>
+  struct CellFromNeighbourLinkExtractor: public std::unary_function<const typename NeighboursModel::NeighbourLink&, CellType>
+  {
+	 SComplex* complex;
+	 explicit CellFromNeighbourLinkExtractor(SComplex* _complex): complex(_complex) {}
+		
+	 CellType operator()(const typename NeighboursModel::NeighbourLink&  link) const {
+		return CellType(complex, link.objectRef.get_pointer());
+	 }
+  };
+
+  template<typename CellType>
+  struct CellFromCellsExtractor: public std::unary_function<const typename Cells::value_type&, CellType>
+  {
+	 SComplex* complex;
+	 explicit CellFromCellsExtractor(SComplex* _complex): complex(_complex) {}
+		
+	 CellType operator()(const typename Cells::value_type& cell) const {
+		return CellType(complex, cell);
+	 }
+  };
+
   
   template<bool isConst>
   class IteratorsImpl {
-	 typedef typename boost::mpl::if_c<isConst, const SComplex, SComplex>::type Complex;
-	 typedef std::unary_function< const typename NeighboursModel::NeighbourLink&,
-										  typename boost::mpl::if_c<isConst,
-																			 ConstCell,
-																			 Cell
-																			 >::type> NeighboursModelCellExtractorFun;
-
-	 class NeighboursModelCellExtractor: public NeighboursModelCellExtractorFun
-	 {
-		Complex* complex;
-	 public:
-		explicit NeighboursModelCellExtractor(Complex* _complex): complex(_complex) {}
-		
-		typename NeighboursModelCellExtractorFun::result_type operator()(typename NeighboursModelCellExtractorFun::argument_type  link) const {
-		  //  typename NeighboursModelCellExtractorFun::result_type operator()(const typename NeighboursModel::NeighbourLink&  link) const {
-		  return typename NeighboursModelCellExtractorFun::result_type(complex, link.objectRef.get_pointer());
-		}
-	 };
-
+	 typedef typename boost::mpl::if_c<isConst, ConstCell, Cell>::type CellType;	 
   public:
 	 
-	 typedef Util::Iterators::BeginEnd<isConst, Cells, std::_Identity<Cell_impl> > AllCells;	 
-	 typedef Util::Iterators::BeginEnd<isConst, NeighboursModel, NeighboursModelCellExtractor> DimCells;
-	 typedef Util::Iterators::BeginEnd<isConst, NeighboursModel, NeighboursModelCellExtractor> BdCells;  
-	 typedef Util::Iterators::BeginEnd<isConst, NeighboursModel, NeighboursModelCellExtractor> CbdCells;
-
-	 explicit IteratorsImpl(Complex* _complex): complex(_complex) {}
+	 typedef Util::Iterators::RangeTransform<Cells, CellFromCellsExtractor<CellType> > AllCells;	 
+	 typedef Util::Iterators::RangeTransform<Cells, CellFromCellsExtractor<CellType> > DimCells;
+	 typedef Util::Iterators::RangeTransform<const typename NeighboursModel::AllNeighbours, CellFromNeighbourLinkExtractor<CellType> > BdCells, CbdCells;
+	 
+	 explicit IteratorsImpl(SComplex* _complex): complex(_complex) {}
 	 
 	 AllCells allCells() {
-		return AllCells(complex->cells, std::_Identity<Cell_impl>()); 
+		return AllCells(complex->cells, CellFromCellsExtractor<CellType>(complex)); 
 	 }
 	 
 	 DimCells dimCells(const Dim& dim);
 	 
 	 BdCells bdCells(const ConstCell& cell) {
-		return BdCells(complex->boundaries[cell.getId()], NeighboursModelCellExtractor(complex));
+		return BdCells(complex->boundaries[cell.getId()].allNeighbours(), CellFromNeighbourLinkExtractor<CellType>(complex));
 	 }
 	 
 	 CbdCells cbdCells(const ConstCell& cell) {
-		return CbdCells(complex->coboundaries[cell.getId()], NeighboursModelCellExtractor(complex));
+		return CbdCells(complex->coboundaries[cell.getId()].allNeighbours(), CellFromNeighbourLinkExtractor<CellType>(complex));
 	 }
 
   private:
-	 Complex* complex;
-	 
+	 SComplex* complex;	 
   };
 
   template<bool isConst>
   class ColoredIteratorsImpl {
 
+	 class IteratorsImpl {
+		typedef typename boost::mpl::if_c<isConst, ConstCell, Cell>::type CellType;	 
+	 public:
+	 
+		typedef Util::Iterators::RangeTransform<Cells, CellFromCellsExtractor<CellType> > AllCells;	 
+		typedef Util::Iterators::RangeTransform<Cells, CellFromCellsExtractor<CellType> > DimCells;
+		typedef Util::Iterators::RangeTransform<typename NeighboursModel::NeighboursInColor, CellFromNeighbourLinkExtractor<CellType> > BdCells, CbdCells;
+	 
+		explicit IteratorsImpl(SComplex* _complex, const Color& _color): complex(_complex), color(_color)  {}
+	 
+		AllCells allCells() {
+		  return AllCells(complex->cells, CellFromCellsExtractor<CellType>(complex)); 
+		}
+	 
+		DimCells dimCells(const Dim& dim);
+	 
+		BdCells bdCells(const ConstCell& cell) {
+		  return BdCells(complex->boundaries[cell.getId()].allNeighbours(), CellFromNeighbourLinkExtractor<CellType>(complex));
+		}
+	 
+		CbdCells cbdCells(const ConstCell& cell) {
+		  return CbdCells(complex->coboundaries[cell.getId()].allNeighbours(), CellFromNeighbourLinkExtractor<CellType>(complex));
+		}
+
+	 private:
+		SComplex* complex;
+		Color color;
+	 };
+	 
   public:
-	 typedef IteratorsImpl<isConst> Iterators;
+	 typedef IteratorsImpl Iterators;
 
 	 template<Color color>
 	 class Color {
 	 public:
-		typedef IteratorsImpl<isConst> Iterators;
+		typedef IteratorsImpl Iterators;
 	 };
   };
 
@@ -160,7 +192,7 @@ public:
 
   typedef std::vector<boost::tuple<Id, Id, int> > KappaMap;
   
-  SComplex(size_t colors, size_t _size, const KappaMap& kappaMap = KappaMap()): boundaries(_size), coboundaries(_size) {
+  SComplex(size_t colors, size_t _size, const KappaMap& kappaMap = KappaMap()): boundaries(_size), coboundaries(_size), nonConstThis(*this) {
 	 using namespace boost::lambda;
 	 using boost::ref;
 	 using boost::lambda::_1;
@@ -171,7 +203,7 @@ public:
 	 // Id id = 0;
 	 // std::for_each(cells.begin(), cells.end(), _1 = bind(new_ptr<Cell>(), ref(id)++, 0));
 	 for (Id id = 0; id < _size; ++id) {
-		cells.push_back(Cell_impl(id, 0));
+		cells.push_back(new Cell_impl(id, 0));
 	 }
 		
 	 //TODO call init with correct size
@@ -182,8 +214,8 @@ public:
 		Id coface = get<0>(kappa);
 		Id face = get<1>(kappa);
 
-		boundaries[coface].add(boost::ref(cells[face]), cells[face].getColor());
-		coboundaries[face].add(boost::ref(cells[coface]), cells[coface].getColor());
+		boundaries[coface].add(boost::ref(*cells[face]), cells[face]->getColor());
+		coboundaries[face].add(boost::ref(*cells[coface]), cells[coface]->getColor());
 	 }
 	 
   }
@@ -191,15 +223,15 @@ public:
   size_t cardinality() const { return cells.size(); }
 
   Cell operator[](const Id id) {
-	 return Cell(this, &cells[id]);
+	 return Cell(this, cells[id]);
   }
 
   ConstCell operator[](const Id id) const {
-	 return ConstCell(this, &cells[id]);
+	 return ConstCell(this, cells[id]);
   }
   
-  Iterators iterators() { return Iterators(this); }
-  ConstIterators iterators() const { return ConstIterators(this); }
+  Iterators iterators() { return Iterators(nonConstThis.get_pointer()); }
+  ConstIterators iterators() const { return ConstIterators(nonConstThis.get_pointer()); }
 
   typename ColoredConstIterators::Iterators iterators(const Color& color) const;
   typename ColoredIterators::Iterators iterators(const Color& color);
@@ -212,10 +244,9 @@ public:
 
 private:
   Cells cells;
-  
   std::vector<std::pair<typename Cells::iterator, typename Cells::iterator> > cellsByDim; // pairs of begin/end in cells
-
   std::vector<NeighboursModel> boundaries, coboundaries; // (co)boundaries by cell id
+  boost::reference_wrapper<SComplex> nonConstThis;  
 };
 
 template<template<typename Object, typename Color> class NeighboursModelT>
