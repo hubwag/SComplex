@@ -82,18 +82,27 @@ public:
 	 SComplex* complex;
   };
 	 
-  
-  typedef NeighboursModelT<boost::reference_wrapper<Cell_impl>, Color> NeighboursModel;
+  struct NeighbourLink;
+  typedef ColorListModel<NeighbourLink, Color> NeighbourModel;
+
+  struct NeighbourLink {
+	 boost::reference_wrapper<Cell_impl> objectRef;
+	 NeighbourModel::ObjectPtrsIterator neighbourLinkPtrsIterator; //an iterator to NeighbourLinkPtrs not in this, but in an instance of the class for a neighbour.
+
+	 explicit NeighbourLink(Object _o) : objectRef(_o) {}
+  };
+
+  //typedef NeighboursModelT<boost::reference_wrapper<Cell_impl>, Color> NeighboursModel;
 
 private:
 
   template<typename CellType>
-  struct CellFromNeighbourLinkExtractor: public std::unary_function<const typename NeighboursModel::NeighbourLink&, CellType>
+  struct CellFromNeighbourLinkExtractor: public std::unary_function<const NeighbourLink&, CellType>
   {
 	 SComplex* complex;
 	 explicit CellFromNeighbourLinkExtractor(SComplex* _complex): complex(_complex) {}
 		
-	 CellType operator()(const typename NeighboursModel::NeighbourLink&  link) const {
+	 CellType operator()(const NeighbourLink&  link) const {
 		return CellType(complex, link.objectRef.get_pointer());
 	 }
   };
@@ -117,7 +126,7 @@ private:
 	 
 	 typedef Util::Iterators::RangeTransform<Cells, CellFromCellsExtractor<CellType> > AllCells;	 
 	 typedef Util::Iterators::RangeTransform<Cells, CellFromCellsExtractor<CellType> > DimCells;
-	 typedef Util::Iterators::RangeTransform<const typename NeighboursModel::AllNeighbours, CellFromNeighbourLinkExtractor<CellType> > BdCells, CbdCells;
+	 typedef Util::Iterators::RangeTransform<const typename NeighboursModel::AllObjects, CellFromNeighbourLinkExtractor<CellType> > BdCells, CbdCells;
 	 
 	 explicit IteratorsImpl(SComplex* _complex): complex(_complex) {}
 	 
@@ -148,7 +157,7 @@ private:
 	 
 		typedef Util::Iterators::RangeTransform<Cells, CellFromCellsExtractor<CellType> > AllCells;	 
 		typedef Util::Iterators::RangeTransform<Cells, CellFromCellsExtractor<CellType> > DimCells;
-		typedef Util::Iterators::RangeTransform<typename NeighboursModel::NeighboursInColor, CellFromNeighbourLinkExtractor<CellType> > BdCells, CbdCells;
+		typedef Util::Iterators::RangeTransform<typename NeighboursModel::ObjectsInColor, CellFromNeighbourLinkExtractor<CellType> > BdCells, CbdCells;
 	 
 		explicit IteratorsImpl(SComplex* _complex, const Color& _color): complex(_complex), color(_color)  {}
 	 
