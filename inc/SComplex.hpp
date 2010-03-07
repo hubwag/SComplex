@@ -18,7 +18,7 @@
 
 #include "util/Iterators.hpp"
 
-
+#include "util/ColorListModel.hpp"
 
 template<template<typename Object, typename Color> class NeighboursModelT>
 class SComplex {
@@ -69,10 +69,10 @@ public:
 	 void setColor(const Color& newColor) {
 		Color oldColor = cell->getColor();
 
-		BOOST_FOREACH(typename SComplex<NeighboursModelT>::Iterators::BdCells::iterator::value_type bd,
-						  complex->iterators().bdCells(*this)) {
+		// BOOST_FOREACH(typename SComplex<NeighboursModelT>::Iterators::BdCells::iterator::value_type bd,
+		// 				  complex->iterators().bdCells(*this)) {
 	 
-		}
+		// }
 			  
 		cell->setColor(newColor);
 	 }
@@ -83,13 +83,13 @@ public:
   };
 	 
   struct NeighbourLink;
-  typedef ColorListModel<NeighbourLink, Color> NeighbourModel;
+  typedef Util::Neighbours::ColorListModel<NeighbourLink, Color> NeighboursModel;
 
   struct NeighbourLink {
-	 boost::reference_wrapper<Cell_impl> objectRef;
-	 NeighbourModel::ObjectPtrsIterator neighbourLinkPtrsIterator; //an iterator to NeighbourLinkPtrs not in this, but in an instance of the class for a neighbour.
+	 Cell_impl* cell;
+	 typename NeighboursModel::ObjectPtrsIterator neighbourLinkPtrsIterator; //an iterator to NeighbourLinkPtrs not in this, but in an instance of the class for a neighbour.
 
-	 explicit NeighbourLink(Object _o) : objectRef(_o) {}
+	 explicit NeighbourLink(Cell_impl* _cell) : cell(_cell) {}
   };
 
   //typedef NeighboursModelT<boost::reference_wrapper<Cell_impl>, Color> NeighboursModel;
@@ -103,7 +103,7 @@ private:
 	 explicit CellFromNeighbourLinkExtractor(SComplex* _complex): complex(_complex) {}
 		
 	 CellType operator()(const NeighbourLink&  link) const {
-		return CellType(complex, link.objectRef.get_pointer());
+		return CellType(complex, link.cell);
 	 }
   };
 
@@ -137,11 +137,11 @@ private:
 	 DimCells dimCells(const Dim& dim);
 	 
 	 BdCells bdCells(const ConstCell& cell) {
-		return BdCells(complex->boundaries[cell.getId()].allNeighbours(), CellFromNeighbourLinkExtractor<CellType>(complex));
+		return BdCells(complex->boundaries[cell.getId()].allObjects(), CellFromNeighbourLinkExtractor<CellType>(complex));
 	 }
 	 
 	 CbdCells cbdCells(const ConstCell& cell) {
-		return CbdCells(complex->coboundaries[cell.getId()].allNeighbours(), CellFromNeighbourLinkExtractor<CellType>(complex));
+		return CbdCells(complex->coboundaries[cell.getId()].allObjects(), CellFromNeighbourLinkExtractor<CellType>(complex));
 	 }
 
   private:
@@ -223,8 +223,8 @@ public:
 		Id coface = get<0>(kappa);
 		Id face = get<1>(kappa);
 
-		boundaries[coface].add(boost::ref(*cells[face]), cells[face]->getColor());
-		coboundaries[face].add(boost::ref(*cells[coface]), cells[coface]->getColor());
+		boundaries[coface].add(NeighbourLink(cells[face]), cells[face]->getColor());
+		coboundaries[face].add(NeighbourLink(cells[coface]), cells[coface]->getColor());
 	 }
 	 
   }
