@@ -28,8 +28,7 @@ public:
   typedef size_t Id;
   class Cell_impl;
   
-  typedef std::vector<Cell_impl*> Cells;
-
+  
   class Cell_impl {
 
   public:
@@ -93,6 +92,8 @@ public:
   };
 
   //typedef NeighboursModelT<boost::reference_wrapper<Cell_impl>, Color> NeighboursModel;
+  //typedef std::vector<Cell_impl*> Cells;
+  typedef Util::Neighbours::ColorListModel<Cell_impl*, Color> Cells;
 
 private:
 
@@ -212,7 +213,9 @@ public:
 	 // Id id = 0;
 	 // std::for_each(cells.begin(), cells.end(), _1 = bind(new_ptr<Cell>(), ref(id)++, 0));
 	 for (Id id = 0; id < _size; ++id) {
-		cells.push_back(new Cell_impl(id, 0));
+		//cells.push_back(new Cell_impl(id, 0));
+		Color color = 0;
+		cells.add(new Cell_impl(id, color), color);
 	 }
 		
 	 //TODO call init with correct size
