@@ -11,20 +11,13 @@ namespace Util {
 
 	 template<typename Object, typename Color>
 	 class ColorListNeighbourModel {
-
-		template<typename T>
-		struct Dereference {
-		  T& operator()(T* t) const {
-			 return *t;
-		  }
-		};
 		
 	 public:
 		struct NeighbourLink;
-		typedef typename std::list<NeighbourLink*> NeighbourLinkPtrs;
-		typedef typename std::vector<NeighbourLinkPtrs> NeighbourLinkPtrsByColor;  
+		typedef ColorListModel<NeighbourLink, Color> ColoredNeighbours;
 
-		typedef typename NeighbourLinkPtrsByColor::value_type::iterator NeighbourLinkPtrsIterator;		
+		typedef typename ColoredNeighbours::ObjectPtrsIterator NeighbourLinkPtrsIterator;
+		
 		struct NeighbourLink {
 		  Object objectRef;
 		  NeighbourLinkPtrsIterator neighbourLinkPtrsIterator; //an iterator to NeighbourLinkPtrs not in this, but in an instance of the class for a neighbour.
@@ -32,36 +25,32 @@ namespace Util {
 		  explicit NeighbourLink(Object _o) : objectRef(_o) {}
 		};
 
-		typedef typename std::vector<NeighbourLink> NeighbourLinks;		
-
-		typedef typename boost::sub_range<NeighbourLinks> AllNeighbours;
-		typedef Util::Iterators::RangeTransform<NeighbourLinkPtrs, Dereference<NeighbourLink> > NeighboursInColor;
+		typedef typename ColoredNeighbours::AllObjects AllNeighbours;
+	  
+		typedef typename ColoredNeighbours::ObjectsInColor NeighboursInColor;
 		
 		AllNeighbours allNeighbours() {
-		  return AllNeighbours(neighbours);
+		  return coloredNeighbours.allObjects();
 		}
 
 		NeighboursInColor neighboursInColor(const Color& color) {
-		  return NeighboursInColor(neighboursByColor[color], Dereference<NeighbourLink>());
+		  return coloredNeighbours.objectsInColor(color);
 		}
 		
 		void init(size_t colors, size_t size) {
-		  neighboursByColor.resize(colors);
-		  neighbours.reserve(size);
+		  coloredNeighbours.init(colors, size);
 		}
 					
 		NeighbourLinkPtrsIterator add(const Object& object, const Color& color) {
-		  neighbours.push_back(NeighbourLink(object));
-		  return neighboursByColor[color].insert(neighboursByColor[color].end(), &(*(neighbours.end() - 1)));	 
+		  return coloredNeighbours.add(NeighbourLink(object), color);
 		}
 
 		void changeColor(NeighbourLinkPtrsIterator it, const Color& oldColor, const Color& newColor) {
-		  neighboursByColor[newColor].splice(neighboursByColor[newColor].end(), neighboursByColor[oldColor], it);
+		  coloredNeighbours.changeColor(it, oldColor, newColor);
 		}
 
 	 private:
-		NeighbourLinks neighbours;
-		NeighbourLinkPtrsByColor neighboursByColor;
+		ColoredNeighbours coloredNeighbours;
 	 };
   }
 }
