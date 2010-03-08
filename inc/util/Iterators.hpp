@@ -68,10 +68,11 @@ namespace Util {
 		typedef boost::sub_range<CollectionT> Range;
 		
 	 public:
-		
+		typedef typename Range::size_type size_type;
 		typedef boost::transform_iterator<TransformT, typename Range::iterator> iterator;
 		typedef boost::transform_iterator<TransformT, typename Range::const_iterator> const_iterator;
 
+		
 		template<typename CollectionT_2>
 		RangeTransform(CollectionT_2& _collection, TransformT _transform): range(_collection), transform(_transform) {}
 

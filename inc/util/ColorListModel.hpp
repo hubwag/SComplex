@@ -4,6 +4,7 @@
 #include <vector>
 #include <list>
 #include <boost/range.hpp>
+#include <boost/ref.hpp>
 
 namespace Util {
   namespace Neighbours {
@@ -13,27 +14,27 @@ namespace Util {
 	 class ColorListModel {
 
 		template<typename T>
-		struct Dereference {
-		  T& operator()(T* t) const {
-			 return *t;
+		struct Unref: public std::unary_function<const boost::reference_wrapper<T>&, typename boost::unwrap_reference<boost::reference_wrapper<T> >::type&> {
+		  typename boost::unwrap_reference<boost::reference_wrapper<T> >::type& operator()(const boost::reference_wrapper<T>& t) const {
+			 return unwrap_ref(t);
 		  }
 		};
 
 	 public:
 		typedef std::vector<Object> Objects;	 
-		typedef std::list<Object*> ObjectPtrs;
+		typedef std::list<boost::reference_wrapper<Object> > ObjectPtrs;
 		typedef std::vector<ObjectPtrs> ObjectPtrsByColor;
 		typedef typename ObjectPtrs::iterator ObjectPtrsIterator;
 
 		typedef typename boost::sub_range<Objects> AllObjects;
-		typedef Util::Iterators::RangeTransform<ObjectPtrs&, Dereference<Object> > ObjectsInColor;
+		typedef Util::Iterators::RangeTransform<ObjectPtrs, Unref<Object> > ObjectsInColor;
 
 		AllObjects allObjects() {
 		  return AllObjects(objects);
 		}
 
 		ObjectsInColor objectsInColor(const Color& color) {
-		  return ObjectsInColor(objectsInColor[color], Dereference<Object>());
+		  return ObjectsInColor(objectsByColor[color], Unref<Object>() );
 		}
 		
 		void init(size_t colors, size_t size) {
@@ -43,10 +44,10 @@ namespace Util {
 					
 		ObjectPtrsIterator add(const Object& object, const Color& color) {
 		  objects.push_back(object);
-		  return objectsByColor[color].insert(objectsByColor[color].end(), &(*(objects.end() - 1)));	 
+		  return objectsByColor[color].insert(objectsByColor[color].end(), boost::ref(*(objects.end() - 1)));	 
 		}
 
-		void changeColor(ObjectPtrsIterator it, const Color& oldColor, const Color& newColor) {
+		void changeColor(const ObjectPtrsIterator& it, const Color& oldColor, const Color& newColor) {
 		  objectsByColor[newColor].splice(objectsByColor[newColor].end(), objectsByColor[oldColor], it);
 		}
 

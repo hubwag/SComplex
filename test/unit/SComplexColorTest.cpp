@@ -19,17 +19,29 @@ BOOST_AUTO_TEST_SUITE(SComplexSuite)
 
 BOOST_AUTO_TEST_CASE(setColor) {
   typedef SComplex<Util::Neighbours::ColorListNeighbourModel> Complex;
-  const int colors = 3;
+  const int size = 300;
+  const int colors = size;
     
-  Complex complex(colors, 3);
+  Complex complex(colors, size);
 
-  complex[0].setColor(0);
-  complex[1].setColor(1);
-  complex[2].setColor(2);
+  for (int i = 0; i < size; ++i) {
+	 complex[i].setColor(i);
+  }
 
-  BOOST_CHECK_EQUAL(complex[0].getColor(), (Complex::Color)0);
-  BOOST_CHECK_EQUAL(complex[1].getColor(), (Complex::Color)1);
-  BOOST_CHECK_EQUAL(complex[2].getColor(), (Complex::Color)2);
+  for (int i = 0; i < size; ++i) {
+	 BOOST_CHECK_EQUAL(complex[i].getColor(), (Complex::Color)i);
+  }
+
+  int i = 0;
+  BOOST_FOREACH(Complex::Iterators::AllCells::iterator::value_type v,
+					 complex.iterators().allCells()) {
+	 BOOST_CHECK_EQUAL(v.getColor(), (Complex::Color) i);
+	 ++i;
+  }
+  
+  for (int i = 0; i < size; ++i) {
+	 BOOST_CHECK_EQUAL( complex.iterators((Complex::Color)i).allCells().begin()->getId(), i);
+  }
 }
 
 BOOST_AUTO_TEST_CASE(setColorCheckNeighbours) {
