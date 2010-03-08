@@ -29,9 +29,10 @@ public:
   typedef size_t Dim;
   typedef size_t Id;
 
+private:
   class Cell_impl;  
   typedef Util::Neighbours::ColorListModel<boost::shared_ptr<Cell_impl>, Color> Cells;
-  
+
   class Cell_impl {
 
   public:
@@ -60,6 +61,8 @@ public:
 
   typedef boost::shared_ptr<Cell_impl> CellImplPtr;
 
+public:
+  
   class ConstCell {	 
   public:
 	 explicit ConstCell(const SComplex* _complex, Cell_impl* _cell): complex(_complex), cell(_cell) {}
@@ -78,11 +81,16 @@ public:
 	 explicit Cell(SComplex* _complex, Cell_impl* _cell): ConstCell(_complex, _cell), complex(_complex) {}
 
 	 void setColor(const Color& newColor) {
+		for (typename NeighboursModel::AllObjects::iterator it = complex->boundaries[this->getId()].allObjects().begin(),
+				 end = complex->boundaries[this->getId()].allObjects().end(); it != end; ++it) {
+		  complex->coboundaries[it->cell->getId()].changeColor(it->iteratorInNeighbour, this->getColor(), newColor);
+		}
 
-		// BOOST_FOREACH(typename SComplex<NeighboursModelT>::Iterators::BdCells::iterator::value_type bd,
-		// 				  complex->iterators().bdCells(*this)) {
-	 
-		// }
+		for (typename NeighboursModel::AllObjects::iterator it = complex->coboundaries[this->getId()].allObjects().begin(),
+				 end = complex->coboundaries[this->getId()].allObjects().end(); it != end; ++it) {
+		  complex->boundaries[it->cell->getId()].changeColor(it->iteratorInNeighbour, this->getColor(), newColor);		  
+		}
+
 		complex->cells.changeColor(cell->getIteratorInCells(), cell->getColor(), newColor);
 		cell->setColor(newColor);
 	 }
@@ -96,8 +104,9 @@ public:
   typedef Util::Neighbours::ColorListModel<NeighbourLink, Color> NeighboursModel;
 
   struct NeighbourLink {
-	 Cell_impl* cell;
-	 typename NeighboursModel::ObjectPtrsIterator neighbourLinkPtrsIterator; //an iterator to NeighbourLinkPtrs not in this, but in an instance of the class for a neighbour.
+	 typedef typename NeighboursModel::ObjectPtrsIterator IteratorInNeighbour;
+	 Cell_impl* cell;	 
+	 IteratorInNeighbour iteratorInNeighbour; //an iterator to NeighbourLinkPtrs not in this, but in an instance of the class for a neighbour.
 
 	 explicit NeighbourLink(const CellImplPtr& _cell) : cell(_cell.get()) {}
   };
@@ -180,7 +189,7 @@ private:
 		}
 	 
 		CbdCells cbdCells(const ConstCell& cell) {
-		  return CbdCells(complex->coboundaries[cell.getId()].objectsInCOlor(color), CellFromNeighbourLinkExtractor<CellType>(complex));
+		  return CbdCells(complex->coboundaries[cell.getId()].objectsInColor(color), CellFromNeighbourLinkExtractor<CellType>(complex));
 		}
 
 	 private:
@@ -210,32 +219,38 @@ public:
   typedef std::vector<boost::tuple<Id, Id, int> > KappaMap;
   
   SComplex(size_t colors, size_t _size, const KappaMap& kappaMap = KappaMap()): boundaries(_size), coboundaries(_size), nonConstThis(*this) {
-	 using namespace boost::lambda;
-	 using boost::ref;
-	 using boost::lambda::_1;
-	 using boost::lambda::bind;
 	 using boost::get;
 
 	 cells.init(_size, colors);
-	 // Id id = 0;
-	 // std::for_each(cells.begin(), cells.end(), _1 = bind(new_ptr<Cell>(), ref(id)++, 0));
 	 for (Id id = 0; id < _size; ++id) {
-		//cells.push_back(new Cell_impl(id, 0));
 		Color color = 0;
 		CellImplPtr cell(new Cell_impl(id, color));
 		cell->setIteratorInCells(cells.add(cell, color));
 	 }
-		
-	 //TODO call init with correct size
-	 std::for_each(boundaries.begin(), boundaries.end(), bind(&NeighboursModel::init, _1, colors, 0));
-	 std::for_each(coboundaries.begin(), coboundaries.end(), bind(&NeighboursModel::init, _1, colors, 0));
 
+	 std::vector<size_t> boundariesSize(_size);
+	 std::vector<size_t> coboundariesSize(_size);
+	 BOOST_FOREACH(KappaMap::value_type kappa, kappaMap) {
+		Id coface = get<0>(kappa);
+		Id face = get<1>(kappa);
+		++boundariesSize[coface];
+		++coboundariesSize[face];
+	 }
+
+	 for (size_t i = 0; i < _size; ++i) {
+		boundaries[i].init(colors, boundariesSize[i]);
+		coboundaries[i].init(colors, coboundariesSize[i]);
+	 }
+	 
 	 BOOST_FOREACH(KappaMap::value_type kappa, kappaMap) {
 		Id coface = get<0>(kappa);
 		Id face = get<1>(kappa);
 
-		boundaries[coface].add(NeighbourLink(cells.allObjects()[face]), cells.allObjects()[face]->getColor());
-		coboundaries[face].add(NeighbourLink(cells.allObjects()[coface]), cells.allObjects()[coface]->getColor());
+		BOOST_ASSERT(coface != face);
+		typename NeighbourLink::IteratorInNeighbour bdIteratorInNeighbour = boundaries[coface].add(NeighbourLink(cells.allObjects()[face]), cells.allObjects()[face]->getColor());
+		typename NeighbourLink::IteratorInNeighbour cbdIteratorInNeighbour = coboundaries[face].add(NeighbourLink(cells.allObjects()[coface]), cells.allObjects()[coface]->getColor());
+		boundaries[coface].allObjects().back().iteratorInNeighbour = cbdIteratorInNeighbour;
+		coboundaries[face].allObjects().back().iteratorInNeighbour = bdIteratorInNeighbour;
 	 }
 	 
   }

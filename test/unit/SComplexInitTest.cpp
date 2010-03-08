@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(coboundarySize) {
   std::vector<int> tmpCbdSizes;
   BOOST_FOREACH( Complex::Cell cell, cells) {
 	 size_t tmpSize = 0;
-	 BOOST_FOREACH(Complex::Iterators::BdCells::iterator::value_type t,
+	 BOOST_FOREACH(Complex::Iterators::CbdCells::iterator::value_type t,
 						complex.iterators().cbdCells(cell)) {
 		tmpSize++;
 	 }

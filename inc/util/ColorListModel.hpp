@@ -41,7 +41,7 @@ namespace Util {
 		  objectsByColor.resize(colors);
 		  objects.reserve(size);
 		}
-					
+
 		ObjectPtrsIterator add(const Object& object, const Color& color) {
 		  objects.push_back(object);
 		  return objectsByColor[color].insert(objectsByColor[color].end(), boost::ref(*(objects.end() - 1)));	 
