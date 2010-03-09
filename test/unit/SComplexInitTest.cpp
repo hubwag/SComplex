@@ -20,10 +20,11 @@ BOOST_AUTO_TEST_CASE(init) {
   typedef SComplex<Util::Neighbours::ColorListNeighbourModel> Complex;
   const int colors = 3;
   
-  Complex::KappaMap kappaMap = tuple_list_of(0, 1, 1);  
-  Complex complex(colors, kappaMap.size() * 10, kappaMap);
+  Complex::KappaMap kappaMap = tuple_list_of(0, 1, 1);
+  Complex::Dims dims = list_of(1)(0);
+  Complex complex(colors, dims.size(), dims, kappaMap);
 
-  BOOST_CHECK_EQUAL(complex.cardinality(), kappaMap.size() * 10);
+  BOOST_CHECK_EQUAL(complex.cardinality(), dims.size());
 
   size_t tmpSize = 0;
   BOOST_FOREACH(Complex::Iterators::AllCells::iterator::value_type v,
@@ -41,6 +42,9 @@ BOOST_AUTO_TEST_CASE(init) {
   }
   BOOST_CHECK_EQUAL(refComplex.cardinality(), tmpSize);
 
+
+  BOOST_CHECK_EQUAL(complex.iterators().dimCells(0).begin()->getId(), (Complex::Id) 1);
+  BOOST_CHECK_EQUAL(complex.iterators().dimCells(1).begin()->getId(), (Complex::Id) 0);
 }
 
 BOOST_AUTO_TEST_CASE(coboundarySize) {
@@ -48,9 +52,10 @@ BOOST_AUTO_TEST_CASE(coboundarySize) {
   const int colors = 3;
   
   Complex::KappaMap kappaMap = tuple_list_of(0, 1, 1)(0, 2, 1)(1, 2, 1)(0, 3, 1);
+  Complex::Dims dims(4);
   std::vector<int> cbdSizes = list_of(0)(1)(2)(1);
   
-  Complex complex(colors, kappaMap.size(), kappaMap);
+  Complex complex(colors, kappaMap.size(), dims, kappaMap);
   Complex::Cell cells[] = {complex[0], complex[1], complex[2], complex[3]} ;
 
   std::vector<int> tmpCbdSizes;
@@ -73,9 +78,10 @@ BOOST_AUTO_TEST_CASE(boundarySize) {
   const int colors = 3;
   
   Complex::KappaMap kappaMap = tuple_list_of(0, 1, 1)(0, 2, 1)(1, 2, 1)(0, 3, 1);
+  Complex::Dims dims(4);
   std::vector<int> bdSizes = list_of(3)(1)(0)(0);
   
-  Complex complex(colors, kappaMap.size(), kappaMap);
+  Complex complex(colors, kappaMap.size(), dims, kappaMap);
 
   Complex::Cell cells[] = {complex[0], complex[1], complex[2], complex[3]};
 

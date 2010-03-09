@@ -21,8 +21,13 @@ BOOST_AUTO_TEST_CASE(setColor) {
   typedef SComplex<Util::Neighbours::ColorListNeighbourModel> Complex;
   const int size = 300;
   const int colors = size;
-    
-  Complex complex(colors, size);
+  Complex::Dims dims(size);
+
+  for (int i = 0; i < size; ++i) {
+	 dims[i] = i;
+  }
+
+  Complex complex(colors, size, dims);
 
   for (int i = 0; i < size; ++i) {
 	 complex[i].setColor(i);
@@ -41,6 +46,7 @@ BOOST_AUTO_TEST_CASE(setColor) {
   
   for (int i = 0; i < size; ++i) {
 	 BOOST_CHECK_EQUAL( complex.iterators((Complex::Color)i).allCells().begin()->getId(), (Complex::Id) i);
+	 BOOST_CHECK_EQUAL( complex.iterators((Complex::Color)i).dimCells((Complex::Dim)i).begin()->getId(), (Complex::Id) i);
   }
 }
 
@@ -50,9 +56,10 @@ BOOST_AUTO_TEST_CASE(setColorCheckNeighbours) {
   const int colors = size;
 
   Complex::KappaMap kappaMap = tuple_list_of(0, 1, 1)(0, 2, 1)(1, 2, 1)(0, 3, 1);
+  Complex::Dims dims(size);
   std::vector<int> bdSizes = list_of(3)(1)(0)(0);
   
-  Complex complex(colors, kappaMap.size(), kappaMap);
+  Complex complex(colors, kappaMap.size(), dims, kappaMap);
   Complex::Cell cells[size] = {complex[0], complex[1], complex[2], complex[3]};
   
   for (int i = 0; i < size; ++i) {
