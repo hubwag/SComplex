@@ -29,24 +29,48 @@ BOOST_AUTO_TEST_CASE(setColor) {
 
   Complex complex(colors, size, dims);
 
-  for (int i = 0; i < size; ++i) {
-	 complex[i].setColor(i);
-  }
+  {
+	 for (int i = 0; i < size; ++i) {
+		complex[i].setColor(i);
+	 }
 
-  for (int i = 0; i < size; ++i) {
-	 BOOST_CHECK_EQUAL(complex[i].getColor(), (Complex::Color)i);
-  }
+	 for (int i = 0; i < size; ++i) {
+		BOOST_CHECK_EQUAL(complex[i].getColor(), (Complex::Color)i);
+	 }
 
-  int i = 0;
-  BOOST_FOREACH(Complex::Iterators::AllCells::iterator::value_type v,
-					 complex.iterators().allCells()) {
-	 BOOST_CHECK_EQUAL(v.getColor(), (Complex::Color) i);
-	 ++i;
-  }
+	 int i = 0;
+	 BOOST_FOREACH(Complex::Iterators::AllCells::iterator::value_type v,
+						complex.iterators().allCells()) {
+		BOOST_CHECK_EQUAL(v.getColor(), (Complex::Color) i);
+		++i;
+	 }
   
-  for (int i = 0; i < size; ++i) {
-	 BOOST_CHECK_EQUAL( complex.iterators((Complex::Color)i).allCells().begin()->getId(), (Complex::Id) i);
-	 BOOST_CHECK_EQUAL( complex.iterators((Complex::Color)i).dimCells((Complex::Dim)i).begin()->getId(), (Complex::Id) i);
+	 for (int i = 0; i < size; ++i) {
+		BOOST_CHECK_EQUAL( complex.iterators((Complex::Color)i).allCells().begin()->getId(), (Complex::Id) i);
+		BOOST_CHECK_EQUAL( complex.iterators((Complex::Color)i).dimCells((Complex::Dim)i).begin()->getId(), (Complex::Id) i);
+	 }
+  }
+
+  {
+	 for (int i = 0; i < size; ++i) {
+		complex[i].setColor(size - i - 1);
+	 }
+
+	 for (int i = 0; i < size; ++i) {
+		BOOST_CHECK_EQUAL(complex[i].getColor(), (Complex::Color)(size - i - 1));
+	 }
+
+	 int i = size - 1;
+	 BOOST_FOREACH(Complex::Iterators::AllCells::iterator::value_type v,
+						complex.iterators().allCells()) {
+		BOOST_CHECK_EQUAL(v.getColor(), (Complex::Color) i);
+		--i;
+	 }
+  
+	 for (int i = 0; i < size; ++i) {
+		BOOST_CHECK_EQUAL( complex.iterators((Complex::Color)i).allCells().begin()->getId(), (Complex::Id) (size - i - 1));
+		BOOST_CHECK_EQUAL( complex.iterators((Complex::Color)i).dimCells((Complex::Dim)(size - i - 1)).begin()->getId(), (Complex::Id) (size - i - 1));
+	 }
   }
 }
 

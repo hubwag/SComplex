@@ -2,6 +2,7 @@
 #define _SCOMPLEX_ALGS_COREDUCTION_HPP
 
 #include "SComplexAlgs_DefaultReduceStrategy.hpp"
+#include <deque>
 
 template<typename StrategyT>
 class CoreductionAlgorithm {

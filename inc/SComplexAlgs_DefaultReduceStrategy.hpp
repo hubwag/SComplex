@@ -1,6 +1,8 @@
 #ifndef SCOMPLEX_ALGS_DEFAULT_REDUCE_STRATEGY_HPP_
 #define SCOMPLEX_ALGS_DEFAULT_REDUCE_STRATEGY_HPP_
 
+#include <boost/optional.hpp>
+
 template<typename SComplexT>
 class DefaultReduceStrategy {
 
@@ -70,6 +72,7 @@ public:
 	 }
   }
 
+    
 private:
   SComplex& complex;
   Cell dummyCell1, dummyCell2, dummyCell3;

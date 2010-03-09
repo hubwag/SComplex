@@ -61,6 +61,8 @@ public:
   
   class ConstCell {	 
   public:
+	 explicit ConstCell(const SComplex& _complex): complex(NULL), cell(NULL) {} // TODO remove with dummyCells in algorithms
+	 
 	 explicit ConstCell(const SComplex* _complex, CellImpl* _cell): complex(_complex), cell(_cell) {}
 	 
 	 const Color& getColor() const { return cell->getColor(); }
@@ -73,6 +75,8 @@ public:
 
   class Cell: public ConstCell {
   public:
+	 explicit Cell(const SComplex& _complex): ConstCell(_complex), complex(NULL) {} // TODO remove with dummyCells in algorithms
+	 
 	 explicit Cell(SComplex* _complex, CellImpl* _cell): ConstCell(_complex, _cell), complex(_complex) {}
 
 	 void setColor(const Color& newColor) {
@@ -90,7 +94,10 @@ public:
 		complex->cellsByDim[cell->getDim()].changeColor(cell->iteratorInCellsByDim, cell->getColor(), newColor);
 		cell->setColor(newColor);
 	 }
-	 
+
+	 template<Color color>
+	 void setColor() { setColor(color); }
+
   private:
 	 using ConstCell::cell;
 	 SComplex* complex;
@@ -305,7 +312,7 @@ public:
 
   template<Color color>
   typename ColoredConstIterators::template Color<color>::Iterators iterators() const { return iterators(color); }
-
+  
 private:
   Cells cells;
   CellsByDim cellsByDim;
