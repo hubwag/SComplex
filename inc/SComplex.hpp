@@ -236,7 +236,7 @@ public:
   typedef std::vector<boost::tuple<Id, Id, int> > KappaMap;
   typedef std::vector<Dim> Dims;
   
-  SComplex(size_t colors, size_t _size, const Dims& dims, const KappaMap& kappaMap = KappaMap()): boundaries(_size), coboundaries(_size), nonConstThis(*this) {
+  SComplex(size_t colors, size_t _size, const Dims& dims, const KappaMap& kappaMap = KappaMap(), const Color& defaultColor = 0): boundaries(_size), coboundaries(_size), nonConstThis(*this) {
 	 using boost::get;
 	 BOOST_ASSERT(_size == dims.size());
 	 
@@ -259,10 +259,9 @@ public:
 	 cells.init(_size, colors);
 	 
 	 for (Id id = 0; id < _size; ++id) {
-		Color color = 0;
-		CellImplPtr cell(new CellImpl(id, dims[id], color));
-		cell->iteratorInCells = cells.add(cell, color);
-		cell->iteratorInCellsByDim = cellsByDim[cell->getDim()].add(boost::ref(*(cell.get())), color);
+		CellImplPtr cell(new CellImpl(id, dims[id], defaultColor));
+		cell->iteratorInCells = cells.add(cell, defaultColor);
+		cell->iteratorInCellsByDim = cellsByDim[cell->getDim()].add(boost::ref(*(cell.get())), defaultColor);
 	 }
 
 	 // init neighbours

@@ -21,22 +21,56 @@ using namespace boost::assign;
 BOOST_AUTO_TEST_SUITE(SComplexSuite)
 
 
-BOOST_AUTO_TEST_CASE(coreduction) {
+BOOST_AUTO_TEST_CASE(coreduction_line) {
   typedef SComplex<Util::Neighbours::ColorListNeighbourModel> Complex;
-  const int size = 300;
-  const int colors = 2;
-
-  Complex::Dims dims(size);
-
-  Complex complex(colors, size, dims);
-
-  Stopwatch swCoRed;
+  
+  Complex::Dims dims = list_of(0)(1)(0)(1)(0);
+  Complex::KappaMap kappaMap = tuple_list_of(1, 0, 1)(1, 2, 1)(3, 2, 1)(3, 4, 1); // .-.-.
+  
+  Complex complex(3, dims.size(), dims, kappaMap, 1);
 
   (CoreductionAlgorithmFactory::createDefault(complex))();
-  BOOST_TEST_MESSAGE(" --- Coreduction reduced the size to " << complex.cardinality() << " in " << swCoRed);
 
+  BOOST_FOREACH(Complex::Iterators::AllCells::iterator::value_type v,
+					 complex.iterators().allCells()) {
+	 BOOST_CHECK_EQUAL(v.getColor(), (Complex::Color)2);
+  }
+
+  BOOST_CHECK(complex.iterators(1).allCells().begin() == complex.iterators(1).allCells().end());  
 }
 
+BOOST_AUTO_TEST_CASE(coreduction_emptyTriangle) {
+  typedef SComplex<Util::Neighbours::ColorListNeighbourModel> Complex;
+  
+  Complex::Dims dims = list_of(0)(1)(0)(1)(0)(1);
+  Complex::KappaMap kappaMap = tuple_list_of(1, 0, 1)(1, 2, 1)(3, 2, 1)(3, 4, 1)(5, 4, 1)(5, 0, 1);
+  
+  Complex complex(3, dims.size(), dims, kappaMap, 1);
+
+  (CoreductionAlgorithmFactory::createDefault(complex))();
+
+  BOOST_CHECK( ++(complex.iterators(1).dimCells((Complex::Dim)1).begin()) == complex.iterators(1).dimCells((Complex::Dim)1).end());
+  BOOST_CHECK( complex.iterators(1).dimCells((Complex::Dim)0).begin() == complex.iterators(1).dimCells((Complex::Dim)0).end());
+}
+
+BOOST_AUTO_TEST_CASE(coreduction_fullTriangle) {
+  typedef SComplex<Util::Neighbours::ColorListNeighbourModel> Complex;
+  
+  Complex::Dims dims = list_of(0)(1)(0)(1)(0)(1)(2);
+  Complex::KappaMap kappaMap = tuple_list_of(1, 0, 1)(1, 2, 1)(3, 2, 1)(3, 4, 1)(5, 4, 1)(5, 0, 1)
+	 (6, 1, 1)(6, 3, 1)(6, 5, 1); 
+  
+  Complex complex(3, dims.size(), dims, kappaMap, 1);
+
+  (CoreductionAlgorithmFactory::createDefault(complex))();
+
+  BOOST_FOREACH(Complex::Iterators::AllCells::iterator::value_type v,
+					 complex.iterators().allCells()) {
+	 BOOST_CHECK_EQUAL(v.getColor(), (Complex::Color)2);
+  }
+
+  BOOST_CHECK(complex.iterators(1).allCells().begin() == complex.iterators(1).allCells().end());  
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 
