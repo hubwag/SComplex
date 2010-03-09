@@ -2,9 +2,11 @@
 #define SCOMPLEX_ALGS_DEFAULT_REDUCE_STRATEGY_HPP_
 
 #include <boost/optional.hpp>
+#include <boost/foreach.hpp>
+
 
 template<typename SComplexT>
-class DefaultReduceStrategy {
+class DefaultReduceStrategyBase {
 
 public:
   typedef SComplexT SComplex;
@@ -13,7 +15,7 @@ public:
   typedef std::pair<boost::reference_wrapper<Cell>, boost::reference_wrapper<Cell> > ReductionPair;  
 
 
-  DefaultReduceStrategy(SComplex& _complex): complex(_complex), dummyCell1(_complex), dummyCell2(_complex),  dummyCell3(_complex) {}
+  DefaultReduceStrategyBase(SComplex& _complex): complex(_complex), dummyCell1(_complex), dummyCell2(_complex),  dummyCell3(_complex) {}
   
   SComplex& getComplex() const {
 	 return complex;
@@ -57,25 +59,54 @@ public:
   }
 
   boost::optional<CoreductionPair> getCoreductionPair(Cell& cell) {
-	 if (complex.getUniqueFace(cell, dummyCell3)) {
-	  	return std::make_pair(boost::ref(dummyCell3), boost::ref(cell));
-	 } else {
-		return boost::optional<ReductionPair>();
+	 int times = 0;
+	 BOOST_FOREACH(typename SComplex::ColoredIterators::Iterators::BdCells::iterator::value_type v,
+						complex.iterators(1).bdCells(cell)) {
+		if (times == 0) {
+		  dummyCell3 = v;
+		}
+		++times;
+		if (times == 2) {
+		  return boost::optional<ReductionPair>();
+		}
 	 }
+
+	 if (times == 1) {
+		return std::make_pair(boost::ref(dummyCell3), boost::ref(cell));
+	 }
+	 return boost::optional<ReductionPair>();
   }
   
   boost::optional<ReductionPair> getReductionPair(Cell& cell) {
-	 if (complex.getUniqueCoFace(cell, dummyCell2)) {
-	  	return std::make_pair(boost::ref(cell), boost::ref(dummyCell2));
-	 } else {
-		return boost::optional<ReductionPair>();
+	 int times = 0;
+	 BOOST_FOREACH(typename SComplex::ColoredIterators::Iterators::CbdCells::iterator::value_type v,
+						complex.iterators(1).cbdCells(cell)) {
+		if (times == 0) {
+		  dummyCell2 = v;
+		}
+		++times;
+		if (times == 2) {
+		  return boost::optional<ReductionPair>();
+		}
 	 }
+
+	 if (times == 1) {
+		return std::make_pair(boost::ref(cell), boost::ref(dummyCell2));
+	 }
+	 return boost::optional<ReductionPair>();
   }
 
     
-private:
+protected:
   SComplex& complex;
   Cell dummyCell1, dummyCell2, dummyCell3;
+};
+
+template<typename SComplexT>
+class DefaultReduceStrategy: public DefaultReduceStrategyBase<SComplexT> {
+
+public:
+  DefaultReduceStrategy(SComplexT& _complex): DefaultReduceStrategyBase<SComplexT>(_complex) {}
 };
 
 #endif

@@ -2,13 +2,12 @@
 #define CUB_SCOMPLEX_HPP
 
 
-#include <sstream>
-
 #include <capd/repSet/ElementaryCell.h>
 #include <capd/auxil/CRef.h>
 #include <capd/bitSet/CubCellSetT.hpp>
 #include <capd/bitSet/CubSetT.hpp>
 #include <capd/homologicalAlgebra/readCubCellSet.hpp>
+
 
 #include <boost/assert.hpp>
 #include <boost/optional.hpp>
@@ -16,7 +15,6 @@
 
 class CubSComplex {
 public:
-  int tmp;
   
   class Cell;
   typedef size_t Dim;

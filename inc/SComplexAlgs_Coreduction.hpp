@@ -46,6 +46,7 @@ public:
   static CoreductionAlgorithm<DefaultReduceStrategy<SComplex> > createDefault(SComplex& s) {
 	 return CoreductionAlgorithm<DefaultReduceStrategy<SComplex> >(new DefaultReduceStrategy<SComplex>(s));
   }
+
 };
 
 
