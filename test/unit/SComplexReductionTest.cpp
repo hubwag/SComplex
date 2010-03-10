@@ -5,11 +5,17 @@ using namespace std;
 #include <SComplex.hpp>
 #include <SComplexDefaultTraits.hpp>
 #include <SComplexAlgs_Coreduction.hpp>
+#include <SComplexBuilderFromSimplices.hpp>
+
+#include <SimplexSubdivision.hpp>
+
 
 #include <boost/test/unit_test.hpp>
 #include <boost/bind.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/assign/list_of.hpp>
+#include <boost/assign/list_inserter.hpp>
+
 
 #include <algorithm>
 
@@ -27,7 +33,7 @@ BOOST_AUTO_TEST_CASE(coreduction_line) {
   Complex::Dims dims = list_of(0)(1)(0)(1)(0);
   Complex::KappaMap kappaMap = tuple_list_of(1, 0, 1)(1, 2, 1)(3, 2, 1)(3, 4, 1); // .-.-.
   
-  Complex complex(3, dims.size(), dims, kappaMap, 1);
+  Complex complex(3, dims, kappaMap, 1);
 
   (CoreductionAlgorithmFactory::createDefault(complex))();
 
@@ -45,7 +51,7 @@ BOOST_AUTO_TEST_CASE(coreduction_emptyTriangle) {
   Complex::Dims dims = list_of(0)(1)(0)(1)(0)(1);
   Complex::KappaMap kappaMap = tuple_list_of(1, 0, 1)(1, 2, 1)(3, 2, 1)(3, 4, 1)(5, 4, 1)(5, 0, 1);
   
-  Complex complex(3, dims.size(), dims, kappaMap, 1);
+  Complex complex(3, dims, kappaMap, 1);
 
   (CoreductionAlgorithmFactory::createDefault(complex))();
 
@@ -60,7 +66,7 @@ BOOST_AUTO_TEST_CASE(coreduction_fullTriangle) {
   Complex::KappaMap kappaMap = tuple_list_of(1, 0, 1)(1, 2, 1)(3, 2, 1)(3, 4, 1)(5, 4, 1)(5, 0, 1)
 	 (6, 1, 1)(6, 3, 1)(6, 5, 1); 
   
-  Complex complex(3, dims.size(), dims, kappaMap, 1);
+  Complex complex(3, dims, kappaMap, 1);
 
   (CoreductionAlgorithmFactory::createDefault(complex))();
 
@@ -70,6 +76,48 @@ BOOST_AUTO_TEST_CASE(coreduction_fullTriangle) {
   }
 
   BOOST_CHECK(complex.iterators(1).allCells().begin() == complex.iterators(1).allCells().end());  
+}
+
+BOOST_AUTO_TEST_CASE(coreduction_simplicialFullTriangle) {
+  typedef SComplex<SComplexDefaultTraits> Complex;
+  
+  SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(3);
+  std::set<std::vector<int> > simplices;
+  insert(simplices)( list_of(0)(1)(2) );
+	 
+  boost::shared_ptr<Complex> complex = builder(simplices, 3, 1);
+
+  BOOST_CHECK_EQUAL(complex->cardinality(), (size_t)7);
+
+  (CoreductionAlgorithmFactory::createDefault(*complex))();
+
+  BOOST_FOREACH(Complex::Iterators::AllCells::iterator::value_type v,
+					 complex->iterators().allCells()) {
+	 BOOST_CHECK_EQUAL(v.getColor(), (Complex::Color)2);
+  }
+
+  BOOST_CHECK(complex->iterators(1).allCells().begin() == complex->iterators(1).allCells().end());  
+}
+
+BOOST_AUTO_TEST_CASE(coreduction_simplicialTorus) {
+  typedef SComplex<SComplexDefaultTraits> Complex;
+  
+  // SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(3);
+  // std::set<std::vector<int> > simplices;
+  // insert(simplices)( list_of(0)(1)(2) );
+	 
+  // boost::shared_ptr<Complex> complex = builder(simplices, 3, 1);
+
+  // BOOST_CHECK_EQUAL(complex->cardinality(), (size_t)7);
+
+  // (CoreductionAlgorithmFactory::createDefault(*complex))();
+
+  // BOOST_FOREACH(Complex::Iterators::AllCells::iterator::value_type v,
+  // 					 complex->iterators().allCells()) {
+  // 	 BOOST_CHECK_EQUAL(v.getColor(), (Complex::Color)2);
+  // }
+
+  // BOOST_CHECK(complex->iterators(1).allCells().begin() == complex->iterators(1).allCells().end());  
 }
 
 BOOST_AUTO_TEST_SUITE_END()

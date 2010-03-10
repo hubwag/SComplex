@@ -239,11 +239,11 @@ public:
   typedef std::vector<Dim> Dims;
 
   //TODO do it as a template <KappaMap, Dims>
-  SComplex(Size colors, Size _size, const Dims& dims, const KappaMap& kappaMap = KappaMap(), const Color& defaultColor = 0): boundaries(_size), coboundaries(_size), nonConstThis(*this) {
-	 using boost::get;
-	 BOOST_ASSERT(_size == dims.size());
-	 
+  SComplex(Size colors, const Dims& dims, const KappaMap& kappaMap = KappaMap(), const Color& defaultColor = 0): boundaries(dims.size()), coboundaries(dims.size()), nonConstThis(*this) {
+	 using boost::get;	 
 
+	 size_t _size = dims.size();
+	 
 	 // init dimension related structures
 	 Dim maxDim = _size > 0 ? *std::max_element(dims.begin(), dims.end()) : 0;	 
 	 std::vector<Size> cellsInDim(maxDim + 1);

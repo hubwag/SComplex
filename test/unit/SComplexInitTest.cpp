@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE(init) {
   
   Complex::KappaMap kappaMap = tuple_list_of(0, 1, 1);
   Complex::Dims dims = list_of(1)(0);
-  Complex complex(colors, dims.size(), dims, kappaMap);
+  Complex complex(colors, dims, kappaMap);
 
   BOOST_CHECK_EQUAL(complex.cardinality(), dims.size());
 
@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(coboundarySize) {
   Complex::Dims dims(4);
   std::vector<int> cbdSizes = list_of(0)(1)(2)(1);
   
-  Complex complex(colors, kappaMap.size(), dims, kappaMap);
+  Complex complex(colors, dims, kappaMap);
   Complex::Cell cells[] = {complex[0], complex[1], complex[2], complex[3]} ;
 
   std::vector<int> tmpCbdSizes;
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(boundarySize) {
   Complex::Dims dims(4);
   std::vector<int> bdSizes = list_of(3)(1)(0)(0);
   
-  Complex complex(colors, kappaMap.size(), dims, kappaMap);
+  Complex complex(colors, dims, kappaMap);
 
   Complex::Cell cells[] = {complex[0], complex[1], complex[2], complex[3]};
 

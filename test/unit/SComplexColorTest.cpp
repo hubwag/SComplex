@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(setColor) {
 	 dims[i] = i;
   }
 
-  Complex complex(colors, size, dims);
+  Complex complex(colors, dims);
 
   {
 	 for (int i = 0; i < size; ++i) {
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(setColorCheckNeighbours) {
   Complex::Dims dims(size);
   std::vector<int> bdSizes = list_of(3)(1)(0)(0);
   
-  Complex complex(colors, kappaMap.size(), dims, kappaMap);
+  Complex complex(colors, dims, kappaMap);
   Complex::Cell cells[size] = {complex[0], complex[1], complex[2], complex[3]};
   
   for (int i = 0; i < size; ++i) {
