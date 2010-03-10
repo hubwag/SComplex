@@ -2,7 +2,8 @@
 using namespace std;
 
 #include <SComplex.hpp>
-#include <util/ColorListNeighbourModel.hpp>
+#include <SComplexDefaultTraits.hpp>
+
 
 #include <boost/test/unit_test.hpp>
 #include <boost/bind.hpp>
@@ -18,7 +19,7 @@ BOOST_AUTO_TEST_SUITE(SComplexSuite)
 
 
 BOOST_AUTO_TEST_CASE(setColor) {
-  typedef SComplex<Util::Neighbours::ColorListNeighbourModel> Complex;
+  typedef SComplex<SComplexDefaultTraits> Complex;
   const int size = 300;
   const int colors = size;
   Complex::Dims dims(size);
@@ -75,7 +76,7 @@ BOOST_AUTO_TEST_CASE(setColor) {
 }
 
 BOOST_AUTO_TEST_CASE(setColorCheckNeighbours) {
-  typedef SComplex<Util::Neighbours::ColorListNeighbourModel> Complex;
+  typedef SComplex<SComplexDefaultTraits> Complex;
   const int size = 4;
   const int colors = size;
 

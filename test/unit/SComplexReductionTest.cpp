@@ -3,7 +3,7 @@ using namespace std;
 
 #include <capd/auxil/Stopwatch.h>
 #include <SComplex.hpp>
-#include <util/ColorListNeighbourModel.hpp>
+#include <SComplexDefaultTraits.hpp>
 #include <SComplexAlgs_Coreduction.hpp>
 
 #include <boost/test/unit_test.hpp>
@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_SUITE(SComplexSuite)
 
 
 BOOST_AUTO_TEST_CASE(coreduction_line) {
-  typedef SComplex<Util::Neighbours::ColorListNeighbourModel> Complex;
+  typedef SComplex<SComplexDefaultTraits> Complex;
   
   Complex::Dims dims = list_of(0)(1)(0)(1)(0);
   Complex::KappaMap kappaMap = tuple_list_of(1, 0, 1)(1, 2, 1)(3, 2, 1)(3, 4, 1); // .-.-.
@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(coreduction_line) {
 }
 
 BOOST_AUTO_TEST_CASE(coreduction_emptyTriangle) {
-  typedef SComplex<Util::Neighbours::ColorListNeighbourModel> Complex;
+  typedef SComplex<SComplexDefaultTraits> Complex;
   
   Complex::Dims dims = list_of(0)(1)(0)(1)(0)(1);
   Complex::KappaMap kappaMap = tuple_list_of(1, 0, 1)(1, 2, 1)(3, 2, 1)(3, 4, 1)(5, 4, 1)(5, 0, 1);
@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE(coreduction_emptyTriangle) {
 }
 
 BOOST_AUTO_TEST_CASE(coreduction_fullTriangle) {
-  typedef SComplex<Util::Neighbours::ColorListNeighbourModel> Complex;
+  typedef SComplex<SComplexDefaultTraits> Complex;
   
   Complex::Dims dims = list_of(0)(1)(0)(1)(0)(1)(2);
   Complex::KappaMap kappaMap = tuple_list_of(1, 0, 1)(1, 2, 1)(3, 2, 1)(3, 4, 1)(5, 4, 1)(5, 0, 1)

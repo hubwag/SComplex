@@ -2,7 +2,7 @@
 using namespace std;
 
 #include <SComplex.hpp>
-#include <util/ColorListNeighbourModel.hpp>
+#include <SComplexDefaultTraits.hpp>
 
 #include <boost/test/unit_test.hpp>
 #include <boost/bind.hpp>
@@ -17,7 +17,7 @@ using namespace boost::assign;
 BOOST_AUTO_TEST_SUITE(SComplexSuite)
 
 BOOST_AUTO_TEST_CASE(init) {
-  typedef SComplex<Util::Neighbours::ColorListNeighbourModel> Complex;
+  typedef SComplex<SComplexDefaultTraits> Complex;
   const int colors = 3;
   
   Complex::KappaMap kappaMap = tuple_list_of(0, 1, 1);
@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(init) {
 }
 
 BOOST_AUTO_TEST_CASE(coboundarySize) {
-  typedef SComplex<Util::Neighbours::ColorListNeighbourModel> Complex;
+  typedef SComplex<SComplexDefaultTraits> Complex;
   const int colors = 3;
   
   Complex::KappaMap kappaMap = tuple_list_of(0, 1, 1)(0, 2, 1)(1, 2, 1)(0, 3, 1);
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(coboundarySize) {
 
 
 BOOST_AUTO_TEST_CASE(boundarySize) {
-  typedef SComplex<Util::Neighbours::ColorListNeighbourModel> Complex;
+  typedef SComplex<SComplexDefaultTraits> Complex;
   const int colors = 3;
   
   Complex::KappaMap kappaMap = tuple_list_of(0, 1, 1)(0, 2, 1)(1, 2, 1)(0, 3, 1);

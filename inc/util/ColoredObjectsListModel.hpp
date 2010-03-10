@@ -1,5 +1,5 @@
-#ifndef __COLOR_LIST_MODEL_HPP_
-#define __COLOR_LIST_MODEL_HPP_
+#ifndef __COLORED_OBJECTS_LIST_MODEL_HPP_
+#define __COLORED_OBJECTS_LIST_MODEL_HPP_
 
 #include <vector>
 #include <list>
@@ -7,11 +7,11 @@
 #include <boost/ref.hpp>
 
 namespace Util {
-  namespace Neighbours {
+  namespace Colors {
 
 
 	 template<typename Object, typename Color>
-	 class ColorListModel {
+	 class ColoredObjectsListModel {
 
 		template<typename T>
 		struct Unref: public std::unary_function<const boost::reference_wrapper<T>&, typename boost::unwrap_reference<boost::reference_wrapper<T> >::type&> {

@@ -21,19 +21,21 @@
 
 #include "util/Iterators.hpp"
 
-#include "util/ColorListModel.hpp"
 
-template<template<typename Object, typename Color> class NeighboursModelT>
+template<typename TraitsT>
 class SComplex: boost::noncopyable {
 public:
-  typedef size_t Color;
-  typedef size_t Dim;
-  typedef size_t Id;
-
+  typedef TraitsT Traits;
+  
+  typedef typename Traits::Color Color;
+  typedef typename Traits::Dim Dim;
+  typedef typename Traits::Id Id;
+  typedef typename Traits::Size Size;
+  
 private:
   class CellImpl;  
-  typedef Util::Neighbours::ColorListModel<boost::shared_ptr<CellImpl>, Color> Cells;
-  typedef std::vector<Util::Neighbours::ColorListModel<boost::reference_wrapper<CellImpl>, Color> > CellsByDim;
+  typedef typename Traits::template ColoredObjectsModel<boost::shared_ptr<CellImpl> > Cells;
+  typedef std::vector<typename Traits::template ColoredObjectsModel<boost::reference_wrapper<CellImpl> > > CellsByDim;
   
   class CellImpl: boost::noncopyable {
   public:
@@ -104,7 +106,7 @@ public:
   };
 	 
   struct NeighbourLink;
-  typedef Util::Neighbours::ColorListModel<NeighbourLink, Color> NeighboursModel;
+  typedef typename Traits::template ColoredObjectsModel<NeighbourLink> NeighboursModel;
 
   struct NeighbourLink {
 	 typedef typename NeighboursModel::ObjectPtrsIterator IteratorInNeighbour;
@@ -235,15 +237,16 @@ public:
 
   typedef std::vector<boost::tuple<Id, Id, int> > KappaMap;
   typedef std::vector<Dim> Dims;
-  
-  SComplex(size_t colors, size_t _size, const Dims& dims, const KappaMap& kappaMap = KappaMap(), const Color& defaultColor = 0): boundaries(_size), coboundaries(_size), nonConstThis(*this) {
+
+  //TODO do it as a template <KappaMap, Dims>
+  SComplex(Size colors, Size _size, const Dims& dims, const KappaMap& kappaMap = KappaMap(), const Color& defaultColor = 0): boundaries(_size), coboundaries(_size), nonConstThis(*this) {
 	 using boost::get;
 	 BOOST_ASSERT(_size == dims.size());
 	 
 
 	 // init dimension related structures
 	 Dim maxDim = _size > 0 ? *std::max_element(dims.begin(), dims.end()) : 0;	 
-	 std::vector<size_t> cellsInDim(maxDim + 1);
+	 std::vector<Size> cellsInDim(maxDim + 1);
 
 	 cellsByDim.resize(maxDim + 1);
 	 
@@ -265,19 +268,19 @@ public:
 	 }
 
 	 // init neighbours
-	 std::vector<size_t> boundariesSize(_size);
-	 std::vector<size_t> coboundariesSize(_size);
-	 BOOST_FOREACH(KappaMap::value_type kappa, kappaMap) {
+	 std::vector<Size> boundariesSize(_size);
+	 std::vector<Size> coboundariesSize(_size);
+	 BOOST_FOREACH(typename KappaMap::value_type kappa, kappaMap) {
 		++boundariesSize[get<0>(kappa)];
 		++coboundariesSize[get<1>(kappa)];
 	 }
 
-	 for (size_t i = 0; i < _size; ++i) {
+	 for (Size i = 0; i < _size; ++i) {
 		boundaries[i].init(colors, boundariesSize[i]);
 		coboundaries[i].init(colors, coboundariesSize[i]);
 	 }
 
-	 BOOST_FOREACH(KappaMap::value_type kappa, kappaMap) {
+	 BOOST_FOREACH(typename KappaMap::value_type kappa, kappaMap) {
 		Id coface = get<0>(kappa);
 		Id face = get<1>(kappa);
 
@@ -290,7 +293,7 @@ public:
 	 
   }
 
-  size_t cardinality() const { return nonConstThis.get().cells.allObjects().size(); }
+  Size cardinality() const { return nonConstThis.get().cells.allObjects().size(); }
 
   Cell operator[](const Id id) {
 	 return Cell(this, cells.allObjects()[id].get());
