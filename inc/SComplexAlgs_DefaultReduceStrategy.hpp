@@ -96,7 +96,19 @@ public:
 	 return boost::optional<ReductionPair>();
   }
 
-    
+
+  size_t getMaxDim() {
+	 size_t maxDim = 0;
+	 for (typename SComplex::ColoredIterators::Iterators::AllCells::iterator it = complex.template iterators<1>().allCells().begin(),
+			  end = complex.template iterators<1>().allCells().end();
+			it != end; ++it) {
+
+		maxDim = std::max(maxDim, it->getDim());
+	 }
+	 
+	 return maxDim;
+  }
+
 protected:
   SComplex& complex;
   Cell dummyCell1, dummyCell2, dummyCell3;

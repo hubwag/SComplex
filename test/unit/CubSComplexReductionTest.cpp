@@ -16,7 +16,7 @@ using namespace std;
 
 #include <CubSComplex.hpp>
 #include <SComplexAlgs.hpp>
-#include <SComplexAlgs_CubSComplexReduceStrategy.hpp>
+#include <SComplexAlgs_DefaultReduceStrategy_CubSComplex.hpp>
 
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_io.hpp>

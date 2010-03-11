@@ -25,7 +25,7 @@ class SComplexBuilderFromSimplices {
 	 template<typename CoordsT>
 	 explicit Simplex(const CoordsT& _coords, size_t _hashFactor): coords(_coords.begin(), _coords.end()), hashFactor(_hashFactor) {
 		hash = 0;
-		BOOST_FOREACH(typename std::vector<T>::value_type v, coords) {
+		BOOST_FOREACH(typename CoordsT::value_type v, coords) {
 		  hash = (hash + v) & hashFactor;
 		}
 
@@ -87,20 +87,24 @@ class SComplexBuilderFromSimplices {
 	 
 	 typename SimplicesByHash::iterator hashIt = simplicesByHash.begin() + simplex.getHash();	 
 	 typename SimplicesByHash::value_type::iterator simplexIt = hashIt->find(simplex);
+	 bool newSimplex = false;
 	 
 	 if (simplexIt == hashIt->end()) {
+		newSimplex = true;
 		simplexIt = hashIt->insert(std::make_pair(simplex, nextId)).first;
 		dims.push_back(simplex.getSize() - 1);
-		//		simplex.print(std::cout) << " " << nextId << std::endl;
+		//simplex.print(std::cout) << " " << nextId << " " << dims.back() << std::endl;
 		++nextId;
 	 } 
 
 	 int sgn = 1;
 	 for (size_t i = 0, end = simplex.getSize(); simplex.getSize() > 1 && i < end; ++i) {
 		Simplex bound = simplex.createWithout(i);
-		
-		kappa.push_back(make_tuple(simplexIt->second, buildSimplicesByHash(bound), sgn));
-		sgn = -sgn;
+		Id boundId = buildSimplicesByHash(bound);
+		if (newSimplex) {
+		  kappa.push_back(make_tuple(simplexIt->second, boundId, sgn));		
+		  sgn = -sgn;
+		}
 	 }
 
 	 return simplexIt->second;

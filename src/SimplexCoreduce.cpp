@@ -84,11 +84,11 @@ void CrHomS_torus(int argc,char* argv[])
 //  SComplexAlgs<CubSComplex>::test(SComplexCR());
 
      Stopwatch swComp,swRed;
-    (ShaveAlgorithmFactory::createDefault(SComplexCR()))();
+	  (ShaveAlgorithmFactory::createDefault(SComplexCR()))();
     cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
 
     Stopwatch swCoRed;
-    (CoreductionAlgorithmFactory::createDefault(SComplexCR()))();
+    //(CoreductionAlgorithmFactory::createDefault(SComplexCR()))();
     cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
 
 

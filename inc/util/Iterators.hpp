@@ -74,10 +74,13 @@ namespace Util {
 
 		
 		template<typename CollectionT_2>
-		RangeTransform(CollectionT_2& _collection, TransformT _transform): range(_collection), transform(_transform) {}
+		RangeTransform(CollectionT_2& _collection, TransformT _transform): range(_collection), transform(_transform) {
+
+		}
 
 		template<typename CollectionT_2>
-		RangeTransform(const CollectionT_2& _collection, TransformT _transform): range(_collection), transform(_transform) {}
+		RangeTransform(const CollectionT_2& _collection, TransformT _transform): range(_collection), transform(_transform) {
+		}
 
 		iterator begin() {
 		  return iterator(range.begin(), transform);
@@ -99,6 +102,7 @@ namespace Util {
 		Range range;
 		TransformT transform;
 	 };
+
   }
 }
 

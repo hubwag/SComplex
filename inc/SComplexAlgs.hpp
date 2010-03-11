@@ -12,10 +12,14 @@
 
 #include <utility>
 #include <algorithm>
+#include <map>
+#include <set>
 
 #include "SComplexAlgs_Coreduction.hpp"
 #include "SComplexAlgs_Shave.hpp"
+#include "SComplexAlgs_DefaultReduceStrategy.hpp"
 
+#include <capd/auxil/CRef.h>
 
 template<typename SComplexT, typename ReducibleFreeChainComplexT>
 class ReducibleFreeChainComplexOverZFromSComplexAlgorithm {
@@ -71,18 +75,11 @@ private:
 
 template<typename SComplexT, typename ReducibleFreeChainComplexT>
 inline CRef<ReducibleFreeChainComplexT> ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SComplexT, ReducibleFreeChainComplexT>::operator()(){
-
-  Stopwatch sw;
+  
   std::set<SComplexChainCell> cells;
 
-  size_t maxDim = 0;
-  for (typename SComplex::ColoredIterators::Iterators::AllCells::iterator it = s.template iterators<1>().allCells().begin(),
-			end = s.template iterators<1>().allCells().end();
-		 it != end; ++it) {
+  size_t maxDim = (DefaultReduceStrategy<SComplexT>(s)).getMaxDim(); // TODO add strategy as a member
 
-	 maxDim = std::max(maxDim, it->getDim());
-  }
-  
   for (typename SComplex::ColoredIterators::Iterators::AllCells::iterator it = s.template iterators<1>().allCells().begin(),
 			end = s.template iterators<1>().allCells().end();
 		 it != end; ++it) {
@@ -91,7 +88,6 @@ inline CRef<ReducibleFreeChainComplexT> ReducibleFreeChainComplexOverZFromSCompl
 
   CRef<ReducibleFreeChainComplex> rfccCR( new ReducibleFreeChainComplex(cells));
 
-  fcout << "Reducible chain complex (over Z) construction of CubCelSet completed in " << sw  << std::endl;
   return rfccCR;
 }
 

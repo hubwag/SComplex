@@ -33,8 +33,8 @@ namespace Util {
 		  return AllObjects(objects);
 		}
 
-		ObjectsInColor objectsInColor(const Color& color) {
-		  return ObjectsInColor(objectsByColor[color], Unref<Object>() );
+		ObjectsInColor& objectsInColor(const Color& color) {
+		  return *(new ObjectsInColor(objectsByColor[color], Unref<Object>() ));
 		}
 		
 		void init(size_t colors, size_t size) {
@@ -44,7 +44,7 @@ namespace Util {
 
 		ObjectPtrsIterator add(const Object& object, const Color& color) {
 		  objects.push_back(object);
-		  return objectsByColor[color].insert(objectsByColor[color].end(), boost::ref(*(objects.end() - 1)));	 
+		  return objectsByColor[color].insert(objectsByColor[color].end(), boost::ref(objects.back()));	 
 		}
 
 		void changeColor(const ObjectPtrsIterator& it, const Color& oldColor, const Color& newColor) {

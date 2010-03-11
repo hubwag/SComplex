@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <vector>
+#include <map>
 #include <list>
 #include <functional>
 
@@ -34,7 +35,7 @@ public:
   
 private:
   class CellImpl;  
-  typedef typename Traits::template ColoredObjectsModel<boost::shared_ptr<CellImpl> > Cells;
+  typedef typename Traits::template ColoredObjectsModel<CellImpl* > Cells;
   typedef std::vector<typename Traits::template ColoredObjectsModel<boost::reference_wrapper<CellImpl> > > CellsByDim;
   
   class CellImpl: boost::noncopyable {
@@ -50,14 +51,16 @@ private:
 	 const Id& getId() const { return id; }
 	 const Dim& getDim() const { return dim; }
 	 void setColor(const Color& _color) { this->color = _color; }
-	 
+
+	 bool operator<(const CellImpl& c) const { return id < c.id; }
+		
   private:
 	 const Id id;
 	 const Dim dim;
 	 Color color;
   };
 
-  typedef boost::shared_ptr<CellImpl> CellImplPtr;
+  typedef CellImpl* CellImplPtr;
 
 public:
   
@@ -70,6 +73,9 @@ public:
 	 const Color& getColor() const { return cell->getColor(); }
 	 const Id& getId() const { return cell->getId(); }
 	 const Dim& getDim() const { return cell->getDim(); }
+
+	 bool operator<(const ConstCell& c) const { return *cell < *(c.cell); }
+	 
   protected:
 	 const SComplex* complex;
 	 CellImpl* cell;
@@ -113,7 +119,7 @@ public:
 	 CellImpl* cell;	 
 	 IteratorInNeighbour iteratorInNeighbour; //an iterator to NeighbourLinkPtrs not in this, but in an instance of the class for a neighbour.
 
-	 explicit NeighbourLink(const CellImplPtr& _cell) : cell(_cell.get()) {}
+	 explicit NeighbourLink(const CellImplPtr& _cell) : cell(_cell) {}
   };
 
 private:
@@ -136,7 +142,7 @@ private:
 	 explicit CellFromCellsExtractor(SComplex* _complex): complex(_complex) {}
 		
 	 CellType operator()(const CellImplPtr& cell) const {
-		return CellType(complex, cell.get());
+		return CellType(complex, cell);
 	 }
   };
 
@@ -259,12 +265,14 @@ public:
 	 }
 
 	 //init cells
-	 cells.init(_size, colors);
+	 cells.init(colors, _size);
+	 //std::cout << "Cells init " << _size << " " << colors << std::endl;
 	 
 	 for (Id id = 0; id < _size; ++id) {
 		CellImplPtr cell(new CellImpl(id, dims[id], defaultColor));
+		//std::cout << "Creating: " << id << " (dim: " << dims[id] << ") " <<  std::endl;
 		cell->iteratorInCells = cells.add(cell, defaultColor);
-		cell->iteratorInCellsByDim = cellsByDim[cell->getDim()].add(boost::ref(*(cell.get())), defaultColor);
+		cell->iteratorInCellsByDim = cellsByDim[cell->getDim()].add(boost::ref(*(cell)), defaultColor);
 	 }
 
 	 // init neighbours
@@ -283,12 +291,15 @@ public:
 	 BOOST_FOREACH(typename KappaMap::value_type kappa, kappaMap) {
 		Id coface = get<0>(kappa);
 		Id face = get<1>(kappa);
-
+		//std::cout << "Kappa " << coface << " " << face << std::endl;
 		BOOST_ASSERT(coface != face);
 		typename NeighbourLink::IteratorInNeighbour bdIteratorInNeighbour = boundaries[coface].add(NeighbourLink(cells.allObjects()[face]), cells.allObjects()[face]->getColor());
 		typename NeighbourLink::IteratorInNeighbour cbdIteratorInNeighbour = coboundaries[face].add(NeighbourLink(cells.allObjects()[coface]), cells.allObjects()[coface]->getColor());
 		boundaries[coface].allObjects().back().iteratorInNeighbour = cbdIteratorInNeighbour;
 		coboundaries[face].allObjects().back().iteratorInNeighbour = bdIteratorInNeighbour;
+
+		bool was = coincidence.insert(std::make_pair(std::make_pair(coface, face), get<2>(kappa))).second;
+		BOOST_ASSERT(was);
 	 }
 	 
   }
@@ -296,11 +307,19 @@ public:
   Size cardinality() const { return nonConstThis.get().cells.allObjects().size(); }
 
   Cell operator[](const Id id) {
-	 return Cell(this, cells.allObjects()[id].get());
+	 return Cell(this, cells.allObjects()[id]);
   }
 
   ConstCell operator[](const Id id) const {
-	 return ConstCell(this, cells.allObjects()[id].get());
+	 return ConstCell(this, cells.allObjects()[id]);
+  }
+
+  int coincidenceIndex(const ConstCell &a, const ConstCell &b) const {
+	 typename std::map<std::pair<Id, Id>, int>::const_iterator it = coincidence.find(std::make_pair(a.getId(), b.getId()));
+	 if (it != coincidence.end()) {
+		return it->second;
+	 }
+	 return 0;
   }
   
   Iterators iterators() { return Iterators(nonConstThis.get_pointer()); }
@@ -319,7 +338,8 @@ private:
   Cells cells;
   CellsByDim cellsByDim;
   std::vector<NeighboursModel> boundaries, coboundaries; // (co)boundaries by cell id
-  boost::reference_wrapper<SComplex> nonConstThis;  
+  boost::reference_wrapper<SComplex> nonConstThis;
+  std::map<std::pair<Id, Id>, int> coincidence;
 };
 
 
