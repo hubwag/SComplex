@@ -36,7 +36,7 @@ public:
 template<typename StrategyT>
 inline void ShaveAlgorithm<StrategyT>::operator()(){
 
-  for(int d=strategy->getMaxDim() ;d>=0;--d){
+  for(int d= strategy->getMaxDim();d>=0;--d){
 	 typedef typename SComplex::ColoredIterators::Iterators::DimCells::iterator DimIt;
 
 	 for (DimIt it = strategy->getComplex().template iterators<1>().dimCells(d).begin(),

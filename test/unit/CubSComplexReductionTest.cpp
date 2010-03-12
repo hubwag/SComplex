@@ -46,8 +46,6 @@ boost::tuple<int, int, int, std::string>  CrHomS(const std::string &fileName) {
 							" of "  << SComplexCR().cardinality() << " cells ");
 
   get<0>(result) = SComplexCR().cardinality();
-//  SComplexAlgs<CubSComplex>::test(SComplexCR());
-
 
   Stopwatch swComp,swRed;
 

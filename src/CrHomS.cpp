@@ -16,8 +16,14 @@ using namespace std;
 #include <capd/homologicalAlgebra/cubSetFunctors.hpp>
 #include <capd/homologicalAlgebra/ReducibleFreeChainComplex.hpp>
 
+#include <CubSComplex.hpp>
+#include <SComplexAlgs.hpp>
+#include <SComplexAlgs_DefaultReduceStrategy_CubSComplex.hpp>
+
+
 #include "CubSComplex.hpp"
 #include "SComplexAlgs.hpp"
+#include <SComplexAlgs_DefaultReduceStrategy_CubSComplex.hpp>
 
 typedef ElementaryCell ElementaryCellType;
 typedef int ScalarType;
@@ -36,8 +42,6 @@ void CrHomS(int argc,char* argv[]){
   cout << "Successfully read  " << fileName <<
           " of "  << SComplexCR().cardinality() << " cells " << endl;
 
-//  SComplexAlgs<CubSComplex>::test(SComplexCR());
-
 
   Stopwatch swComp,swRed;
   (ShaveAlgorithmFactory::createDefault(SComplexCR()))();  
@@ -48,7 +52,7 @@ void CrHomS(int argc,char* argv[]){
   cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
 
   CRef<ReducibleFreeChainComplexType> RFCComplexCR=
-		(ReducibleFreeChainComplexOverZFromSComplexAlgorithm<CubSComplex, ReducibleFreeChainComplexType,ElementaryCellType>(SComplexCR()))();
+		(ReducibleFreeChainComplexOverZFromSComplexAlgorithm<CubSComplex, ReducibleFreeChainComplexType>(SComplexCR()))();
   cout << " --- RFCC constructed  " << endl;
 
   CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
@@ -61,10 +65,6 @@ void CrHomS(int argc,char* argv[]){
 ofstreamcout fcout;
 
 int main(int argc,char* argv[]){
-  std::string outFname="out.txt";
-  fcout.turnOn();
-  fcout.open(outFname.c_str());
-
   try{
     CrHomS<CubSComplex>(argc,argv);
   }catch(std::exception& e){

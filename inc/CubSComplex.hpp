@@ -86,9 +86,7 @@ public:
   
   Dim getBaseDimension() const;
 
-  int coincidenceIndex(const Cell &a, const Cell &b) const {
-	 throw std::logic_error("Not implemented");
-  }
+  int coincidenceIndex(const Cell &a, const Cell &b) const;
   
 protected:
   CRef<BCubCellSet> bCubCellSetCR;
@@ -172,6 +170,37 @@ inline bool CubSComplex::getUniqueFace(const Cell& cell, Cell& coface) const {
   } else {
 	 return false;
   }
+}
+
+inline int CubSComplex::coincidenceIndex(const Cell &a, const Cell &b) const {
+  if (a.embDim() != b.embDim()) {
+	 return 0;
+  }
+
+  int res = 0;
+  int sgn = 1;
+  for (size_t i = 0, end = a.embDim(); i < end; ++i) {
+	 if (! (a[i]/2 == b[i]/2 || a[i]/2 + (a[i]%2) == b[i]/2)) {
+		return 0; // b[i] left side doesn't intersect a[i] interval
+	 }
+	 
+	 if (a[i] % 2 == 1 && b[i] % 2 == 1) {
+		sgn = -sgn; //both nondegenerated, go to next
+	 } else if (a[i] % 2 == 0 && b[i] % 2 == 0) {
+		// both degenerated
+	 } else if (b[i] % 2 == 1) {		
+		return 0; // a[i] is inside b[i]
+	 } else { // b[i] is inside a[i]
+		if (res != 0) {
+		  return 0; // second time, so not proper face
+		}
+		res = sgn;
+		if (a[i] / 2 != b[i]/2) { // b[i] is the right face of a[i]
+		  res = -res;
+		}
+	 }
+  }
+  return res;
 }
 
 #endif
