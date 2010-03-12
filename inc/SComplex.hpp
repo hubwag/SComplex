@@ -266,11 +266,13 @@ public:
 
 	 //init cells
 	 cells.init(colors, _size);
-	 //std::cout << "Cells init " << _size << " " << colors << std::endl;
+
+	 //    TODO !!!!
+	 //
+	 // DON"T USE NEW, use local memory !!!!!!!!!!
 	 
 	 for (Id id = 0; id < _size; ++id) {
 		CellImplPtr cell(new CellImpl(id, dims[id], defaultColor));
-		//std::cout << "Creating: " << id << " (dim: " << dims[id] << ") " <<  std::endl;
 		cell->iteratorInCells = cells.add(cell, defaultColor);
 		cell->iteratorInCellsByDim = cellsByDim[cell->getDim()].add(boost::ref(*(cell)), defaultColor);
 	 }

@@ -33,8 +33,8 @@ namespace Util {
 		  return AllObjects(objects);
 		}
 
-		ObjectsInColor& objectsInColor(const Color& color) {
-		  return *(new ObjectsInColor(objectsByColor[color], Unref<Object>() ));
+		ObjectsInColor objectsInColor(const Color& color) {
+		  return ObjectsInColor(objectsByColor[color], Unref<Object>());
 		}
 		
 		void init(size_t colors, size_t size) {

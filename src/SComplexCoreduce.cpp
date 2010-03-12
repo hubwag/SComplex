@@ -43,30 +43,35 @@ typedef FreeModule<int,capd::vectalg::Matrix<int,0,0> > FreeModuleType;
 typedef FreeChainComplex<FreeModuleType> FreeChainComplexType;
 typedef ReducibleFreeChainComplex<FreeModuleType,int> ReducibleFreeChainComplexType;
 
+#include <SComplex.hpp>
+#include <SComplexDefaultTraits.hpp>
+#include <SComplexAlgs.hpp>
+#include <SComplexBuilderFromSimplices.hpp>
+
 #include "SimplexSubdivision.hpp"
 #include <CrHomS.hpp>
 
-template<typename SComplex>
+
 void CrHomS_torus(int argc,char* argv[])
 {
     Stopwatch swTot;
-    CRef<SComplex> SComplexCR(new SComplex());
 	 vector<set<int> > tris = makeTest();
 
-    for (size_t i = 0; i < tris.size(); i++)
-    {
-    	SComplexCR().addSimplex(tris[i]);
-    }
+	 Stopwatch swBuild;
+	typedef SComplex<SComplexDefaultTraits> Complex;
+	SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(1234567);
 
-	 testReduce(SComplexCR());
-    cout << " --- generated simplicial complex --- \n cardinality: " << SComplexCR().cardinality() << endl;
+	boost::shared_ptr<Complex> complex = builder(tris, 3, 1);
+	cout << " --- built in " << swBuild << std::endl;
+	testReduce(*complex);
+    cout << " --- generated simplicial complex --- \n cardinality: " << complex->cardinality() << endl;
 }
 
 int main(int argc,char* argv[])
 {
     try
     {
-		CrHomS_torus<SimplexSComplex>(argc,argv);
+		CrHomS_torus(argc,argv);
     }
     catch (std::exception& e)
     {

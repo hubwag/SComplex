@@ -10,7 +10,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/assign/list_inserter.hpp>
-
+#include <boost/tuple/tuple.hpp>
 
 template<typename T, typename TraitsT>
 class SComplexBuilderFromSimplices {
@@ -26,7 +26,7 @@ class SComplexBuilderFromSimplices {
 	 explicit Simplex(const CoordsT& _coords, size_t _hashFactor): coords(_coords.begin(), _coords.end()), hashFactor(_hashFactor) {
 		hash = 0;
 		BOOST_FOREACH(typename CoordsT::value_type v, coords) {
-		  hash = (hash + v) & hashFactor;
+		  hash = (hash + v) % hashFactor;
 		}
 
 	 }
@@ -95,25 +95,28 @@ class SComplexBuilderFromSimplices {
 		dims.push_back(simplex.getSize() - 1);
 		//simplex.print(std::cout) << " " << nextId << " " << dims.back() << std::endl;
 		++nextId;
-	 } 
-
-	 int sgn = 1;
-	 for (size_t i = 0, end = simplex.getSize(); simplex.getSize() > 1 && i < end; ++i) {
-		Simplex bound = simplex.createWithout(i);
-		Id boundId = buildSimplicesByHash(bound);
-		if (newSimplex) {
-		  kappa.push_back(make_tuple(simplexIt->second, boundId, sgn));		
-		  sgn = -sgn;
+	 
+		int sgn = 1;
+		for (size_t i = 0, end = simplex.getSize(); simplex.getSize() > 1 && i < end; ++i) {
+		  Simplex bound = simplex.createWithout(i);
+		  Id boundId = buildSimplicesByHash(bound);
+		  if (newSimplex) {
+			 kappa.push_back(boost::make_tuple(simplexIt->second, boundId, sgn));		
+			 sgn = -sgn;
+		  }
 		}
 	 }
-
+	 
 	 return simplexIt->second;
   }
 
 public:
   typedef typename SComplex<TraitsT>::Color Color;
+  const size_t hashFactor;
   
-  SComplexBuilderFromSimplices(size_t _hashFactor): simplicesByHash(_hashFactor) {}
+  SComplexBuilderFromSimplices(size_t _hashFactor): hashFactor(_hashFactor) {
+	 simplicesByHash.resize(_hashFactor);
+  }
   
   template<typename CollectionT>
   boost::shared_ptr<SComplex<TraitsT> > operator()(const CollectionT& simplices, size_t colors, const Color& defaultColor) {
@@ -123,7 +126,7 @@ public:
 	 dims.clear();
 	 
 	 for (typename CollectionT::const_iterator it = simplices.begin(), end = simplices.end(); it != end; ++it) {
-		buildSimplicesByHash(Simplex(*it, simplicesByHash.size()));
+		buildSimplicesByHash(Simplex(*it, hashFactor));
 	 }
 
 	 return boost::shared_ptr<SComplex<TraitsT> >(new SComplex<TraitsT>(colors, dims, kappa, defaultColor));
