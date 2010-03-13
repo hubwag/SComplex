@@ -81,16 +81,17 @@ public:
   template<Color color>
   typename ColoredConstIterators::Color<color>::Iterators iterators() const;
 
-  bool getUniqueCoFace(const Cell& cell, Cell& coface) const;
+  bool getUniqueCoFace(Cell& cell, Cell& coface) const;
 
-  bool getUniqueFace(const Cell& cell, Cell& coface) const;
+  bool getUniqueFace(Cell& cell, Cell& coface) const;
   
   Dim getBaseDimension() const;
 
   int coincidenceIndex(const Cell &a, const Cell &b) const;
   
 protected:
-  CRef<BCubCellSet> bCubCellSetCR;
+  CRef<BCubCellSet> _bCubCellSetCR;
+  BCubCellSet& bCubCellSet;
   Dim baseDimension;
   
   template<bool isConst>
@@ -103,7 +104,7 @@ inline CubSComplex::Dim CubSComplex::getBaseDimension() const {
 }
 
 inline size_t CubSComplex::cardinality() {
-  return bCubCellSetCR().cardinality();
+  return bCubCellSet.cardinality();
 }
 
 #include "CubSComplex_Cell.hpp"
@@ -112,17 +113,16 @@ inline size_t CubSComplex::cardinality() {
 #include "CubSComplex_ColoredIterators.hpp"
 #include "CubSComplex_Numerators.hpp"
 
-inline CubSComplex::CubSComplex():
-  bCubCellSetCR(new BCubCellSet()), baseDimension(0)
-{}
+// inline CubSComplex::CubSComplex():
+//   bCubCellSetCR(new BCubCellSet()), baseDimension(0)
+// {}
 
-inline CubSComplex::CubSComplex(const int* A_w, bool clear):
-  bCubCellSetCR(new BCubCelSet(A_w,clear)),baseDimension(0)
-{}
+// inline CubSComplex::CubSComplex(const int* A_w, bool clear):
+//   bCubCellSetCR(new BCubCelSet(A_w,clear)),baseDimension(0)
+// {}
 
-inline CubSComplex::CubSComplex(CRef<BCubCellSet> _bCubCellSet):baseDimension(0){
-  bCubCellSetCR = _bCubCellSet;
-  bCubCellSetCR().addEmptyCollar();
+inline CubSComplex::CubSComplex(CRef<BCubCellSet> _bCubCellSetCR):baseDimension(0), _bCubCellSetCR(_bCubCellSetCR), bCubCellSet(_bCubCellSetCR()) {
+  bCubCellSet.addEmptyCollar();
 }
 
 inline CubSComplex::Iterators CubSComplex::iterators() {
@@ -157,51 +157,55 @@ inline CubSComplex::ColoredConstIterators::Color<1>::Iterators CubSComplex::iter
   return ColoredConstIterators::Color<1>::Iterators(*this);
 }
 
-inline bool CubSComplex::getUniqueCoFace(const Cell& cell, Cell& coface) const {
-  if (bCubCellSetCR().isFreeFace(const_cast<Cell&>(cell), coface)) {
-	 return true;
+inline bool CubSComplex::getUniqueCoFace(Cell& cell, Cell& coface) const {
+  BCubCellSet::BitCoordIterator b(bCubCellSet);
+  if (bCubCellSet.isFreeFace(cell.getBitCoordIt(), b)) {
+	 coface = Cell(b, b.ownDim());
+  	 return true;
   } else {
-	 return false;
+  	 return false;
   }
 }
 
-inline bool CubSComplex::getUniqueFace(const Cell& cell, Cell& coface) const {
-  if (bCubCellSetCR().isFreeCoFace(const_cast<Cell&>(cell), coface)) {
-	 return true;
+inline bool CubSComplex::getUniqueFace(Cell& cell, Cell& coface) const {
+  BCubCellSet::BitCoordIterator b(bCubCellSet);
+  if (bCubCellSet.isFreeCoFace(cell.getBitCoordIt(), b)) {
+	 coface = Cell(b, b.ownDim());
+  	 return true;
   } else {
-	 return false;
+  	 return false;
   }
 }
 
 inline int CubSComplex::coincidenceIndex(const Cell &a, const Cell &b) const {
-  if (bCubCellSetCR().embDim() != bCubCellSetCR().embDim()) {
+  if (bCubCellSet.embDim() != bCubCellSet.embDim()) {
 	 return 0;
   }
 
   int res = 0;
   int sgn = 1;
-  for (size_t i = 0, end = bCubCellSetCR().embDim(); i < end; ++i) {
-  	 if (! (a[i]/2 == b[i]/2 || a[i]/2 + (a[i]%2) == b[i]/2)) {
-  		return 0; // b[i] left side doesn't intersect a[i] interval
-  	 }
+  // for (size_t i = 0, end = bCubCellSet.embDim(); i < end; ++i) {
+  // 	 if (! (a[i]/2 == b[i]/2 || a[i]/2 + (a[i]%2) == b[i]/2)) {
+  // 		return 0; // b[i] left side doesn't intersect a[i] interval
+  // 	 }
 	 
-  	 if (a[i] % 2 == 1 && b[i] % 2 == 1) {
-  		sgn = -sgn; //both nondegenerated, go to next
-  	 } else if (a[i] % 2 == 0 && b[i] % 2 == 0) {
-  		// both degenerated
-  	 } else if (b[i] % 2 == 1) {		
-  		return 0; // a[i] is inside b[i]
-  	 } else { // b[i] is inside a[i]
-  		if (res != 0) {
-  		  return 0; // second time, so not proper face
-  		}
-  		res = sgn;
-  		if (a[i] / 2 != b[i]/2) { // b[i] is the right face of a[i]
-  		  res = -res;
-  		}
-  	 }
-  }
-  return res;
+  // 	 if (a[i] % 2 == 1 && b[i] % 2 == 1) {
+  // 		sgn = -sgn; //both nondegenerated, go to next
+  // 	 } else if (a[i] % 2 == 0 && b[i] % 2 == 0) {
+  // 		// both degenerated
+  // 	 } else if (b[i] % 2 == 1) {		
+  // 		return 0; // a[i] is inside b[i]
+  // 	 } else { // b[i] is inside a[i]
+  // 		if (res != 0) {
+  // 		  return 0; // second time, so not proper face
+  // 		}
+  // 		res = sgn;
+  // 		if (a[i] / 2 != b[i]/2) { // b[i] is the right face of a[i]
+  // 		  res = -res;
+  // 		}
+  // 	 }
+  // }
+  //return res;
 }
 
 #endif

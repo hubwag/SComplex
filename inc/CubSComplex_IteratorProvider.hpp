@@ -67,7 +67,8 @@ public:
 		  return tmp;
 	 }
 
-	 typename Base::reference operator*() {
+  //typename Base::reference operator*() {
+  typename Base::value_type operator*() {
 		  return currentNumerator.Current();
 	 }
 

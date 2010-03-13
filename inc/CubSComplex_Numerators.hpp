@@ -2,18 +2,20 @@
 #define CUB_SCOMPLEX_NUMERATORS_HPP
 
 #include "CubSComplex.hpp"
+#include <limits>
 
 class CubSComplex::BasicNumerator: public BCubCellSet::BitCoordIterator {
 protected:
-  explicit BasicNumerator(const CubSComplex& s): BCubCellSet::BitCoordIterator(s.bCubCellSetCR()), current(s) {}
+  explicit BasicNumerator(const CubSComplex& s): BCubCellSet::BitCoordIterator(s.bCubCellSet)/*, current(*this)*/ {}
   
 public:
   void toEnd() {
 	 this->wIt=const_cast<WordIterator>(this->getBitmap().getBitmapEnd());
   }
 		
-  Cell& Current(){
-	 return (current = Cell(*this));
+  Cell Current(){
+	 //return (current = Cell(*this));
+	 return Cell(this);
   }
 
   bool operator==(const BasicNumerator& o) const {
@@ -25,7 +27,7 @@ public:
   }
 
 private:
-  Cell current; // to remove, for walid reference only
+  // Cell current; // to remove, for walid reference only
 };
 
 class CubSComplex::CellNumerator: public BasicNumerator{
@@ -68,7 +70,7 @@ class CubSComplex::CbdNumerator: public BasicNumerator {
 public:
   typedef Cell value_type;
 		
-  CbdNumerator(const CubSComplex& s, const Cell& c):BasicNumerator(s), center(c),i(0),downDir(true), dim(c.embDim()){
+  CbdNumerator(const CubSComplex& s, const Cell& c):BasicNumerator(s), center(c.bitIt),i(0),downDir(true), dim(s.bCubCellSet.embDim()){
   }
 		
   bool MoveNext(){
@@ -96,7 +98,7 @@ public:
 	 return false;
   }
 protected:
-  const Cell& center;
+  const BCubCellSet::BitCoordIterator center;
   int i;
   bool downDir;
   const int dim;
@@ -106,7 +108,7 @@ class CubSComplex::BdNumerator: public BasicNumerator{
 public:
 	 typedef Cell value_type;
 		
-  BdNumerator(const CubSComplex& s, const Cell& c): BasicNumerator(s), center(c),i(0),downDir(true), dim(c.embDim()) {
+  BdNumerator(const CubSComplex& s, const Cell& c): BasicNumerator(s), center(c.bitIt),i(0),downDir(true), dim(s.bCubCellSet.embDim()) {
 	 }
 		
   bool MoveNext(){
@@ -135,7 +137,7 @@ public:
   }
 
 protected:
-  const Cell& center;
+  const BCubCellSet::BitCoordIterator center;
   int i;
   bool downDir;
   const int dim;
