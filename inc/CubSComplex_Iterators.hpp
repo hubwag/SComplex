@@ -39,12 +39,12 @@ inline typename CubSComplex::IteratorsImpl<isConst>::DimCells CubSComplex::Itera
 
 template<bool isConst>
 inline typename CubSComplex::IteratorsImpl<isConst>::CbdCells CubSComplex::IteratorsImpl<isConst>::cbdCells(const Cell& cell) const {
-  return CbdCells(CbdNumerator(cell));
+  return CbdCells(CbdNumerator(scomplex, cell));
 }
 
 template<bool isConst>
 inline typename CubSComplex::IteratorsImpl<isConst>::BdCells CubSComplex::IteratorsImpl<isConst>::bdCells(const Cell& cell) const {
-  return BdCells(BdNumerator(cell));
+  return BdCells(BdNumerator(scomplex, cell));
 }
 
 #endif

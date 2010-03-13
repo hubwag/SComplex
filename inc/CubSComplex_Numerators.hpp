@@ -3,189 +3,142 @@
 
 #include "CubSComplex.hpp"
 
-class CubSComplex::CellNumerator{
+class CubSComplex::BasicNumerator: public BCubCellSet::BitCoordIterator {
+protected:
+  explicit BasicNumerator(const CubSComplex& s): BCubCellSet::BitCoordIterator(s.bCubCellSetCR()), current(s) {}
+  
+public:
+  void toEnd() {
+	 this->wIt=const_cast<WordIterator>(this->getBitmap().getBitmapEnd());
+  }
+		
+  Cell& Current(){
+	 return (current = Cell(*this));
+  }
+
+  bool operator==(const BasicNumerator& o) const {
+	 return this->wIt == o.wIt;
+  }
+
+  bool operator!=(const BasicNumerator& o) const {
+	 return this->wIt != o.wIt;
+  }
+
+private:
+  Cell current; // to remove, for walid reference only
+};
+
+class CubSComplex::CellNumerator: public BasicNumerator{
   
 public:
 	 typedef Cell value_type;
   
-	 CellNumerator(const CubSComplex& s):cCell(s){
-		  --cCell;
-	 }
+  CellNumerator(const CubSComplex& s): BasicNumerator(s) {
+  }
   
 	 bool MoveNext(){
-		  ++cCell;
-		  cCell.moveToFirstPixel();
-		  return cCell.wIt < cCell.getBitmap().getBitmapEnd();
+		++(*this);
+		moveToFirstPixel();
+		return wIt < getBitmap().getBitmapEnd();
 	 }
-
-	 Cell& Current(){
-		  return cCell;
-	 }
-
-	 void toEnd() {
-		  cCell.toEnd();
-	 }
-  
-	 bool operator==(const CellNumerator& o) const {
-		  return this->cCell.wIt == o.cCell.wIt;
-	 }
-
-	 bool operator!=(const CellNumerator& o) const {
-		  return this->cCell.wIt != o.cCell.wIt;
-	 }
-
-protected:
-	 Cell cCell;
 };
 
-class CubSComplex::CellDimNumerator{
+class CubSComplex::CellDimNumerator: public BasicNumerator {
 public:
 	 typedef Cell value_type;
 		
-	 CellDimNumerator(const CubSComplex& s,int d):cCell(s),dim(d){
-		  --cCell;
-	 }
+  CellDimNumerator(const CubSComplex& s,int d): BasicNumerator(s),dim(d) {
+	 --(*this);
+  }
 
-
-	 bool operator==(const CellDimNumerator& o) const {
-		  return this->cCell.wIt == o.cCell.wIt;
+  bool MoveNext(){
+	 for(;;){
+		++(*this);
+		moveToFirstPixel();
+		if(wIt == getBitmap().getBitmapEnd()) return false;
+		if(ownDim()==dim) return true;
 	 }
-
-	 bool operator!=(const CellDimNumerator& o) const {
-		  return this->cCell.wIt != o.cCell.wIt;
-	 }
-
-	 bool MoveNext(){
-		  for(;;){
-            ++cCell;
-            cCell.moveToFirstPixel();
-            if(cCell.wIt == cCell.getBitmap().getBitmapEnd()) return false;
-            if(cCell.ownDim()==dim) return true;
-		  }
-	 }
+  }
 	 
-	 void toEnd() {
-		  cCell.toEnd();
-	 }
-		
-	 Cell& Current(){
-		  return cCell;
-	 }
 protected:
-	 Cell cCell;
-	 int dim;
+  int dim;
 };
 
-class CubSComplex::CbdNumerator{
+class CubSComplex::CbdNumerator: public BasicNumerator {
 public:
-	 typedef Cell value_type;
+  typedef Cell value_type;
 		
-  CbdNumerator(const Cell& c):center(c),i(0),downDir(true), dim(c.embDim()), cCell(c){
-		//		  cCell=false;
-	 }
-
-  void toEnd() {
-	 cCell.toEnd();
+  CbdNumerator(const CubSComplex& s, const Cell& c):BasicNumerator(s), center(c),i(0),downDir(true), dim(c.embDim()){
   }
 		
-	 bool operator==(const CbdNumerator& o) const {
-		  return this->cCell.wIt == o.cCell.wIt;
-	 }
-
-	 bool operator!=(const CbdNumerator& o) const {
-		  return this->cCell.wIt != o.cCell.wIt;
-	 }
-
-	 bool MoveNext(){
-		  while(i < dim){
-            // process only directions in which cell is degenerate
-            if(!downDir || !center.odd(i)){
-					 cCell=center;
-					 // First check the bottom face
-					 if(downDir){
-						  cCell.decInDir(i);
-						  downDir=false;
-						  // and now go to the top face
-					 }else{
-						  cCell.incInDir(i);;
-						  downDir=true;
-						  ++i;
-					 }
-					 return true;
-            }else{
-					 ++i;
-            }
+  bool MoveNext(){
+	 while(i < dim){
+		// process only directions in which cell is degenerate
+		if(!downDir || !center.odd(i)){
+		  ((BCubCellSet::BitCoordIterator&)(*this)) = center;
+		  // First check the bottom face
+		  if(downDir){
+			 decInDir(i);
+			 downDir=false;
+			 // and now go to the top face
+		  }else{
+			 incInDir(i);;
+			 downDir=true;
+			 ++i;
 		  }
-		  //cCell=false;
-		  cCell.toEnd();
-		  return false;
+		  return true;
+		}else{
+		  ++i;
+		}
 	 }
-	 Cell& Current(){
-		  return cCell;
-	 }
+	 //cCell=false;
+	 toEnd();
+	 return false;
+  }
 protected:
   const Cell& center;
   int i;
   bool downDir;
   const int dim;
-  Cell cCell;
-
 };
 
-class CubSComplex::BdNumerator{
+class CubSComplex::BdNumerator: public BasicNumerator{
 public:
 	 typedef Cell value_type;
 		
-  BdNumerator(const Cell& c):center(c),i(0),downDir(true), dim(c.embDim()), cCell(c){
-		//		  cCell=false;
+  BdNumerator(const CubSComplex& s, const Cell& c): BasicNumerator(s), center(c),i(0),downDir(true), dim(c.embDim()) {
 	 }
-
-  void toEnd() {
-	 cCell.toEnd();
-  }
 		
-	 bool operator==(const BdNumerator& o) const {
-		  return this->cCell.wIt == o.cCell.wIt;
-	 }
-
-	 bool operator!=(const BdNumerator& o) const {
-		  return this->cCell.wIt != o.cCell.wIt;
-	 }
-
-	 bool MoveNext(){
-		  while(i < dim){
-            // process only directions in which cell is degenerate
-            if(!downDir || center.odd(i)){
-					 cCell=center;
-					 // First check the bottom face
-					 if(downDir){
-						  cCell.decInDir(i);
-						  downDir=false;
-						  // and now go to the top face
-					 }else{
-						  cCell.incInDir(i);;
-						  downDir=true;
-						  ++i;
-					 }
-					 return true;
-            }else{
-					 ++i;
-            }
+  bool MoveNext(){
+	 while(i < dim){
+		// process only directions in which cell is degenerate
+		if(!downDir || center.odd(i)){
+		  ((BCubCellSet::BitCoordIterator&)(*this)) = center;
+		  // First check the bottom face
+		  if(downDir){
+			 decInDir(i);
+			 downDir=false;
+			 // and now go to the top face
+		  }else{
+			 incInDir(i);;
+			 downDir=true;
+			 ++i;
 		  }
-		  //cCell=false;
-		  cCell.toEnd();
-		  return false;
+		  return true;
+		}else{
+		  ++i;
+		}
 	 }
-	 Cell& Current(){
-		  return cCell;
-	 }
+	 //cCell=false;
+	 toEnd();
+	 return false;
+  }
+
 protected:
   const Cell& center;
   int i;
   bool downDir;
   const int dim;
-  Cell cCell;
-
 };
 
 #endif // CUB_SCOMPLEX_NUMERATORS_HPP

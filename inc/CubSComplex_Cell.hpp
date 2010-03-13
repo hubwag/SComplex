@@ -11,7 +11,11 @@ class CubSComplex::Cell: private BCubCellSet::BitCoordIterator {
   typedef BCubCellSet::BitCoordIterator::WordIterator WordIterator;
 
 public:
-  Cell(const CubSComplex& s): BitCoordIterator(s.bCubCellSetCR()) {}
+  explicit Cell(const CubSComplex& s): BitCoordIterator(s.bCubCellSetCR()) {
+  }
+
+  explicit Cell(const BitCoordIterator& b): BitCoordIterator(b) {
+  }
 
   Color getColor() const{
 	 return this->getBit() ? 1 : 2;
@@ -29,11 +33,6 @@ public:
   Dim getDim() const {
 	 return ownDim();
   }
-	 
-  // ElementaryCell getElementaryCell() const { //conversion operator doesn't work here, because of copy constructor in ElementaryCell
-  // 	 int dim=this->embDim();
-  // 	 return ElementaryCell(this->coords(),dim);
-  // }
 
   bool operator<(const Cell& b) const {
 	 return (BCubCellSet::BitCoordIterator)(*this) < ((BCubCellSet::BitCoordIterator) b);
