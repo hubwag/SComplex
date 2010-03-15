@@ -14,17 +14,28 @@
 
 
 class CubSComplex {
+  class BitCoordCellImpl;
+  class DynamicBitCoordCellImpl;
+  class BitCoordPtrCellImpl;
+  
 public:
   
-  class Cell;
+  template<typename CellImplT>
+  class CellProxy;
+
+  typedef CellProxy<BitCoordCellImpl> Cell;
+  typedef CellProxy<DynamicBitCoordCellImpl> DynamicCell;
+  typedef CellProxy<BitCoordPtrCellImpl> TempCell;
+  
   typedef size_t Dim;
   typedef int Color;
 
 private:
-
+  
   template<typename NumeratorT, bool isConst>
   class IteratorProvider;
 
+  
   class BasicNumerator;
   class CellNumerator;
   class CellDimNumerator;
@@ -81,10 +92,10 @@ public:
   template<Color color>
   typename ColoredConstIterators::Color<color>::Iterators iterators() const;
 
-  bool getUniqueCoFace(Cell& cell, Cell& coface) const;
+  bool getUniqueCoFace(TempCell cell, DynamicCell& coface) const;
 
-  bool getUniqueFace(Cell& cell, Cell& coface) const;
-  
+  bool getUniqueFace(TempCell cell, DynamicCell& coface) const;
+
   Dim getBaseDimension() const;
 
   int coincidenceIndex(const Cell &a, const Cell &b) const;
@@ -157,20 +168,16 @@ inline CubSComplex::ColoredConstIterators::Color<1>::Iterators CubSComplex::iter
   return ColoredConstIterators::Color<1>::Iterators(*this);
 }
 
-inline bool CubSComplex::getUniqueCoFace(Cell& cell, Cell& coface) const {
-  BCubCellSet::BitCoordIterator b(bCubCellSet);
-  if (bCubCellSet.isFreeFace(cell.getBitCoordIt(), b)) {
-	 coface = Cell(b, b.ownDim());
+inline bool CubSComplex::getUniqueCoFace(TempCell cell, DynamicCell& coface) const {
+  if (bCubCellSet.isFreeFace(const_cast< BCubCellSet::BitCoordIterator&>(cell.getBitCoordIt()), coface.getBitCoordIt())) {
   	 return true;
   } else {
   	 return false;
   }
 }
 
-inline bool CubSComplex::getUniqueFace(Cell& cell, Cell& coface) const {
-  BCubCellSet::BitCoordIterator b(bCubCellSet);
-  if (bCubCellSet.isFreeCoFace(cell.getBitCoordIt(), b)) {
-	 coface = Cell(b, b.ownDim());
+inline bool CubSComplex::getUniqueFace(TempCell cell, DynamicCell& coface) const {
+  if (bCubCellSet.isFreeCoFace(const_cast<BCubCellSet::BitCoordIterator&>(cell.getBitCoordIt()), coface.getBitCoordIt())) {
   	 return true;
   } else {
   	 return false;

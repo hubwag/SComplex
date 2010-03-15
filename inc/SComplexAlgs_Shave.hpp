@@ -42,12 +42,11 @@ inline void ShaveAlgorithm<StrategyT>::operator()(){
 	 for (DimIt it = strategy->getComplex().template iterators<1>().dimCells(d).begin(),
 			  end = strategy->getComplex().template iterators<1>().dimCells(d).end();
 			it != end; ++it) {
-
-		Cell cell = *it;
-		boost::optional<ReductionPair> reductionPair = strategy->getReductionPair(cell);
-		if (reductionPair) {
-		  strategy->reduce(*reductionPair);
-		}
+		strategy->reduceIfPossible(*it);
+		// boost::optional<ReductionPair> reductionPair = strategy->getReductionPair(*it);
+		// if (reductionPair) {
+		//   strategy->reduce(*reductionPair);
+		// }
 	 }
   }
 }

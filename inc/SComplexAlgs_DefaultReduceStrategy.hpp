@@ -11,8 +11,8 @@ class DefaultReduceStrategyBase {
 public:
   typedef SComplexT SComplex;
   typedef typename SComplex::Cell Cell;
-  typedef std::pair<boost::reference_wrapper<Cell>, boost::reference_wrapper<Cell> > CoreductionPair;
-  typedef std::pair<boost::reference_wrapper<Cell>, boost::reference_wrapper<Cell> > ReductionPair;  
+  typedef std::pair<Cell, Cell> CoreductionPair;
+  typedef std::pair<Cell, Cell> ReductionPair;  
 
 
   DefaultReduceStrategyBase(SComplex& _complex): complex(_complex), dummyCell1(_complex), dummyCell2(_complex),  dummyCell3(_complex) {}
@@ -21,22 +21,22 @@ public:
 	 return complex;
   }
 
-  Cell& getFace(const CoreductionPair& coRedPair) {
-	 return boost::unwrap_ref(coRedPair.first);
+  Cell& getFace(CoreductionPair& coRedPair) {
+	 return coRedPair.first;
   }
   
   bool reduced(const Cell& cell) const {
 	 return cell.getColor() == 2;
   }
 
-  void coreduce(const CoreductionPair& coRedPair) const {
-	 boost::unwrap_ref(coRedPair.first).template setColor<2>();
-	 boost::unwrap_ref(coRedPair.second).template setColor<2>();
+  void coreduce(CoreductionPair& coRedPair) const {
+	 coRedPair.first.template setColor<2>();
+	 coRedPair.second.template setColor<2>();
   }
 
-  void reduce(const ReductionPair& redPair) const {
-	 boost::unwrap_ref(redPair.first).template setColor<2>();
-	 boost::unwrap_ref(redPair.second).template setColor<2>();
+  void reduce(ReductionPair& redPair) const {
+	 redPair.first.template setColor<2>();
+	 redPair.second.template setColor<2>();
   }
 
   void reduce(Cell& cell) {
@@ -72,7 +72,7 @@ public:
 	 }
 
 	 if (times == 1) {
-		return std::make_pair(boost::ref(dummyCell3), boost::ref(cell));
+		return std::make_pair(dummyCell3, cell);
 	 }
 	 return boost::optional<ReductionPair>();
   }
@@ -91,7 +91,7 @@ public:
 	 }
 
 	 if (times == 1) {
-		return std::make_pair(boost::ref(cell), boost::ref(dummyCell2));
+		return std::make_pair(cell, dummyCell2);
 	 }
 	 return boost::optional<ReductionPair>();
   }

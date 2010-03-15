@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <boost/iterator/transform_iterator.hpp>
+#include <boost/range.hpp>
 
 namespace Util {
   namespace Iterators {

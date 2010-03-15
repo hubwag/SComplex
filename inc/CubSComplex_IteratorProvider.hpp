@@ -72,8 +72,9 @@ public:
 		  return currentNumerator.Current();
 	 }
 
-	 typename Base::pointer operator->()  {
-		  return &currentNumerator.Current();
+  //typename Base::pointer operator->()  {
+  typename Base::value_type operator->()  {
+		  return currentNumerator.Current();
 	 }
 
 	 bool operator==(const IteratorFromNumeratorAdapter& o) const {

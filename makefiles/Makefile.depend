@@ -6,6 +6,6 @@ include Makefile.depend.vars
 $(DEPEND_FILE): $(H_SRCS)
 	@touch $(DEPEND_FILE)
 	@$(MAKE) -f $(MAKEFILES_DIR)/Makefile.dirs init
-	makedepend  -p$(OBJS_DIR)/ $(LOCAL_INC_PATHS) -f $(DEPEND_FILE) $(ALL_SRCS) > /dev/null
+	makedepend  -p$(OBJS_DIR)/ $(LOCAL_INC_PATHS) -f $(DEPEND_FILE) $(ALL_SRCS) > /dev/null 2>/dev/null
 
 depend: $(DEPEND_FILE)

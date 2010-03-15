@@ -26,25 +26,44 @@
 template<>
 class DefaultReduceStrategy<CubSComplex>: public DefaultReduceStrategyBase<CubSComplex> {
 
+  CubSComplex::DynamicCell dynamicCell;
+  
 public:
-  DefaultReduceStrategy(CubSComplex& complex): DefaultReduceStrategyBase<CubSComplex>(complex) {}
+  DefaultReduceStrategy(CubSComplex& complex): DefaultReduceStrategyBase<CubSComplex>(complex), dynamicCell(complex) {}
   
-  boost::optional<CoreductionPair> getCoreductionPair(Cell& cell) {
-	 if (complex.getUniqueFace(cell, dummyCell3)) {
-	  	return std::make_pair(boost::ref(dummyCell3), boost::ref(cell));
-	 } else {
-		return boost::optional<ReductionPair>();
-	 }
-  }
+  // boost::optional<CoreductionPair> getCoreductionPair(Cell& cell) {
+  // 	 if (complex.getUniqueFace(cell, dummyCell3)) {
+  // 		//	  	return std::make_pair(boost::ref(dummyCell3), boost::ref(cell));
+  // 		return std::make_pair(dummyCell3, cell);
+  // 	 } else {
+  // 		return boost::optional<ReductionPair>();
+  // 	 }
+  // }
   
-  boost::optional<ReductionPair> getReductionPair(Cell& cell) {
-	 if (complex.getUniqueCoFace(cell, dummyCell2)) {
-	  	return std::make_pair(boost::ref(cell), boost::ref(dummyCell2));
-	 } else {
-		return boost::optional<ReductionPair>();
-	 }
+  // boost::optional<ReductionPair> getReductionPair( Cell& cell) {
+  // 	 if (complex.getUniqueCoFace(cell, dummyCell2)) {
+  // 		//	  	return std::make_pair(boost::ref(cell), boost::ref(dummyCell2));
+  // 		return std::make_pair(cell, dummyCell2);
+  // 	 } else {
+  // 		return boost::optional<ReductionPair>();
+  // 	 }
+  // }
+
+
+  void reduce(CubSComplex::TempCell cell) {
+	 cell.setColor<2>();
   }
 
+  void reduceIfPossible(CubSComplex::TempCell cell) {
+	 if (complex.getUniqueCoFace(cell, dynamicCell)) {
+		reduce(cell);
+		reduce(CubSComplex::TempCell(dynamicCell));
+		//return dummyCell2;
+	 } else {
+		//return boost::optional<Cell>();
+	 }
+  }
+  
 };
 
 #endif
