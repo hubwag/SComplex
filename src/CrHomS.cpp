@@ -48,7 +48,7 @@ void CrHomS(int argc,char* argv[]){
   cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
   
   // Stopwatch swCoRed;
-  // (CoreductionAlgorithmFactory::createDefault(SComplexCR()))();
+  //(CoreductionAlgorithmFactory::createDefault(SComplexCR()))();
   // cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
 
   // CRef<ReducibleFreeChainComplexType> RFCComplexCR=

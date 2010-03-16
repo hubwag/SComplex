@@ -10,7 +10,6 @@ public:
   typedef StrategyT Strategy;
   typedef typename Strategy::SComplex SComplex;
   typedef typename SComplex::Cell Cell;
-  typedef typename Strategy::ReductionPair ReductionPair;
 
   ShaveAlgorithm(Strategy* _strategy): strategy(_strategy) {}
 
@@ -42,11 +41,14 @@ inline void ShaveAlgorithm<StrategyT>::operator()(){
 	 for (DimIt it = strategy->getComplex().template iterators<1>().dimCells(d).begin(),
 			  end = strategy->getComplex().template iterators<1>().dimCells(d).end();
 			it != end; ++it) {
-		strategy->reduceIfPossible(*it);
-		// boost::optional<ReductionPair> reductionPair = strategy->getReductionPair(*it);
-		// if (reductionPair) {
-		//   strategy->reduce(*reductionPair);
-		// }
+		typename DimIt::value_type v = *it;
+		//strategy->reduceIfPossible(v);
+		boost::optional<typename StrategyT::Traits::template ReductionPair<typename DimIt::value_type>::second_type> reductionPair =
+		  strategy->template getReductionPair<CubSComplex::BitCoordPtrCellImpl>(v);
+		if (reductionPair) {
+		  strategy->reduce(*reductionPair);
+		  strategy->reduce(v);
+		}
 	 }
   }
 }

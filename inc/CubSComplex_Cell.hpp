@@ -2,31 +2,19 @@
 #define CUB_SCOMPLEX_CELL_HPP
 
 #include "CubSComplex.hpp"
+#include "CellProxy.hpp"
 #include <boost/shared_ptr.hpp>
 
 template<typename CellImplT>
-class CubSComplex::CellProxy {
-  CellImplT impl;
+class CubSComplex::CubCellProxy: public CellProxy<CellImplT> {
+protected:
+  using CellProxy<CellImplT>::impl;
 public:
-  CellProxy(const CellImplT& _impl): impl(_impl) {}
+  CubCellProxy(const CellImplT& _impl): CellProxy<CellImplT>(_impl) {}
+
+  template<typename CubCellImplT2>
+  CubCellProxy(const CubCellProxy<CubCellImplT2>& other): CellProxy<CellImplT>(other.impl) {}
   
-  Color getColor() const{
-	 return impl.getColor();
-  }
-
-  template<Color color>
-  void setColor() {
-	 impl.template setColor<color>();
-  }
-
-  void setColor(const Color& color) {
-	 impl.setColor(color);
-  }
-	 
-  Dim getDim() const {
-	 return impl.getDim();
-  }
-
   const BCubCellSet::BitCoordIterator& getBitCoordIt() const {
 	 return impl.getBitCoordIt();
   }
@@ -35,18 +23,23 @@ public:
 	 return impl.getBitCoordIt();
   }
 
-  bool operator<(const CellProxy& b) const {
-	 return impl < b.impl;
-  }
 };
 
-class CubSComplex::BitCoordCellImpl {
+class CubSComplex::CellImpl {
+public:
+  typedef CubSComplex::Dim Dim;
+  typedef CubSComplex::Color Color;
+
+};
+
+class CubSComplex::BitCoordCellImpl: public CellImpl {
   Dim dim;
 
 protected:
   BCubCellSet::BitCoordIterator bitIt;
   
 public:
+  
   BitCoordCellImpl(const BCubCellSet::BitCoordIterator& b): bitIt(b), dim(b.ownDim()) {}
 
   BitCoordCellImpl(const CubSComplex& s): bitIt(s.bCubCellSet), dim(std::numeric_limits<Dim>::max()) {}
@@ -97,7 +90,7 @@ public:
 
 };
 
-class CubSComplex::BitCoordPtrCellImpl {
+class CubSComplex::BitCoordPtrCellImpl: public CellImpl {
 protected:
   BCubCellSet::BitCoordIterator* bitIt;
   
@@ -107,8 +100,12 @@ public:
   BitCoordPtrCellImpl(const CubSComplex& s): bitIt(NULL) {}
 
   template<typename ImplT>
-  BitCoordPtrCellImpl(CellProxy<ImplT>& b): bitIt(& b.getBitCoordIt()) {}
+  BitCoordPtrCellImpl(CubCellProxy<ImplT>& b): bitIt(& b.getBitCoordIt()) {}
 
+  operator BitCoordCellImpl () const {
+	 return BitCoordCellImpl(*bitIt);
+  }
+  
   Color getColor() const{
 	 return bitIt->getBit() ? 1 : 2;
   }

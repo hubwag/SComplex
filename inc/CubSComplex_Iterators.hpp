@@ -20,7 +20,7 @@ public:
   typedef CubSComplex::IteratorProvider<BdNumerator, isConst> BdCells;  
   typedef CubSComplex::IteratorProvider<CbdNumerator, isConst> CbdCells;
 
-  typedef CellProxy<BitCoordPtrCellImpl> CellType;
+  typedef CubCellProxy<BitCoordPtrCellImpl> CellType;
 
 
   template<typename Derived>
