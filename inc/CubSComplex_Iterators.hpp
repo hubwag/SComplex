@@ -91,7 +91,11 @@ public:
   AllCells allCells() const;
   DimCells dimCells(const Dim& dim);
   BdCells bdCells(const Cell& cell) const;
-  CbdCells cbdCells(const Cell& cell) const;
+
+  template<typename ImplT>
+  CbdCells cbdCells(const CubCellProxy<ImplT>& cell) const {
+	 return CbdCells(CbdNumerator(scomplex, cell));
+  }
   
 private:
   SComplexRef scomplex;
@@ -106,11 +110,6 @@ template<bool isConst>
 inline typename CubSComplex::IteratorsImpl<isConst>::DimCells CubSComplex::IteratorsImpl<isConst>::dimCells(const Dim& dim) {
   //return DimCells(CellDimNumerator(scomplex, dim));
   return DimCells(DimCoordIterator(scomplex, dim), DimCoordIterator(scomplex));
-}
-
-template<bool isConst>
-inline typename CubSComplex::IteratorsImpl<isConst>::CbdCells CubSComplex::IteratorsImpl<isConst>::cbdCells(const Cell& cell) const {
-  return CbdCells(CbdNumerator(scomplex, cell));
 }
 
 template<bool isConst>

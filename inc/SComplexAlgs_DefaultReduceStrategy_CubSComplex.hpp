@@ -23,23 +23,44 @@
 #include "CubSComplex.hpp"
 #include <capd/vectalg/MatrixSlice.h>
 
+#include <functional>
+
 template<>
 class ReduceStrategyTraits<CubSComplex> {
 public:
-   template<typename>
-   class ReductionPair;
 
   template<typename ImplT>
-  class ReductionPair<CubSComplex::CubCellProxy<ImplT> > {
-  public:
-	 typedef CellProxy<ImplT*> first_type;
-	 typedef CellProxy<CubSComplex::DynamicCell::Impl*> second_type;
-	 typedef std::pair<first_type, second_type> type;
+  class Proxy: public CubSComplex::CubCellProxy<ImplT> {
+  public:	 
+	 Proxy(const CubSComplex::CubCellProxy<ImplT>& o): CubSComplex::CubCellProxy<ImplT>(o) {}
+	 Proxy(const ImplT& impl): CubSComplex::CubCellProxy<ImplT>(impl) {}
   };
 
   template<typename ImplT>
-  class CoreductionPair: public ReductionPair<ImplT> {
-  };  
+  static Proxy<ImplT*> makeProxy(const CubSComplex::CubCellProxy<ImplT>& impl) {
+	 return Proxy<ImplT*>(impl.getImpl());
+  }
+  
+  template<typename>
+  class GetReductionPair;  
+  template<typename>
+  class GetCoreductionPair;
+
+  template<typename ImplT>
+  struct GetReductionPair<typename CubSComplex::CubCellProxy<ImplT> >:  std::unary_function<const typename CubSComplex::CubCellProxy<ImplT>&,
+																																 boost::optional<Proxy<CubSComplex::DynamicCell::Impl*> > > {};
+  template<typename ImplT>
+  struct GetCoreductionPair<typename CubSComplex::CubCellProxy<ImplT> >:  std::unary_function<const typename CubSComplex::CubCellProxy<ImplT>&,
+																																	boost::optional<Proxy<CubSComplex::DynamicCell::Impl*> > > {};  
+  struct ForceCoreduction {
+	 typedef boost::optional<std::pair<Proxy<CubSComplex::DynamicCell::Impl*>,
+												  Proxy<CubSComplex::DynamicCell::Impl*> > > result_type;
+  };
+
+  struct Extract {
+	 typedef boost::optional<Proxy<CubSComplex::Cell> >  result_type;
+  };
+
 };
 
 template<>
@@ -50,39 +71,30 @@ public:
   
   DefaultReduceStrategy(CubSComplex& complex): DefaultReduceStrategyBase<CubSComplex>(complex), dynamicCell(complex) {}
   
-  // template<typename ImplT>
-  // boost::optional<typename Traits::ReductionPair<ImplT>::type> getCoreductionPair(const CubSComplex::CubCellProxy<ImplT>& cell) {
-  // 	 if (complex.getUniqueFace(cell, dynamicCell)) {
-  // 		//	  	return std::make_pair(boost::ref(dummyCell3), boost::ref(cell));
-  // 		return std::make_pair(dummyCell3, cell);
-  // 	 } else {
-  // 		return boost::optional<ReductionPair>();
-  // 	 }
-  // }
-
   template<typename ImplT>
-  boost::optional<typename Traits::ReductionPair<CubSComplex::CubCellProxy<ImplT> >::second_type> getReductionPair(const CubSComplex::CubCellProxy<ImplT>& cell) {
-  	 if (complex.getUniqueCoFace(cell, dynamicCell)) {
-  		// return std::make_pair(typename Traits::ReductionPair<CubSComplex::CubCellProxy<ImplT> >::first_type(cell.getImpl()),
-		// 							 typename Traits::ReductionPair<CubSComplex::CubCellProxy<ImplT> >::second_type(dynamicCell.getImpl()));
-		return typename Traits::ReductionPair<CubSComplex::CubCellProxy<ImplT> >::second_type(dynamicCell.getImpl());
+  typename Traits::GetCoreductionPair<typename CubSComplex::CubCellProxy<ImplT> >::result_type
+  //  getCoreductionPair(typename Traits::GetCoreductionPair<typename CubSComplex::CubCellProxy<ImplT> >::argument_type cell)
+  getCoreductionPair(const typename CubSComplex::CubCellProxy<ImplT>& cell)
+  {  
+  	 if (complex.getUniqueFace(cell, dynamicCell)) {
+		return typename Traits::GetCoreductionPair<typename CubSComplex::CubCellProxy<ImplT> >::result_type(dynamicCell.getImpl());
   	 } else {
-		return boost::optional<typename Traits::ReductionPair<CubSComplex::CubCellProxy<ImplT> >::second_type>();
-  		//return typename Traits::ReductionPair<CubSComplex::CubCellProxy<ImplT> >::type();
+		return typename Traits::GetCoreductionPair<typename CubSComplex::CubCellProxy<ImplT> >::result_type();
   	 }
   }
 
   template<typename ImplT>
-  void reduceIfPossible(CubSComplex::CubCellProxy<ImplT>& cell) {
-  	 if (complex.getUniqueCoFace(cell, dynamicCell)) {
-  		reduce(cell);
-  		reduce(dynamicCell);
-  		//return dummyCell2;
+  typename Traits::GetReductionPair<typename CubSComplex::CubCellProxy<ImplT> >::result_type
+  getReductionPair(typename Traits::GetReductionPair<typename CubSComplex::CubCellProxy<ImplT> >::argument_type cell)
+  {
+	 if (complex.getUniqueCoFace(cell, dynamicCell)) {
+		return typename Traits::GetReductionPair<typename CubSComplex::CubCellProxy<ImplT> >::result_type(dynamicCell.getImpl());
   	 } else {
-  		//return boost::optional<Cell>();
+		return typename Traits::GetReductionPair<typename CubSComplex::CubCellProxy<ImplT> >::result_type();
   	 }
   }
-  
+
+    
 };
 
 #endif

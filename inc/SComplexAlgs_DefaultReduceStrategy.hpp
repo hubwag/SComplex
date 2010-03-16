@@ -11,10 +11,16 @@ class ReduceStrategyTraits {
 public:
 
   template<typename ImplT>
+  class Proxy {
+  public:
+	 typedef CellProxy<ImplT> type;
+  };
+  
+  template<typename ImplT>
   class ReductionPair {
   public:
-	 typedef CellProxy<typename SComplexT::Cell> first_type;
-	 typedef CellProxy<typename SComplexT::Cell> second_type;
+	 typedef Proxy<typename SComplexT::Cell> first_type;
+	 typedef Proxy<typename SComplexT::Cell> second_type;
 	 typedef std::pair<first_type, second_type > type;
   };
 };
@@ -34,82 +40,87 @@ public:
 	 return complex;
   }
 
-  // Cell& getFace(CoreductionPair& coRedPair) {
-  // 	 return coRedPair.first;
-  // }
-  
-  // bool reduced(const Cell& cell) const {
-  // 	 return cell.getColor() == 2;
-  // }
+  template<typename ImplT>
+  bool reduced(const typename Traits::template Proxy<ImplT>& cell) const {
+  	 return cell.getColor() == 2;
+  }
 
-  // void coreduce(CoreductionPair& coRedPair) const {
-  // 	 coRedPair.first.template setColor<2>();
-  // 	 coRedPair.second.template setColor<2>();
-  // }
+  template<typename ImplT1, typename ImplT2>	 
+  void coreduce(const typename Traits::template Proxy<ImplT1>& a, const typename Traits::template Proxy<ImplT2>& b) const {
+  	 a.template setColor<2>();
+  	 b.template setColor<2>();
+  }
 
-  // template<typename ImplT>
-  // void reduce(typename Traits::template ReductionPair<ImplT>::type& redPair) const {
-  // 	 redPair.first.template setColor<2>();
-  // 	 redPair.second.template setColor<2>();
-  // }
+  template<typename ImplT1, typename ImplT2>	 
+  void reduce(const typename Traits::template Proxy<ImplT1>& a, const typename Traits::template Proxy<ImplT2>& b) const {
+  	 a.template setColor<2>();
+  	 b.template setColor<2>();
+  }
 
   template<typename ImplT>
-  void reduce(CellProxy<ImplT>& cell) {
+  //void reduce(CellProxy<ImplT>::type& cell) {
+  void reduce(const typename Traits::template Proxy<ImplT>& cell) {
 	 cell.template setColor<2>();
   }
   
-  // boost::optional<Cell&> extract() {
-  // 	 typename SComplex::ColoredIterators::Iterators::DimCells::iterator end = complex.iterators(1).dimCells(0).end(),
-  // 		it = complex.iterators(1).dimCells(0).begin();
+  typename Traits::Extract::result_type extract() {
+  	 typename SComplex::ColoredIterators::Iterators::DimCells::iterator end = complex.iterators(1).dimCells(0).end(),
+  		it = complex.iterators(1).dimCells(0).begin();
 
-  // 	 if (it != end) { 
-  // 		dummyCell1 = *it;
-  // 		return dummyCell1;
-  // 	 }
-  // 	 return boost::optional<Cell&>();	 
-  // }
+  	 if (it != end) { 
+  		dummyCell1 = *it;
+  		return typename Traits::Extract::result_type(dummyCell1);
+  	 }
+  	 return typename Traits::Extract::result_type();	 
+  }
   
-  // boost::optional<CoreductionPair> forceCoreductionPair() {
-  // 	 return boost::optional<CoreductionPair>();
-  // }
+  typename Traits::ForceCoreduction::result_type forceCoreductionPair() {
+  	 return typename Traits::ForceCoreduction::result_type();
+  }
 
-  // boost::optional<CoreductionPair> getCoreductionPair(Cell& cell) {
-  // 	 int times = 0;
-  // 	 BOOST_FOREACH(typename SComplex::ColoredIterators::Iterators::BdCells::iterator::value_type v,
-  // 						complex.iterators(1).bdCells(cell)) {
-  // 		if (times == 0) {
-  // 		  dummyCell3 = v;
-  // 		}
-  // 		++times;
-  // 		if (times == 2) {
-  // 		  return boost::optional<ReductionPair>();
-  // 		}
-  // 	 }
+  template<typename ImplT>
+  typename Traits::template GetCoreductionPair<typename Traits::template Proxy<ImplT> >::result_type
+  getCoreductionPair(typename Traits::template GetCoreductionPair<typename Traits::template Proxy<ImplT> >::argument_type cell)
+  {
+  	 int times = 0;
+  	 BOOST_FOREACH(typename SComplex::ColoredIterators::Iterators::BdCells::iterator::value_type v,
+  						complex.iterators(1).bdCells(cell)) {
+  		if (times == 0) {
+  		  dummyCell3 = v;
+  		}
+  		++times;
+  		if (times == 2) {
+		  break;
+  		}
+  	 }
 
-  // 	 if (times == 1) {
-  // 		return std::make_pair(dummyCell3, cell);
-  // 	 }
-  // 	 return boost::optional<ReductionPair>();
-  // }
+  	 if (times == 1) {
+  		return typename Traits::template GetCoreductionPair<typename Traits::template Proxy<ImplT> >::result_type(dummyCell3);
+  	 }
+  	 return typename Traits::template GetCoreductionPair<typename Traits::template Proxy<ImplT> >::result_type();
+  }
 
-  // boost::optional<ReductionPair> getReductionPair(Cell& cell) {
-  // 	 int times = 0;
-  // 	 BOOST_FOREACH(typename SComplex::ColoredIterators::Iterators::CbdCells::iterator::value_type v,
-  // 						complex.iterators(1).cbdCells(cell)) {
-  // 		if (times == 0) {
-  // 		  dummyCell2 = v;
-  // 		}
-  // 		++times;
-  // 		if (times == 2) {
-  // 		  return boost::optional<ReductionPair>();
-  // 		}
-  // 	 }
+  template<typename ImplT>
+  typename Traits::template GetReductionPair<typename Traits::template Proxy<ImplT> >::result_type
+  getReductionPair(typename Traits::template GetReductionPair<typename Traits::template Proxy<ImplT> >::argument_type cell)
+  {
+  	 int times = 0;
+  	 BOOST_FOREACH(typename SComplex::ColoredIterators::Iterators::CbdCells::iterator::value_type v,
+  						complex.iterators(1).cbdCells(cell)) {
+  		if (times == 0) {
+  		  dummyCell2 = v;
+  		}
+  		++times;
+  		if (times == 2) {
+  		  break;
+  		}
+  	 }
 
-  // 	 if (times == 1) {
-  // 		return std::make_pair(cell, dummyCell2);
-  // 	 }
-  // 	 return boost::optional<ReductionPair>();
-  // }
+  	 if (times == 1) {
+  		return typename Traits::template GetReductionPair<typename Traits::template Proxy<ImplT> >::result_type(dummyCell2);
+  	 }
+  	 return typename Traits::template GetReductionPair<typename Traits::template Proxy<ImplT> >::result_type();
+  }
 
 
   size_t getMaxDim() {

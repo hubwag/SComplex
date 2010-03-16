@@ -11,9 +11,7 @@ public:
   typedef StrategyT Strategy;
 
   typedef typename Strategy::SComplex SComplex;
-  typedef typename Strategy::Cell Cell;
-  typedef typename Strategy::CoreductionPair CoreductionPair;
-
+  typedef typename Strategy::Cell Cell;  
   
   CoreductionAlgorithm(Strategy* _strategy): strategy(_strategy), dummyCell1(_strategy->getComplex()) {}
 
@@ -25,13 +23,36 @@ public:
   int operator()();
 
 private:
-  void storeGenerator(const Cell& c);
-  void storeCoreductionPair(const CoreductionPair& ) {}
+  template<typename ImplT>
+  void storeGenerator(const typename Strategy::Traits::template Proxy<ImplT>& a) {
+	 collectedHomGenerators.push_back(a);
+  }
+
+  template<typename ImplT1, typename ImplT2>
+  void storeCoreductionPair(const typename Strategy::Traits::template Proxy<ImplT1>& a, const typename Strategy::Traits::template Proxy<ImplT2>& b) {}
   
-  boost::optional<CoreductionPair> getNextPair();  
-  void addCellsToProcess(const Cell& sourceFace);
+  bool coreduceNextPair();  
+
+  template<typename ImplT>
+  void addCellsToProcess(const typename Strategy::Traits::template Proxy<ImplT>& sourceFace) {
+	 // Finally, put all present cofaces of the source face
+	 // into the queue
+	 for (typename SComplex::ColoredIterators::Iterators::CbdCells::iterator cbdn = strategy->getComplex().template iterators<1>().cbdCells(sourceFace).begin(),
+			  end = strategy->getComplex().template iterators<1>().cbdCells(sourceFace).end(); cbdn != end; ++cbdn) {
+		if (! strategy->reduced(Strategy::Traits::makeProxy(*cbdn))) {
+		  cellsToProcess.push_back(*cbdn);
+		}
+	 }
+  }
 
 
+  template<typename ImplT1, typename ImplT2>
+  void doCoreduction(const typename Strategy::Traits::template Proxy<ImplT1>& a, const typename Strategy::Traits::template Proxy<ImplT2>& b) {
+	 storeCoreductionPair(a, b);
+	 addCellsToProcess(a);		
+	 strategy->coreduce(a, b);
+  }
+  
   Strategy* strategy;
   
   std::vector<Cell> collectedHomGenerators;
@@ -50,27 +71,21 @@ public:
 };
 
 
-
 template<typename StrategyT>
-inline void CoreductionAlgorithm<StrategyT>::storeGenerator(const Cell& c){
-  collectedHomGenerators.push_back(c);
-}
-
-
-template<typename StrategyT>
-inline boost::optional<typename CoreductionAlgorithm<StrategyT>::CoreductionPair> CoreductionAlgorithm<StrategyT>::getNextPair() {
+inline bool CoreductionAlgorithm<StrategyT>::coreduceNextPair() {
   
   while (! cellsToProcess.empty() ) {
 	 Cell& cell = cellsToProcess.front();
 	 
-	 if (! strategy->reduced(cell)) {
-		dummyCell1 = cell;
-		boost::optional<CoreductionPair> coreductionPair = strategy->getCoreductionPair(dummyCell1);
+	 if (! strategy->reduced(Strategy::Traits::makeProxy(cell))) {
+		typename StrategyT::Traits::template GetCoreductionPair<Cell>::result_type coreductionPair = strategy->getCoreductionPair(cell);
+		
 		if (coreductionPair) {		
-		  cellsToProcess.pop_front();	 
-		  return coreductionPair;
+		  cellsToProcess.pop_front();
+		  doCoreduction(*coreductionPair, Strategy::Traits::makeProxy(cell));
+		  return true;
 		} else {
-		  addCellsToProcess(cell);
+		  addCellsToProcess(Strategy::Traits::makeProxy(cell));
 		}
 	 }
 	 cellsToProcess.pop_front();	 
@@ -81,7 +96,12 @@ inline boost::optional<typename CoreductionAlgorithm<StrategyT>::CoreductionPair
   // is exhausted
   // If we know that a coreduction may be there,
   // For instance when treating a non-compact set
-  return strategy->forceCoreductionPair();
+  typename StrategyT::Traits::ForceCoreduction::result_type force = strategy->forceCoreductionPair();
+  if (force) {
+	 doCoreduction(force->first, force->second);
+	 return true;
+  }
+  return false;
 }
 
 
@@ -90,13 +110,7 @@ inline int CoreductionAlgorithm<StrategyT>::operator()(){
   int cnt=0;
 
   for(;;){
-	 boost::optional<CoreductionPair> nextPair = getNextPair();
-	 
-	 if (nextPair) {
-		storeCoreductionPair(*nextPair);
-		addCellsToProcess(strategy->getFace(*nextPair));
-		
-		strategy->coreduce(*nextPair);		
+	 if (coreduceNextPair()) {
 		++cnt;++cnt;
 	 } else {
 		// If the search failed or when we even did not try to search
@@ -104,7 +118,7 @@ inline int CoreductionAlgorithm<StrategyT>::operator()(){
 		// a homology generator like in the case of a vertex in
 		// a compact set, we just pick up such a cell and
 		// remove it from the complex
-		boost::optional<Cell&> sourceFace = strategy->extract();
+		typename StrategyT::Traits::Extract::result_type sourceFace = strategy->extract();
 
 		if(sourceFace){
 		  storeGenerator(*sourceFace);		  
@@ -119,18 +133,6 @@ inline int CoreductionAlgorithm<StrategyT>::operator()(){
   }
   
   return cnt; // the number of cells removed
-}
-
-template<typename StrategyT>
-inline void CoreductionAlgorithm<StrategyT>::addCellsToProcess(const Cell& sourceFace) {
-  // Finally, put all present cofaces of the source face
-  // into the queue
-  for (typename SComplex::ColoredIterators::Iterators::CbdCells::iterator cbdn = strategy->getComplex().template iterators<1>().cbdCells(sourceFace).begin(),
-			end = strategy->getComplex().template iterators<1>().cbdCells(sourceFace).end(); cbdn != end; ++cbdn) {
-	 if (! strategy->reduced(*cbdn)) {
-		cellsToProcess.push_back(*cbdn);
-	 }
-  }
 }
 
 #endif

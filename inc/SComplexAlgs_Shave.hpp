@@ -43,11 +43,11 @@ inline void ShaveAlgorithm<StrategyT>::operator()(){
 			it != end; ++it) {
 		typename DimIt::value_type v = *it;
 		//strategy->reduceIfPossible(v);
-		boost::optional<typename StrategyT::Traits::template ReductionPair<typename DimIt::value_type>::second_type> reductionPair =
+		typename StrategyT::Traits::template GetReductionPair<typename DimIt::value_type>::result_type reductionPair =
 		  strategy->template getReductionPair<CubSComplex::BitCoordPtrCellImpl>(v);
 		if (reductionPair) {
 		  strategy->reduce(*reductionPair);
-		  strategy->reduce(v);
+		  strategy->reduce(Strategy::Traits::makeProxy(v));
 		}
 	 }
   }

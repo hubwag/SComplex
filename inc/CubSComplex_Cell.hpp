@@ -16,11 +16,11 @@ public:
   CubCellProxy(const CubCellProxy<CubCellImplT2>& other): CellProxy<CellImplT>(other.impl) {}
   
   const BCubCellSet::BitCoordIterator& getBitCoordIt() const {
-	 return impl.getBitCoordIt();
+	 return CellProxy<CellImplT>::getImpl()->getBitCoordIt();
   }
 
   BCubCellSet::BitCoordIterator& getBitCoordIt() {
-	 return impl.getBitCoordIt();
+  	 return CellProxy<CellImplT>::getImpl()->getBitCoordIt();
   }
 
 };
@@ -33,11 +33,10 @@ public:
 };
 
 class CubSComplex::BitCoordCellImpl: public CellImpl {
-  Dim dim;
-
 protected:
   BCubCellSet::BitCoordIterator bitIt;
-  
+private:
+    Dim dim;
 public:
   
   BitCoordCellImpl(const BCubCellSet::BitCoordIterator& b): bitIt(b), dim(b.ownDim()) {}
@@ -64,6 +63,10 @@ public:
   }
 
   const BCubCellSet::BitCoordIterator& getBitCoordIt() const {
+	 return bitIt;
+  }
+
+  BCubCellSet::BitCoordIterator& getBitCoordIt() {
 	 return bitIt;
   }
 

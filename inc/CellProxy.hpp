@@ -6,7 +6,7 @@
 template<typename CellImplT>
 class CellProxy {
 protected:
-  CellImplT impl;
+  mutable CellImplT impl;
   //  boost::reference_wrapper<CellImplT> nonConstImpl;
   
 public:
@@ -22,11 +22,11 @@ public:
   }
 
   template<Color color>
-  void setColor() {
+  void setColor() const {
 	 impl.template setColor<color>();
   }
 
-  void setColor(const Color& color) {
+  void setColor(const Color& color) const {
 	 impl.setColor(color);
   }
 	 
@@ -47,7 +47,7 @@ public:
 template<typename CellImplT>
 class CellProxy<CellImplT*> {
 protected:
-  CellImplT* impl;
+  mutable CellImplT* impl;
   //  boost::reference_wrapper<CellImplT> nonConstImpl;
 public:
   typedef typename CellImplT::Color Color;
@@ -66,11 +66,11 @@ public:
   }
 
   template<Color color>
-  void setColor() {
+  void setColor() const {
 	 impl->template setColor<color>();
   }
 
-  void setColor(const Color& color) {
+  void setColor(const Color& color) const {
 	 impl->setColor(color);
   }
 	 
@@ -83,7 +83,6 @@ public:
   }
 
   CellImplT* getImpl() const {
-	 //return nonConstImpl.get_pointer();
 	 return const_cast<CellProxy*>(this)->impl;
   }
 
