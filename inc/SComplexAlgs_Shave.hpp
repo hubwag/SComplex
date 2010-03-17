@@ -38,13 +38,16 @@ inline void ShaveAlgorithm<StrategyT>::operator()(){
   for(int d=2/* strategy->getMaxDim()*/;d>=0;--d){
 	 typedef typename SComplex::ColoredIterators::Iterators::DimCells::iterator DimIt;
 
-	 for (DimIt it = strategy->getComplex().template iterators<1>().dimCells(d).begin(),
-			  end = strategy->getComplex().template iterators<1>().dimCells(d).end();
-			it != end; ++it) {
+	 typename SComplex::ColoredIterators::Iterators::DimCells dimCells = strategy->getComplex().template iterators<1>().dimCells(d);
+	 for (DimIt it = dimCells.begin(),
+	 		  end = dimCells.end();
+	 		it != end; ++it) {
+	 // BOOST_FOREACH(typename DimIt::value_type v,
+	 // 					dimCells) {
+	 //strategy->reduceIfPossible(v);
 		typename DimIt::value_type v = *it;
-		//strategy->reduceIfPossible(v);
 		typename StrategyT::Traits::template GetReductionPair<typename DimIt::value_type>::result_type reductionPair =
-		  strategy->template getReductionPair<CubSComplex::BitCoordPtrCellImpl>(v);
+		  strategy->getReductionPair(v);
 		if (reductionPair) {
 		  strategy->reduce(*reductionPair);
 		  strategy->reduce(Strategy::Traits::makeProxy(v));

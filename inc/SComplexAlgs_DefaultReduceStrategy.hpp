@@ -34,47 +34,46 @@ public:
   typedef typename SComplex::Cell Cell;
 
 
-  DefaultReduceStrategyBase(SComplex& _complex): complex(_complex), dummyCell1(_complex), dummyCell2(_complex),  dummyCell3(_complex) {}
+  DefaultReduceStrategyBase(SComplex& _complex): complex(_complex), dummyCell2(_complex),  dummyCell3(_complex) {}
   
   SComplex& getComplex() const {
 	 return complex;
   }
-
+  
   template<typename ImplT>
-  bool reduced(const typename Traits::template Proxy<ImplT>& cell) const {
+  static bool reduced(const typename Traits::template Proxy<ImplT>& cell) {
   	 return cell.getColor() == 2;
   }
 
   template<typename ImplT1, typename ImplT2>	 
-  void coreduce(const typename Traits::template Proxy<ImplT1>& a, const typename Traits::template Proxy<ImplT2>& b) const {
+  static void coreduce(const typename Traits::template Proxy<ImplT1>& a, const typename Traits::template Proxy<ImplT2>& b)  {
   	 a.template setColor<2>();
   	 b.template setColor<2>();
   }
 
   template<typename ImplT1, typename ImplT2>	 
-  void reduce(const typename Traits::template Proxy<ImplT1>& a, const typename Traits::template Proxy<ImplT2>& b) const {
+  static void reduce(const typename Traits::template Proxy<ImplT1>& a, const typename Traits::template Proxy<ImplT2>& b)  {
   	 a.template setColor<2>();
   	 b.template setColor<2>();
   }
 
   template<typename ImplT>
-  //void reduce(CellProxy<ImplT>::type& cell) {
-  void reduce(const typename Traits::template Proxy<ImplT>& cell) {
+  static void reduce(const typename Traits::template Proxy<ImplT>& cell) {
 	 cell.template setColor<2>();
   }
   
   typename Traits::Extract::result_type extract() {
-  	 typename SComplex::ColoredIterators::Iterators::DimCells::iterator end = complex.iterators(1).dimCells(0).end(),
-  		it = complex.iterators(1).dimCells(0).begin();
+	 typename SComplex::ColoredIterators::Iterators::DimCells dimCells = complex.iterators(1).dimCells(0);
+  	 typename SComplex::ColoredIterators::Iterators::DimCells::iterator end = dimCells.end(),
+  		it = dimCells.begin();
 
   	 if (it != end) { 
-  		dummyCell1 = *it;
-  		return typename Traits::Extract::result_type(dummyCell1);
+  		return typename Traits::Extract::result_type::value_type(*it);
   	 }
   	 return typename Traits::Extract::result_type();	 
   }
   
-  typename Traits::ForceCoreduction::result_type forceCoreductionPair() {
+  static typename Traits::ForceCoreduction::result_type forceCoreductionPair() {
   	 return typename Traits::ForceCoreduction::result_type();
   }
 
@@ -137,7 +136,7 @@ public:
 
 protected:
   SComplex& complex;
-  Cell dummyCell1, dummyCell2, dummyCell3;
+  Cell dummyCell2, dummyCell3;
 };
 
 template<typename SComplexT>

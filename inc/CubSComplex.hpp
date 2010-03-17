@@ -15,13 +15,14 @@
 
 class CubSComplex {
   class CellImpl;
+  
+public:
+
   class BitCoordCellImpl;
   class DynamicBitCoordCellImpl;
   class BitCoordPtrCellImpl;
-  
-public:
-  
-  template<typename CellImplT>
+
+  template<typename, typename Enable=void>
   class CubCellProxy;
 
   typedef CubCellProxy<BitCoordCellImpl> Cell;

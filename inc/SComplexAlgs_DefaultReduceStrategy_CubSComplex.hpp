@@ -24,6 +24,7 @@
 #include <capd/vectalg/MatrixSlice.h>
 
 #include <functional>
+#include <boost/utility/enable_if.hpp>
 
 template<>
 class ReduceStrategyTraits<CubSComplex> {
@@ -31,9 +32,19 @@ public:
 
   template<typename ImplT>
   class Proxy: public CubSComplex::CubCellProxy<ImplT> {
-  public:	 
-	 Proxy(const CubSComplex::CubCellProxy<ImplT>& o): CubSComplex::CubCellProxy<ImplT>(o) {}
-	 Proxy(const ImplT& impl): CubSComplex::CubCellProxy<ImplT>(impl) {}
+  public:
+	 typedef  CubSComplex::CubCellProxy<ImplT> Base;
+	 
+	 //Proxy(const Base& o): Base(o) {}
+	 template<typename ImplT2>
+	 Proxy(const ImplT2& impl): Base(impl) {}
+  };
+
+  template<typename ImplT>
+  class Proxy<CubSComplex::CubCellProxy<ImplT> >: public CubSComplex::CubCellProxy<ImplT> {
+  public:
+	 template<typename ImplT2>
+	 Proxy(const ImplT2& impl): CubSComplex::CubCellProxy<ImplT>(impl) {}
   };
 
   template<typename ImplT>
@@ -58,7 +69,7 @@ public:
   };
 
   struct Extract {
-	 typedef boost::optional<Proxy<CubSComplex::Cell> >  result_type;
+	 typedef boost::optional<Proxy<CubSComplex::BitCoordCellImpl> >  result_type;
   };
 
 };
@@ -85,7 +96,7 @@ public:
 
   template<typename ImplT>
   typename Traits::GetReductionPair<typename CubSComplex::CubCellProxy<ImplT> >::result_type
-  getReductionPair(typename Traits::GetReductionPair<typename CubSComplex::CubCellProxy<ImplT> >::argument_type cell)
+  getReductionPair(const typename CubSComplex::CubCellProxy<ImplT>& cell)
   {
 	 if (complex.getUniqueCoFace(cell, dynamicCell)) {
 		return typename Traits::GetReductionPair<typename CubSComplex::CubCellProxy<ImplT> >::result_type(dynamicCell.getImpl());

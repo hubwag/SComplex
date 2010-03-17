@@ -4,16 +4,26 @@
 #include "CubSComplex.hpp"
 #include "CellProxy.hpp"
 #include <boost/shared_ptr.hpp>
+#include <boost/utility.hpp>
+#include <boost/type_traits.hpp>
+
+template<typename CellImplT, typename Enable>
+class CubSComplex::CubCellProxy: public Enable {
+};
 
 template<typename CellImplT>
-class CubSComplex::CubCellProxy: public CellProxy<CellImplT> {
+class CubSComplex::CubCellProxy<CellImplT,
+										  typename boost::enable_if<typename boost::is_base_of<CubSComplex::CellImpl,
+																												 typename boost::remove_pointer<CellImplT>::type >::type
+																			 >::type > : public CellProxy<CellImplT> {
 protected:
   using CellProxy<CellImplT>::impl;
 public:
-  CubCellProxy(const CellImplT& _impl): CellProxy<CellImplT>(_impl) {}
+  template<typename CubCellImplT2>
+  CubCellProxy(const CubCellImplT2& _impl): CellProxy<CellImplT>(_impl) {}
 
   template<typename CubCellImplT2>
-  CubCellProxy(const CubCellProxy<CubCellImplT2>& other): CellProxy<CellImplT>(other.impl) {}
+  CubCellProxy(const CubCellProxy<CubCellImplT2>& other): CellProxy<CellImplT>((CellImplT)other.impl) {}
   
   const BCubCellSet::BitCoordIterator& getBitCoordIt() const {
 	 return CellProxy<CellImplT>::getImpl()->getBitCoordIt();
@@ -24,6 +34,7 @@ public:
   }
 
 };
+
 
 class CubSComplex::CellImpl {
 public:
@@ -36,12 +47,12 @@ class CubSComplex::BitCoordCellImpl: public CellImpl {
 protected:
   BCubCellSet::BitCoordIterator bitIt;
 private:
-    Dim dim;
+  //Dim dim;
 public:
   
-  BitCoordCellImpl(const BCubCellSet::BitCoordIterator& b): bitIt(b), dim(b.ownDim()) {}
+  BitCoordCellImpl(const BCubCellSet::BitCoordIterator& b): bitIt(b)/*, dim(b.ownDim())*/ {}
 
-  BitCoordCellImpl(const CubSComplex& s): bitIt(s.bCubCellSet), dim(std::numeric_limits<Dim>::max()) {}
+  BitCoordCellImpl(const CubSComplex& s): bitIt(s.bCubCellSet)/*, dim(std::numeric_limits<Dim>::max())*/ {}
   
   Color getColor() const{
 	 return bitIt.getBit() ? 1 : 2;
@@ -59,7 +70,8 @@ public:
   }
 	 
   Dim getDim() const {
-	 return dim;
+	 //return dim;
+	 return bitIt.ownDim();
   }
 
   const BCubCellSet::BitCoordIterator& getBitCoordIt() const {
@@ -76,37 +88,20 @@ public:
   
 };
 
-class CubSComplex::DynamicBitCoordCellImpl: public BitCoordCellImpl  {
-
-public:
- DynamicBitCoordCellImpl(const BCubCellSet::BitCoordIterator& b): BitCoordCellImpl(b) {}
-
- DynamicBitCoordCellImpl(const CubSComplex& s): BitCoordCellImpl(s.bCubCellSet) {}
-  
-  Dim getDim() const {
-	 return bitIt.ownDim();
-  }
-
-  BCubCellSet::BitCoordIterator& getBitCoordIt() {
-	 return bitIt;
-  }
-
-};
-
 class CubSComplex::BitCoordPtrCellImpl: public CellImpl {
 protected:
-  BCubCellSet::BitCoordIterator* bitIt;
+  mutable BCubCellSet::BitCoordIterator* bitIt;
   
 public:
   BitCoordPtrCellImpl(BCubCellSet::BitCoordIterator* b): bitIt(b) {}
 
-  BitCoordPtrCellImpl(const CubSComplex& s): bitIt(NULL) {}
+  explicit BitCoordPtrCellImpl(const CubSComplex& s): bitIt(NULL) {}
 
   template<typename ImplT>
   BitCoordPtrCellImpl(CubCellProxy<ImplT>& b): bitIt(& b.getBitCoordIt()) {}
 
-  operator BitCoordCellImpl () const {
-	 return BitCoordCellImpl(*bitIt);
+  operator const BCubCellSet::BitCoordIterator& () const {
+	 return *bitIt;
   }
   
   Color getColor() const{
@@ -140,6 +135,24 @@ public:
 	 return *bitIt < *b.bitIt;
   }
   
+};
+
+
+class CubSComplex::DynamicBitCoordCellImpl: public BitCoordCellImpl  {
+
+public:
+ DynamicBitCoordCellImpl(const BCubCellSet::BitCoordIterator& b): BitCoordCellImpl(b) {}
+
+ DynamicBitCoordCellImpl(const CubSComplex& s): BitCoordCellImpl(s.bCubCellSet) {}
+  
+  Dim getDim() const {
+	 return bitIt.ownDim();
+  }
+
+  BCubCellSet::BitCoordIterator& getBitCoordIt() {
+	 return bitIt;
+  }
+
 };
 
 #endif

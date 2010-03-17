@@ -13,7 +13,7 @@ public:
   typedef typename Strategy::SComplex SComplex;
   typedef typename Strategy::Cell Cell;  
   
-  CoreductionAlgorithm(Strategy* _strategy): strategy(_strategy), dummyCell1(_strategy->getComplex()) {}
+  CoreductionAlgorithm(Strategy* _strategy): strategy(_strategy) {}
 
   ~CoreductionAlgorithm() {
 	 if (strategy)
@@ -37,11 +37,10 @@ private:
   void addCellsToProcess(const typename Strategy::Traits::template Proxy<ImplT>& sourceFace) {
 	 // Finally, put all present cofaces of the source face
 	 // into the queue
-	 for (typename SComplex::ColoredIterators::Iterators::CbdCells::iterator cbdn = strategy->getComplex().template iterators<1>().cbdCells(sourceFace).begin(),
-			  end = strategy->getComplex().template iterators<1>().cbdCells(sourceFace).end(); cbdn != end; ++cbdn) {
-		if (! strategy->reduced(Strategy::Traits::makeProxy(*cbdn))) {
-		  cellsToProcess.push_back(*cbdn);
-		}
+	 typename SComplex::ColoredIterators::Iterators::CbdCells cbdCells = strategy->getComplex().template iterators<1>().cbdCells(sourceFace);
+	 for (typename SComplex::ColoredIterators::Iterators::CbdCells::iterator cbdn = cbdCells.begin(),
+			  end = cbdCells.end(); cbdn != end; ++cbdn) {
+		cellsToProcess.push_back(*cbdn);
 	 }
   }
 
@@ -55,9 +54,8 @@ private:
   
   Strategy* strategy;
   
-  std::vector<Cell> collectedHomGenerators;
-  std::deque<Cell> cellsToProcess;
-  Cell dummyCell1;
+  std::vector<typename Strategy::Traits::template Proxy<Cell> > collectedHomGenerators;
+  std::deque<typename Strategy::Traits::template Proxy<Cell> > cellsToProcess;
 };
 
 class CoreductionAlgorithmFactory {
@@ -75,17 +73,17 @@ template<typename StrategyT>
 inline bool CoreductionAlgorithm<StrategyT>::coreduceNextPair() {
   
   while (! cellsToProcess.empty() ) {
-	 Cell& cell = cellsToProcess.front();
+	 typename Strategy::Traits::template Proxy<Cell>& cell = cellsToProcess.front();
 	 
-	 if (! strategy->reduced(Strategy::Traits::makeProxy(cell))) {
+	 if (! strategy->reduced(cell)) {
 		typename StrategyT::Traits::template GetCoreductionPair<Cell>::result_type coreductionPair = strategy->getCoreductionPair(cell);
 		
 		if (coreductionPair) {		
+		  doCoreduction(*coreductionPair, cell);
 		  cellsToProcess.pop_front();
-		  doCoreduction(*coreductionPair, Strategy::Traits::makeProxy(cell));
 		  return true;
 		} else {
-		  addCellsToProcess(Strategy::Traits::makeProxy(cell));
+		  addCellsToProcess(cell);
 		}
 	 }
 	 cellsToProcess.pop_front();	 

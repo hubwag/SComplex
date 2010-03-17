@@ -10,7 +10,7 @@ using namespace std;
 
 #include <capd/vectalg/MatrixSlice.h>
 #include <capd/matrixAlgorithms/intMatrixAlgorithms.hpp>
-
+#include <capd/bitSet/EuclBitSet.h>
 #include <capd/homologicalAlgebra/homologicalAlgebra.hpp>
 #include <capd/homologicalAlgebra/homAlgFunctors.hpp>
 #include <capd/homologicalAlgebra/cubSetFunctors.hpp>
@@ -31,6 +31,7 @@ typedef FreeModule<int,capd::vectalg::Matrix<int,0,0> > FreeModuleType;
 typedef FreeChainComplex<FreeModuleType> FreeChainComplexType;
 typedef ReducibleFreeChainComplex<FreeModuleType,int> ReducibleFreeChainComplexType;
 
+int COPY=0;
 
 template<typename SComplex>
 void CrHomS(int argc,char* argv[]){
@@ -44,7 +45,7 @@ void CrHomS(int argc,char* argv[]){
 
 
   Stopwatch swComp,swRed;
-  (ShaveAlgorithmFactory::createDefault(SComplexCR()))();  
+  //(ShaveAlgorithmFactory::createDefault(SComplexCR()))();  
   cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
   
    Stopwatch swCoRed;
@@ -59,7 +60,7 @@ void CrHomS(int argc,char* argv[]){
   // cout << " --- Computation completed in " << swComp  << std::endl;
   // cout << " --- Computed homology is: \n\n" << homSignCR()  << std::endl;
 
-  cout << " --- Total computation time is: " << swTot  << std::endl;
+	cout << " --- Total computation time is: " << swTot  << " " << COPY << std::endl;
 
 }
 ofstreamcout fcout;

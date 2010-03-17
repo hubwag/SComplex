@@ -88,4 +88,11 @@ public:
 
 };
 
+template<typename CellImplT>
+class CellProxy<CellProxy<CellImplT> >: public CellProxy<CellImplT> {
+
+  CellProxy();
+  CellProxy(const CellProxy&);
+};
+
 #endif
