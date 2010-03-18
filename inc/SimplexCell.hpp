@@ -10,6 +10,9 @@ class SimplexCell
 	Simplex *simp;
 public:
 
+  typedef int Dim;
+  typedef int Color;
+  
 	explicit SimplexCell(Simplex *simplex = 0) : simp(simplex)
 	{
 	}

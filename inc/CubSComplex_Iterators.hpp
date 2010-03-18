@@ -33,7 +33,7 @@ public:
 	 typedef BCubCellSet::BitIterator BitIterator;
   
 	 CoordIterator(): coordIt(NULL) {}
-	 CoordIterator(CubSComplex& s): coordIt(new (coordItMem) BitCoordIterator(s.bCubCellSet)) {}
+	 CoordIterator(const CubSComplex& s): coordIt(new (coordItMem) BitCoordIterator(s.bCubCellSet)) {}
 
 	 CoordIterator(const CoordIterator& other) {
 		if (other.coordIt) {
@@ -64,11 +64,11 @@ public:
   public:
 	 DimCoordIterator(): CoordIterator<DimCoordIterator>(), dim(std::numeric_limits<Dim>::max()) {}
   
-	 DimCoordIterator(CubSComplex& s, const Dim _dim): CoordIterator<DimCoordIterator>(s), dim(_dim) { //begin iterator
+	 DimCoordIterator(const CubSComplex& s, const Dim& _dim): CoordIterator<DimCoordIterator>(s), dim(_dim) { //begin iterator
 		findDim();
 	 }
 
-	 DimCoordIterator(CubSComplex& s): CoordIterator<DimCoordIterator>(), dim(std::numeric_limits<Dim>::max()) { //end constructor
+	 DimCoordIterator(const CubSComplex& s): CoordIterator<DimCoordIterator>(), dim(std::numeric_limits<Dim>::max()) { //end constructor
 		//coordIt->wIt = const_cast<BCubCellSet::BitCoordIterator::WordIterator>(coordIt->getBitmap().getBitmapEnd());
 	 }
   

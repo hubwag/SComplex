@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(iterators_AllCells_forEach_test) {
 	 int cnt = 0;
 	 for (CubSComplex::Iterators::AllCells::iterator it = s.iterators(1).allCells().begin();
 			it != s.iterators(1).allCells().end(); ++it) {
-		if (it->getColor() == 1) {
+		if ((*it).getColor() == 1) {
 		  ++cnt;
 		}
 	 }

@@ -26,7 +26,7 @@ class ReducibleFreeChainComplexOverZFromSComplexAlgorithm {
 
 public:
   typedef SComplexT SComplex;
-  typedef typename SComplex::Cell Cell;
+  typedef typename DefaultReduceStrategy<SComplexT>::Cell Cell;
 
   typedef ReducibleFreeChainComplexT ReducibleFreeChainComplex;
   

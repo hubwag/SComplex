@@ -7,6 +7,7 @@
 
 #include "SimplexCell.hpp"
 #include "simple_set.h"
+#include "CellProxy.hpp"
 
 using namespace std;
 
@@ -21,7 +22,7 @@ public:
         return distance(all_begin(), all_end()); // slow
     }
 
-    typedef SimplexCell Cell;
+  typedef SimplexCell Cell;
 
 // to be changed later!!
 #include "SimplexInternalColoredIterators.hpp"

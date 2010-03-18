@@ -134,9 +134,14 @@ std::string reduction(SComplex<TraitsT>& complex) {
 template<typename T>
 std::string reduction(const T& simplices) {
   typedef SComplex<SComplexDefaultTraits> Complex;  
-  SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(3);
+  SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(300);
+
+  std::cout << simplices.size() << std::endl;
 
   boost::shared_ptr<Complex> complex = builder(simplices, 3, 1);
+
+  std::cout << complex->cardinality() << std::endl;
+
   return reduction(*complex);
 }
 
@@ -161,7 +166,7 @@ BOOST_AUTO_TEST_CASE(coreduction_simplicialTorus) {
   SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(3);
   std::vector<std::set<int> > simplices = makeSpaceFromWelds(makeTorusWelds());
 
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < 10; i++) {
   	 simplices = subdivide3(simplices);
   }
 

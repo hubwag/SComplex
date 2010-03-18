@@ -7,21 +7,42 @@
 #include <utility>
 
 template<typename SComplexT>
-class ReduceStrategyTraits {
+class DefaultReduceStrategyTraits {
 public:
-
-  template<typename ImplT>
-  class Proxy {
-  public:
-	 typedef CellProxy<ImplT> type;
-  };
   
   template<typename ImplT>
-  class ReductionPair {
-  public:
-	 typedef Proxy<typename SComplexT::Cell> first_type;
-	 typedef Proxy<typename SComplexT::Cell> second_type;
-	 typedef std::pair<first_type, second_type > type;
+  struct Proxy: public CellProxy<ImplT> {
+	 template<typename ImplT2>
+	 Proxy(const ImplT2& impl): CellProxy<ImplT>(impl) {}
+
+	 Proxy(const SComplexT& c): CellProxy<ImplT>(ImplT(c)) {}
+  };
+
+  template<typename ImplT>
+  struct Proxy<CellProxy<ImplT> >: public CellProxy<ImplT> {
+	 template<typename ImplT2>
+	 Proxy(const ImplT2& impl): CellProxy<ImplT>(impl) {}
+  };
+
+  template<typename ImplT>
+  static Proxy<ImplT*> makeProxy(const CellProxy<ImplT>& impl) {
+	 return Proxy<ImplT*>(impl.getImpl());
+  }
+  
+  template<typename>
+  struct GetReductionPair;  
+
+  template<typename ArgT>
+  struct GetCoreductionPair: public std::unary_function<const ArgT&,
+																		  boost::optional<Proxy<typename SComplexT::Cell> > > {};
+
+  struct ForceCoreduction {
+	 typedef boost::optional<std::pair<Proxy<typename SComplexT::Cell>,
+												  Proxy<typename SComplexT::Cell> > > result_type;
+  };
+
+  struct Extract {
+	 typedef boost::optional<Proxy<typename SComplexT::Cell> >  result_type;
   };
 };
 
@@ -30,8 +51,8 @@ class DefaultReduceStrategyBase {
 
 public:
   typedef SComplexT SComplex;
-  typedef ReduceStrategyTraits<SComplex> Traits;
-  typedef typename SComplex::Cell Cell;
+  typedef DefaultReduceStrategyTraits<SComplex> Traits;
+  typedef typename Traits::template Proxy<typename SComplex::Cell> Cell;
 
 
   DefaultReduceStrategyBase(SComplex& _complex): complex(_complex), dummyCell2(_complex),  dummyCell3(_complex) {}
@@ -77,9 +98,9 @@ public:
   	 return typename Traits::ForceCoreduction::result_type();
   }
 
-  template<typename ImplT>
-  typename Traits::template GetCoreductionPair<typename Traits::template Proxy<ImplT> >::result_type
-  getCoreductionPair(typename Traits::template GetCoreductionPair<typename Traits::template Proxy<ImplT> >::argument_type cell)
+  template<typename ArgT>
+  typename Traits::template GetCoreductionPair<ArgT>::result_type
+  getCoreductionPair(const ArgT& cell)
   {
   	 int times = 0;
   	 BOOST_FOREACH(typename SComplex::ColoredIterators::Iterators::BdCells::iterator::value_type v,
@@ -94,9 +115,9 @@ public:
   	 }
 
   	 if (times == 1) {
-  		return typename Traits::template GetCoreductionPair<typename Traits::template Proxy<ImplT> >::result_type(dummyCell3);
+  		return typename Traits::template GetCoreductionPair<ArgT>::result_type(dummyCell3);
   	 }
-  	 return typename Traits::template GetCoreductionPair<typename Traits::template Proxy<ImplT> >::result_type();
+  	 return typename Traits::template GetCoreductionPair<ArgT>::result_type();
   }
 
   template<typename ImplT>
@@ -128,7 +149,7 @@ public:
 			  end = complex.template iterators<1>().allCells().end();
 			it != end; ++it) {
 
-		maxDim = std::max(maxDim, it->getDim());
+		maxDim = std::max(maxDim, (*it).getDim());
 	 }
 	 
 	 return maxDim;

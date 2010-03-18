@@ -54,8 +54,8 @@ private:
   
   Strategy* strategy;
   
-  std::vector<typename Strategy::Traits::template Proxy<Cell> > collectedHomGenerators;
-  std::deque<typename Strategy::Traits::template Proxy<Cell> > cellsToProcess;
+  std::vector<Cell> collectedHomGenerators;
+  std::deque<Cell> cellsToProcess;
 };
 
 class CoreductionAlgorithmFactory {
@@ -73,7 +73,7 @@ template<typename StrategyT>
 inline bool CoreductionAlgorithm<StrategyT>::coreduceNextPair() {
   
   while (! cellsToProcess.empty() ) {
-	 typename Strategy::Traits::template Proxy<Cell>& cell = cellsToProcess.front();
+	 Cell& cell = cellsToProcess.front();
 	 
 	 if (! strategy->reduced(cell)) {
 		typename StrategyT::Traits::template GetCoreductionPair<Cell>::result_type coreductionPair = strategy->getCoreductionPair(cell);

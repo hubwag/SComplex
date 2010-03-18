@@ -102,7 +102,8 @@ public:
 
   Dim getBaseDimension() const;
 
-  int coincidenceIndex(const Cell &a, const Cell &b) const;
+  template<typename ImplT1, typename ImplT2>
+  int coincidenceIndex(const CubCellProxy<ImplT1> &a, const CubCellProxy<ImplT2> &b) const;
   
 protected:
   CRef<BCubCellSet> _bCubCellSetCR;
@@ -190,35 +191,36 @@ inline bool CubSComplex::getUniqueFace(const CubCellProxy<ImplT>& cell, DynamicC
   }
 }
 
-inline int CubSComplex::coincidenceIndex(const Cell &a, const Cell &b) const {
-  if (bCubCellSet.embDim() != bCubCellSet.embDim()) {
-	 return 0;
-  }
-
+template<typename ImplT1, typename ImplT2>
+inline int CubSComplex::coincidenceIndex(const CubCellProxy<ImplT1> &_a, const CubCellProxy<ImplT2> &_b) const {
   int res = 0;
   int sgn = 1;
-  // for (size_t i = 0, end = bCubCellSet.embDim(); i < end; ++i) {
-  // 	 if (! (a[i]/2 == b[i]/2 || a[i]/2 + (a[i]%2) == b[i]/2)) {
-  // 		return 0; // b[i] left side doesn't intersect a[i] interval
-  // 	 }
+
+  const BCubCellSet::BitCoordIterator& a = _a.getBitCoordIt();
+  const BCubCellSet::BitCoordIterator& b = _b.getBitCoordIt();
+  
+  for (size_t i = 0, end = bCubCellSet.embDim(); i < end; ++i) {
+  	 if (! (a[i]/2 == b[i]/2 || a[i]/2 + (a[i]%2) == b[i]/2)) {
+  		return 0; // b[i] left side doesn't intersect a[i] interval
+  	 }
 	 
-  // 	 if (a[i] % 2 == 1 && b[i] % 2 == 1) {
-  // 		sgn = -sgn; //both nondegenerated, go to next
-  // 	 } else if (a[i] % 2 == 0 && b[i] % 2 == 0) {
-  // 		// both degenerated
-  // 	 } else if (b[i] % 2 == 1) {		
-  // 		return 0; // a[i] is inside b[i]
-  // 	 } else { // b[i] is inside a[i]
-  // 		if (res != 0) {
-  // 		  return 0; // second time, so not proper face
-  // 		}
-  // 		res = sgn;
-  // 		if (a[i] / 2 != b[i]/2) { // b[i] is the right face of a[i]
-  // 		  res = -res;
-  // 		}
-  // 	 }
-  // }
-  //return res;
+  	 if (a[i] % 2 == 1 && b[i] % 2 == 1) {
+  		sgn = -sgn; //both nondegenerated, go to next
+  	 } else if (a[i] % 2 == 0 && b[i] % 2 == 0) {
+  		// both degenerated
+  	 } else if (b[i] % 2 == 1) {		
+  		return 0; // a[i] is inside b[i]
+  	 } else { // b[i] is inside a[i]
+  		if (res != 0) {
+  		  return 0; // second time, so not proper face
+  		}
+  		res = sgn;
+  		if (a[i] / 2 != b[i]/2) { // b[i] is the right face of a[i]
+  		  res = -res;
+  		}
+  	 }
+  }
+  return res;
 }
 
 #endif
