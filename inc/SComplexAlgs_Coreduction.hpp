@@ -3,6 +3,12 @@
 
 #include "SComplexAlgs_DefaultReduceStrategy.hpp"
 #include <deque>
+#include <set>
+#include <boost/pool/object_pool.hpp>
+#include <boost/pool/pool_alloc.hpp>
+#include <boost/shared_ptr.hpp>
+#include <capd/auxil/Stopwatch.h>
+
 
 template<typename StrategyT>
 class CoreductionAlgorithm {
@@ -23,69 +29,76 @@ public:
   int operator()();
 
 private:
+
   template<typename ImplT>
-  void storeGenerator(const typename Strategy::Traits::template Proxy<ImplT>& a) {
+  void storeGenerator(const typename Strategy::SComplex::template CellProxy<ImplT>& a) {
 	 collectedHomGenerators.push_back(a);
   }
 
   template<typename ImplT1, typename ImplT2>
-  void storeCoreductionPair(const typename Strategy::Traits::template Proxy<ImplT1>& a, const typename Strategy::Traits::template Proxy<ImplT2>& b) {}
+  void storeCoreductionPair(const typename Strategy::SComplex::template CellProxy<ImplT1>& a, const typename Strategy::SComplex::template CellProxy<ImplT2>& b) {}
   
   bool coreduceNextPair();  
 
   template<typename ImplT>
-  void addCellsToProcess(const typename Strategy::Traits::template Proxy<ImplT>& sourceFace) {
+  void addCellsToProcess(const typename Strategy::SComplex::template CellProxy<ImplT>& sourceFace) {
 	 // Finally, put all present cofaces of the source face
 	 // into the queue
 	 typename SComplex::ColoredIterators::Iterators::CbdCells cbdCells = strategy->getComplex().template iterators<1>().cbdCells(sourceFace);
 	 for (typename SComplex::ColoredIterators::Iterators::CbdCells::iterator cbdn = cbdCells.begin(),
 			  end = cbdCells.end(); cbdn != end; ++cbdn) {
-		cellsToProcess.push_back(*cbdn);
+		typename SComplex::ColoredIterators::Iterators::CbdCells::iterator::value_type v = *cbdn;
+		if (!cellIdsToProcess[v.getId()]) {
+		  cellsToProcess.push_back(v);
+		  cellIdsToProcess[v.getId()] = true;
+		}
 	 }
   }
 
 
   template<typename ImplT1, typename ImplT2>
-  void doCoreduction(const typename Strategy::Traits::template Proxy<ImplT1>& a, const typename Strategy::Traits::template Proxy<ImplT2>& b) {
+  void doCoreduction(const typename Strategy::SComplex::template CellProxy<ImplT1>& a, const typename Strategy::SComplex::template CellProxy<ImplT2>& b) {
 	 storeCoreductionPair(a, b);
-	 addCellsToProcess(a);		
 	 strategy->coreduce(a, b);
+	 addCellsToProcess(a);		
   }
   
   Strategy* strategy;
   
   std::vector<Cell> collectedHomGenerators;
   std::deque<Cell> cellsToProcess;
+  std::vector<bool> cellIdsToProcess;
 };
 
 class CoreductionAlgorithmFactory {
 
 public:
   template<typename SComplex>
-  static CoreductionAlgorithm<DefaultReduceStrategy<SComplex> > createDefault(SComplex& s) {
-	 return CoreductionAlgorithm<DefaultReduceStrategy<SComplex> >(new DefaultReduceStrategy<SComplex>(s));
+  static boost::shared_ptr< CoreductionAlgorithm<DefaultReduceStrategy<SComplex> > > createDefault(SComplex& s) {
+	 return boost::shared_ptr< CoreductionAlgorithm<DefaultReduceStrategy<SComplex> > >(new CoreductionAlgorithm<DefaultReduceStrategy<SComplex> >(new DefaultReduceStrategy<SComplex>(s)));
   }
 
 };
-
 
 template<typename StrategyT>
 inline bool CoreductionAlgorithm<StrategyT>::coreduceNextPair() {
   
   while (! cellsToProcess.empty() ) {
-	 Cell& cell = cellsToProcess.front();
+	 Cell* cell = &cellsToProcess.front();
 	 
-	 if (! strategy->reduced(cell)) {
-		typename StrategyT::Traits::template GetCoreductionPair<Cell>::result_type coreductionPair = strategy->getCoreductionPair(cell);
+	 if (! strategy->reduced(*cell)) {
+		typename StrategyT::Traits::template GetCoreductionPair<Cell>::result_type coreductionPair = strategy->getCoreductionPair(*cell);
 		
 		if (coreductionPair) {		
-		  doCoreduction(*coreductionPair, cell);
+		  doCoreduction(*coreductionPair, *cell);
+		  cellIdsToProcess[cell->getId()] = false;
 		  cellsToProcess.pop_front();
 		  return true;
 		} else {
-		  addCellsToProcess(cell);
+		  addCellsToProcess(*cell);
 		}
 	 }
+	 cellIdsToProcess[cell->getId()] = false;
 	 cellsToProcess.pop_front();	 
   }
 
@@ -105,6 +118,9 @@ inline bool CoreductionAlgorithm<StrategyT>::coreduceNextPair() {
 
 template<typename StrategyT>
 inline int CoreductionAlgorithm<StrategyT>::operator()(){
+  //cellIdsToProcess.resize(strategy->getComplex().cardinality()); // 
+  cellIdsToProcess.resize(strategy->getComplex().size());
+
   int cnt=0;
 
   for(;;){

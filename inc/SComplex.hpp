@@ -21,7 +21,7 @@
 #include <boost/utility.hpp>
 
 #include "util/Iterators.hpp"
-#include "CellProxy.hpp"
+#include "BasicCellProxy.hpp"
 
 template<typename TraitsT>
 class SComplex: boost::noncopyable {
@@ -67,6 +67,7 @@ private:
   public:
 	 typedef typename SComplex::Dim Dim;
 	 typedef typename SComplex::Color Color;
+	 typedef typename SComplex::Id Id;
 	 
 	 explicit ConstCellImpl(const SComplex& _complex): complex(NULL), cell(NULL) {} // TODO remove with dummyCells in algorithms
 	 
@@ -116,15 +117,15 @@ private:
 public:
   
   template<typename ImplT>
-  class SCellProxy: public CellProxy<ImplT> {
+  class CellProxy: public BasicCellProxy<ImplT> {
   public:
-  	 SCellProxy(const ImplT& impl): CellProxy<ImplT>(impl) {}
-	 SCellProxy(const SComplex& s): CellProxy<ImplT>(ImplT(s)) {}
-  	 Id getId() const { return CellProxy<ImplT>::getImpl()->getId(); }
+  	 CellProxy(const ImplT& impl): BasicCellProxy<ImplT>(impl) {}
+	 CellProxy(const SComplex& s): BasicCellProxy<ImplT>(ImplT(s)) {}
+  	 Id getId() const { return BasicCellProxy<ImplT>::getImpl()->getId(); }
   };
 
-  typedef SCellProxy<NonConstCellImpl> Cell;
-  typedef SCellProxy<ConstCellImpl> ConstCell;
+  typedef CellProxy<NonConstCellImpl> Cell;
+  typedef CellProxy<ConstCellImpl> ConstCell;
   
   struct NeighbourLink;
   typedef typename Traits::template ColoredObjectsModel<NeighbourLink> NeighboursModel;
@@ -140,34 +141,34 @@ public:
 private:
 
   template<typename CellType>
-  struct CellFromNeighbourLinkExtractor: public std::unary_function<const NeighbourLink&, SCellProxy<CellType> >
+  struct CellFromNeighbourLinkExtractor: public std::unary_function<const NeighbourLink&, CellProxy<CellType> >
   {
 	 SComplex* complex;
 	 explicit CellFromNeighbourLinkExtractor(SComplex* _complex): complex(_complex) {}
 		
-	 SCellProxy<CellType> operator()(const NeighbourLink&  link) const {
+	 CellProxy<CellType> operator()(const NeighbourLink&  link) const {
 		return CellType(complex, link.cell);
 	 }
   };
 
   template<typename CellType>
-  struct CellFromCellsExtractor: public std::unary_function<const CellImplPtr&, SCellProxy<CellType> >
+  struct CellFromCellsExtractor: public std::unary_function<const CellImplPtr&, CellProxy<CellType> >
   {
 	 SComplex* complex;
 	 explicit CellFromCellsExtractor(SComplex* _complex): complex(_complex) {}
 		
-	 SCellProxy<CellType> operator()(const CellImplPtr& cell) const {
+	 CellProxy<CellType> operator()(const CellImplPtr& cell) const {
 		return CellType(complex, cell);
 	 }
   };
 
   template<typename CellType>
-  struct CellFromCellsByDimExtractor: public std::unary_function<const boost::reference_wrapper<CellImpl>&, SCellProxy<CellType> >
+  struct CellFromCellsByDimExtractor: public std::unary_function<const boost::reference_wrapper<CellImpl>&, CellProxy<CellType> >
   {
 	 SComplex* complex;
 	 explicit CellFromCellsByDimExtractor(SComplex* _complex): complex(_complex) {}
 		
-	 SCellProxy<CellType> operator()(const boost::reference_wrapper<CellImpl>& cell) const {
+	 CellProxy<CellType> operator()(const boost::reference_wrapper<CellImpl>& cell) const {
 		return CellType(complex, cell.get_pointer());
 	 }
   };
@@ -325,7 +326,7 @@ public:
 	 
   }
 
-  Size cardinality() const { return nonConstThis.get().cells.allObjects().size(); }
+  Size size() const { return nonConstThis.get().cells.allObjects().size(); }
 
   Cell operator[](const Id id) {
 	 return NonConstCellImpl(this, cells.allObjects()[id]);

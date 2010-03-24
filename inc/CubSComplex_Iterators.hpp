@@ -11,16 +11,15 @@
 #include <functional>
 
 
+template<int DIM>
 template<bool isConst>
-class CubSComplex::IteratorsImpl {
+class CubSComplex<DIM>::IteratorsImpl {
   typedef typename boost::mpl::if_c<isConst, const CubSComplex&, CubSComplex&>::type SComplexRef;
 public:
-  typedef CubSComplex::IteratorProvider<CellNumerator, isConst> AllCells;
-  //typedef CubSComplex::IteratorProvider<CellDimNumerator, isConst> DimCells;
-  typedef CubSComplex::IteratorProvider<BdNumerator, isConst> BdCells;  
-  //typedef CubSComplex::IteratorProvider<CbdNumerator, isConst> CbdCells;
+  typedef typename CubSComplex::template IteratorProvider<CellNumerator, isConst> AllCells;
+  typedef typename CubSComplex::template IteratorProvider<BdNumerator, isConst> BdCells;  
 
-  typedef CubCellProxy<BitCoordPtrCellImpl> CellType;
+  typedef CellProxy<BitCoordPtrCellImpl> CellType;
 
 
   template<typename Derived>
@@ -29,57 +28,79 @@ public:
   {
   
   public:
-	 typedef BCubCellSet::BitCoordIterator BitCoordIterator;
-	 typedef BCubCellSet::BitIterator BitIterator;
+	 typedef typename CubSComplex::BCubCellSet::BitCoordIterator BitCoordIterator;
+	 typedef typename CubSComplex::BCubCellSet::BitIterator BitIterator;
   
-	 CoordIterator(): coordIt(NULL) {}
-	 CoordIterator(const CubSComplex& s): coordIt(new (coordItMem) BitCoordIterator(s.bCubCellSet)) {}
-
+	 CoordIterator():  initializedCoordIt(false), coordIt(NULL) {}
+	 
 	 CoordIterator(const CoordIterator& other) {
 		if (other.coordIt) {
 		  this->coordIt = new (coordItMem) BitCoordIterator(*other.coordIt);
 		} else {
 		  this->coordIt = NULL;
 		}
+		this->initializedCoordIt = other.initializedCoordIt;
+	 }
+
+  protected:
+	 BitCoordIterator* getCoordIt() {
+		if (! initializedCoordIt) {
+		  initializedCoordIt = true;
+		  ((Derived*)this)->initCoordIt((BitCoordIterator*)coordItMem);
+		}
+		return coordIt;
+	 }
+
+	 BitCoordIterator* getCoordIt() const {
+	  	return const_cast<CoordIterator*>(this)->getCoordIt();
 	 }
 	 
   protected:
 	 friend class boost::iterator_core_access;
+	 bool initializedCoordIt;
 	 mutable BitCoordIterator* coordIt;
 	 char coordItMem[sizeof(BitCoordIterator)];
 	 
+	 
 	 bool equal(const Derived& other) const {
-		return (coordIt == NULL && other.coordIt == NULL) ||
-		  ( (coordIt != NULL && other.coordIt != NULL)
-			 && (BitIterator&)(*coordIt) == ((BitIterator&)(*other.coordIt)));
+		BitCoordIterator* it1 = this->getCoordIt();
+		BitCoordIterator* it2 = other.getCoordIt();
+		return (it1 == NULL && it2 == NULL) ||
+		  ( (it1 != NULL && it2 != NULL)
+			 && (BitIterator&)(*it1) == ((BitIterator&)(*it2)));
 	 }
 
 	 CellType dereference() const {
-		return CellType(&(*coordIt));
+		return CellType(getCoordIt());
 	 }
   };
 
   class DimCoordIterator: public  CoordIterator<DimCoordIterator> {
-
+	 typedef typename CubSComplex::BCubCellSet::BitCoordIterator BitCoordIterator;
   public:
-	 DimCoordIterator(): CoordIterator<DimCoordIterator>(), dim(std::numeric_limits<Dim>::max()) {}
   
-	 DimCoordIterator(const CubSComplex& s, const Dim& _dim): CoordIterator<DimCoordIterator>(s), dim(_dim) { //begin iterator
-		findDim();
+	 DimCoordIterator(const CubSComplex& s, const Dim& _dim): CoordIterator<DimCoordIterator>(), complex(&s), dim(_dim) { //begin iterator
 	 }
 
-	 DimCoordIterator(const CubSComplex& s): CoordIterator<DimCoordIterator>(), dim(std::numeric_limits<Dim>::max()) { //end constructor
-		//coordIt->wIt = const_cast<BCubCellSet::BitCoordIterator::WordIterator>(coordIt->getBitmap().getBitmapEnd());
+	 DimCoordIterator(const CubSComplex& s): CoordIterator<DimCoordIterator>(), complex(NULL), dim(std::numeric_limits<Dim>::max()) { //end constructor
 	 }
   
-  private:
-	 using CoordIterator<DimCoordIterator>::coordIt;
-	 
+  private:	 
 	 friend class boost::iterator_core_access;
-
+	 friend class CoordIterator<DimCoordIterator>;
+	 
+	 void initCoordIt(BitCoordIterator* allocatedMemory) {
+		if (complex == NULL) {
+		  coordIt = NULL;
+		} else {
+		  coordIt = new (allocatedMemory) BitCoordIterator(complex->bCubCellSet);
+		  findDim();
+		}
+	 }
+	 
 	 void findDim() {
-		while (coordIt->wIt < coordIt->getBitmap().getBitmapEnd()) {
-		  coordIt->moveToFirstPixel();
+		while (coordIt->wIt < coordIt->getBitmap().end().wIt) {
+		  coordIt->findPoint();
 		  if(coordIt->getBit() && coordIt->ownDim()==dim)
 			 return;
 		  ++(*coordIt);
@@ -88,36 +109,44 @@ public:
 	 }
   
 	 void increment() {
-		++(*coordIt);
+		++(*CoordIterator<DimCoordIterator>::getCoordIt());
 		findDim();
 	 }
 
+	 using CoordIterator<DimCoordIterator>::coordIt;	 
+	 const CubSComplex* complex;
 	 Dim dim;  
   };
 
   class CbdCoordIterator: public  CoordIterator<CbdCoordIterator> {
+	 typedef typename CubSComplex::BCubCellSet::BitCoordIterator BitCoordIterator;
   public:
 	 CbdCoordIterator(): CoordIterator<CbdCoordIterator>() {}
 
 	 template<typename ImplT>
-	 CbdCoordIterator(CubSComplex& s, const CubCellProxy<ImplT>& c): CoordIterator<CbdCoordIterator>(s),
+	 CbdCoordIterator(CubSComplex& s, const CellProxy<ImplT>& c): CoordIterator<CbdCoordIterator>(), sourceCoordIt(&c.getBitCoordIt()),
 																							i(-1), dim(s.bCubCellSet.embDim()) { //begin iterator
-		*coordIt = c.getBitCoordIt();
-		findCbd();
 	 }
 
-	 CbdCoordIterator(CubSComplex& s): CoordIterator<CbdCoordIterator>(s),
-												  i(0), dim(s.bCubCellSet.embDim()) { //end constructor
+	 CbdCoordIterator(CubSComplex& s): CoordIterator<CbdCoordIterator>(), sourceCoordIt(NULL),
+												  i(0), dim(0) { //end constructor
 		toEnd();
 	 }
   
-  private:
-	 using CoordIterator<CbdCoordIterator>::coordIt;
-	 
+  private:	 
 	 friend class boost::iterator_core_access;
+	 friend class  CoordIterator<CbdCoordIterator>;
+	 
+	 void initCoordIt(BitCoordIterator* allocatedMemory) {
+		if (sourceCoordIt == NULL) {
+		  coordIt = NULL;
+		} else {
+		  coordIt = new (allocatedMemory) BitCoordIterator(*sourceCoordIt);
+		  findCbd();
+		}
+	 }
 
 	 void toEnd() {
-		//coordIt->wIt = const_cast<BCubCellSet::BitCoordIterator::WordIterator>(coordIt->getBitmap().getBitmapEnd());
 		coordIt = NULL;
 	 }
 	 
@@ -157,9 +186,12 @@ public:
 	 }
   
 	 void increment() {
+		CoordIterator<CbdCoordIterator>::getCoordIt();
 		findCbd();
 	 }
-	 
+
+	 using CoordIterator<CbdCoordIterator>::coordIt;
+	 const BitCoordIterator* sourceCoordIt;	 
 	 int i;
 	 Dim dim;
   };
@@ -170,12 +202,12 @@ public:
 
   IteratorsImpl(SComplexRef _scomplex): scomplex(_scomplex) {}
   
-  AllCells allCells() const;
-  DimCells dimCells(const Dim& dim);
-  BdCells bdCells(const Cell& cell) const;
+  AllCells allCells() const {   return AllCells(CellNumerator(scomplex)); }
+  DimCells dimCells(const Dim& dim) {return DimCells(DimCoordIterator(scomplex, dim), DimCoordIterator(scomplex));}
+  BdCells bdCells(const Cell& cell) const {return BdCells(BdNumerator(scomplex, cell)); }
 
   template<typename ImplT>
-  CbdCells cbdCells(const CubCellProxy<ImplT>& cell) const {
+  CbdCells cbdCells(const CellProxy<ImplT>& cell) const {
 	 return CbdCells(CbdCoordIterator(scomplex, cell), CbdCoordIterator(scomplex));
   }
   
@@ -183,20 +215,10 @@ private:
   SComplexRef scomplex;
 };
 
-template<bool isConst>
-inline typename CubSComplex::IteratorsImpl<isConst>::AllCells CubSComplex::IteratorsImpl<isConst>::allCells() const {
-  return AllCells(CellNumerator(scomplex));
-}
 
-template<bool isConst>
-inline typename CubSComplex::IteratorsImpl<isConst>::DimCells CubSComplex::IteratorsImpl<isConst>::dimCells(const Dim& dim) {
-  //return DimCells(CellDimNumerator(scomplex, dim));
-  return DimCells(DimCoordIterator(scomplex, dim), DimCoordIterator(scomplex));
-}
 
-template<bool isConst>
-inline typename CubSComplex::IteratorsImpl<isConst>::BdCells CubSComplex::IteratorsImpl<isConst>::bdCells(const Cell& cell) const {
-  return BdCells(BdNumerator(scomplex, cell));
-}
+
+  
+
 
 #endif

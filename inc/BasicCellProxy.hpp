@@ -4,7 +4,7 @@
 #include <boost/ref.hpp>
 
 template<typename CellImplT>
-class CellProxy {
+class BasicCellProxy {
 protected:
   mutable CellImplT impl;
   //  boost::reference_wrapper<CellImplT> nonConstImpl;
@@ -12,10 +12,14 @@ protected:
 public:
   typedef typename CellImplT::Color Color;
   typedef typename CellImplT::Dim Dim;
-
+  typedef typename CellImplT::Id Id;
+  
   typedef CellImplT Impl;
   
-  CellProxy(const CellImplT& _impl): impl(_impl) {} //, nonConstImpl(impl) {}
+  BasicCellProxy(const CellImplT& _impl): impl(_impl) {} //, nonConstImpl(impl) {}
+
+  template<typename ImplT2>
+  BasicCellProxy(const ImplT2& _impl): impl(_impl) {}
   
   Color getColor() const{
 	 return impl.getColor();
@@ -34,18 +38,22 @@ public:
 	 return impl.getDim();
   }
 
-  bool operator<(const CellProxy& b) const {
+  Id getId() const {
+	 return impl.getId();
+  }
+  
+  bool operator<(const BasicCellProxy& b) const {
 	 return impl < b.impl;
   }
 
   CellImplT* getImpl() const {
 	 //return nonConstImpl.get_pointer();
-	 return &(const_cast<CellProxy*>(this)->impl);
+	 return &(const_cast<BasicCellProxy*>(this)->impl);
   }
 };
 
 template<typename CellImplT>
-class CellProxy<CellImplT*> {
+class BasicCellProxy<CellImplT*> {
 protected:
   mutable CellImplT* impl;
   //  boost::reference_wrapper<CellImplT> nonConstImpl;
@@ -55,10 +63,10 @@ public:
 
   typedef CellImplT Impl;
 
-  CellProxy(): impl(NULL) {} //, nonConstImpl(*impl) {}
-  CellProxy(CellImplT* _impl): impl(_impl) {} //, nonConstImpl(*impl) {}
+  BasicCellProxy(): impl(NULL) {} //, nonConstImpl(*impl) {}
+  BasicCellProxy(CellImplT* _impl): impl(_impl) {} //, nonConstImpl(*impl) {}
 
-  CellProxy(const CellProxy<CellImplT>& other): impl(other.getImpl()) {}
+  BasicCellProxy(const BasicCellProxy<CellImplT>& other): impl(other.getImpl()) {}
 																//nonConstImpl(*impl) {}
 
   Color getColor() const{
@@ -78,21 +86,21 @@ public:
 	 return impl->getDim();
   }
 
-  bool operator<(const CellProxy& b) const {
+  bool operator<(const BasicCellProxy& b) const {
 	 return *impl < b->impl;
   }
 
   CellImplT* getImpl() const {
-	 return const_cast<CellProxy*>(this)->impl;
+	 return const_cast<BasicCellProxy*>(this)->impl;
   }
 
 };
 
 template<typename CellImplT>
-class CellProxy<CellProxy<CellImplT> >: public CellProxy<CellImplT> {
+class BasicCellProxy<BasicCellProxy<CellImplT> >: public BasicCellProxy<CellImplT> {
 
-  CellProxy();
-  CellProxy(const CellProxy&);
+  BasicCellProxy();
+  BasicCellProxy(const BasicCellProxy&);
 };
 
 #endif

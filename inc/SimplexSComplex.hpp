@@ -7,7 +7,7 @@
 
 #include "SimplexCell.hpp"
 #include "simple_set.h"
-#include "CellProxy.hpp"
+#include "BasicCellProxy.hpp"
 
 using namespace std;
 
@@ -17,13 +17,20 @@ class SimplexSComplex
 {
 public:
 
-    int cardinality()
+    int size()
     {
         return distance(all_begin(), all_end()); // slow
     }
 
   typedef SimplexCell Cell;
 
+  template<typename ImplT>
+  class CellProxy: public BasicCellProxy<ImplT> {
+  public:
+	 CellProxy(const ImplT& impl): BasicCellProxy<ImplT>(impl) {}
+
+  };
+	 
 // to be changed later!!
 #include "SimplexInternalColoredIterators.hpp"
 // to be changed later!!

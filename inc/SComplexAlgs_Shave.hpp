@@ -2,6 +2,7 @@
 #define _SCOMPLEX_ALGS_SHAVE_HPP
 
 #include "SComplexAlgs_DefaultReduceStrategy.hpp"
+#include "SComplexAlgs_DefaultReduceStrategy_CubSComplex.hpp"
 
 template<typename StrategyT>
 class ShaveAlgorithm {
@@ -35,7 +36,7 @@ public:
 template<typename StrategyT>
 inline void ShaveAlgorithm<StrategyT>::operator()(){
 
-  for(int d=2/* strategy->getMaxDim()*/;d>=0;--d){
+  for(typename SComplex::Dim d = strategy->getMaxDim() - 1; d >= 0; --d){
 	 typedef typename SComplex::ColoredIterators::Iterators::DimCells::iterator DimIt;
 
 	 typename SComplex::ColoredIterators::Iterators::DimCells dimCells = strategy->getComplex().template iterators<1>().dimCells(d);
@@ -50,7 +51,7 @@ inline void ShaveAlgorithm<StrategyT>::operator()(){
 		  strategy->getReductionPair(v);
 		if (reductionPair) {
 		  strategy->reduce(*reductionPair);
-		  strategy->reduce(Strategy::Traits::makeProxy(v));
+		  strategy->reduce(v);
 		}
 	 }
   }

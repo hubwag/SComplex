@@ -1,37 +1,56 @@
 #ifndef CUB_SCOMPLEX_HPP
 #define CUB_SCOMPLEX_HPP
 
-
-#include <capd/repSet/ElementaryCell.h>
-#include <capd/auxil/CRef.h>
-#include <capd/bitSet/CubCellSetT.hpp>
-#include <capd/bitSet/CubSetT.hpp>
-#include <capd/homologicalAlgebra/readCubCellSet.hpp>
-
-
 #include <boost/assert.hpp>
 #include <boost/optional.hpp>
+#include <utility>
 
 
+#include <capd/auxil/CRef.h>
+#include <capd/homologicalAlgebra/embeddingDim.h>
+#include <capd/vectalg/MatrixSlice.h>
+#include <capd/matrixAlgorithms/intMatrixAlgorithms.hpp>
+#include <capd/homologicalAlgebra/homologicalAlgebra.hpp>
+#include <capd/homologicalAlgebra/homAlgFunctors.hpp>
+#include <capd/homologicalAlgebra/cubSetFunctors.hpp>
+#include <capd/homologicalAlgebra/ReducibleFreeChainComplex.hpp>
+#include <capd/homologicalAlgebra/readCubCellSet.hpp>
+
+#include <capd/bitSet/CubCellSetT.hpp>
+#include <capd/bitSet/CubSetT.hpp>
+#include <capd/bitSet/EuclBitSetT.hpp>
+
+
+
+
+
+template<int DIM>
 class CubSComplex {
   class CellImpl;
+  typedef unsigned long int cluster;
+  typedef BitSetT<BitmapT<cluster> > BitSet;
+  typedef EuclBitSetT<BitSet, DIM> EuclBitSet;
   
 public:
+  typedef CubSetT<EuclBitSet> BCubSet;
+  typedef CubCellSetT<EuclBitSet> BCubCellSet;
 
   class BitCoordCellImpl;
   class DynamicBitCoordCellImpl;
   class BitCoordPtrCellImpl;
 
   template<typename, typename Enable=void>
-  class CubCellProxy;
+  class CellProxy;
 
-  typedef CubCellProxy<BitCoordCellImpl> Cell;
-  typedef CubCellProxy<BitCoordPtrCellImpl> CellRef;
-  typedef CubCellProxy<DynamicBitCoordCellImpl> DynamicCell;
+  typedef CellProxy<BitCoordCellImpl> Cell;
+  typedef CellProxy<BitCoordPtrCellImpl> CellRef;
+  typedef CellProxy<DynamicBitCoordCellImpl> DynamicCell;
   
-  typedef size_t Dim;
+  typedef int Dim;
   typedef int Color;
-
+  //typedef std::pair<const BCubCellSet::BitCoordIterator::WordIterator, int> Id;
+  typedef long Id;
+  
 private:
   
   template<typename NumeratorT, bool isConst>
@@ -44,13 +63,6 @@ private:
   class CbdNumerator;
   class BdNumerator;
 
-  typedef unsigned long int cluster;
-  typedef BitSetT<BitmapT<cluster> > BitSet;
-  typedef EuclBitSetT<BitSet,embeddingDim> EuclBitSet;
-  typedef CubSetT<EuclBitSet> BCubSet;
-  typedef CubCellSetT<EuclBitSet> BCubCellSet;
-
-
   template<bool isConst>
   class IteratorsImpl;
 
@@ -60,7 +72,7 @@ private:
   public:
 	 typedef IteratorsImpl<isConst> Iterators;
 
-	 template<CubSComplex::Color color>
+	 template<typename CubSComplex::Color color>
 	 class Color {
 	 public:
 		typedef IteratorsImpl<isConst> Iterators;
@@ -80,48 +92,40 @@ public:
   CubSComplex(const int* A_w, bool clear=false);
   explicit CubSComplex(CRef<BCubCellSet> _bCubCellSet);
 
-  size_t cardinality();
+  size_t cardinality() {  return bCubCellSet.cardinality(); }
+  size_t size() const { return bCubCellSet.getBmpSizeInBits(); }
 
+  Dim getDim() { return bCubCellSet.embDim(); }
+  
    ConstIterators iterators() const;
    Iterators iterators();
 
-  ColoredConstIterators::Iterators iterators(const Color& color) const;
-  ColoredIterators::Iterators iterators(const Color& color);
+  typename ColoredConstIterators::Iterators iterators(const Color& color) const;
+  typename ColoredIterators::Iterators iterators(const Color& color);
 
   template<Color color>
-  typename ColoredIterators::Color<color>::Iterators iterators();
+  typename ColoredIterators::template Color<color>::Iterators iterators();
 
   template<Color color>
-  typename ColoredConstIterators::Color<color>::Iterators iterators() const;
+  typename ColoredConstIterators::template Color<color>::Iterators iterators() const;
 
   template<typename ImplT>
-  bool getUniqueFace(const CubCellProxy<ImplT>& cell, DynamicCell& coface) const;
+  bool getUniqueFace(const CellProxy<ImplT>& cell, DynamicCell& coface) const;
 
   template<typename ImplT>
-  bool getUniqueCoFace(const CubCellProxy<ImplT>& cell, DynamicCell& coface) const;
-
-  Dim getBaseDimension() const;
+  bool getUniqueCoFace(const CellProxy<ImplT>& cell, DynamicCell& coface) const;
 
   template<typename ImplT1, typename ImplT2>
-  int coincidenceIndex(const CubCellProxy<ImplT1> &a, const CubCellProxy<ImplT2> &b) const;
+  int coincidenceIndex(const CellProxy<ImplT1> &a, const CellProxy<ImplT2> &b) const;
   
 protected:
   CRef<BCubCellSet> _bCubCellSetCR;
   BCubCellSet& bCubCellSet;
-  Dim baseDimension;
   
   template<bool isConst>
   friend class IteratorsImpl;
   
 };
-
-inline CubSComplex::Dim CubSComplex::getBaseDimension() const {
-  return baseDimension;
-}
-
-inline size_t CubSComplex::cardinality() {
-  return bCubCellSet.cardinality();
-}
 
 #include "CubSComplex_Cell.hpp"
 #include "CubSComplex_IteratorProvider.hpp"
@@ -137,67 +141,77 @@ inline size_t CubSComplex::cardinality() {
 //   bCubCellSetCR(new BCubCelSet(A_w,clear)),baseDimension(0)
 // {}
 
-inline CubSComplex::CubSComplex(CRef<BCubCellSet> _bCubCellSetCR):baseDimension(0), _bCubCellSetCR(_bCubCellSetCR), bCubCellSet(_bCubCellSetCR()) {
+template<int DIM>
+inline CubSComplex<DIM>::CubSComplex(CRef<BCubCellSet> _bCubCellSetCR): _bCubCellSetCR(_bCubCellSetCR), bCubCellSet(_bCubCellSetCR()) {
   bCubCellSet.addEmptyCollar();
 }
 
-inline CubSComplex::Iterators CubSComplex::iterators() {
+template<int DIM>
+inline typename CubSComplex<DIM>::Iterators CubSComplex<DIM>::iterators() {
   throw std::logic_error("Not implemented yet."); // How cn I iterate over removed elements ?
 
   return Iterators(*this);
 }
 
-inline CubSComplex::ConstIterators CubSComplex::iterators() const {
+template<int DIM>
+inline typename CubSComplex<DIM>::ConstIterators CubSComplex<DIM>::iterators() const {
   throw std::logic_error("Not implemented yet."); // How cn I iterate over removed elements ?
 
   return ConstIterators(*this);
 }
 
-inline CubSComplex::ColoredConstIterators::Iterators CubSComplex::iterators(const Color& color) const {
+template<int DIM>
+inline typename CubSComplex<DIM>::ColoredConstIterators::Iterators CubSComplex<DIM>::iterators(const Color& color) const {
   BOOST_ASSERT(color == 1);
-  return ColoredConstIterators::Iterators(*this);
+  return typename ColoredConstIterators::Iterators(*this);
 }
 
-inline CubSComplex::ColoredIterators::Iterators CubSComplex::iterators(const Color& color) {
+template<int DIM>
+inline typename CubSComplex<DIM>::ColoredIterators::Iterators CubSComplex<DIM>::iterators(const Color& color) {
   BOOST_ASSERT(color == 1);
-  return ColoredIterators::Iterators(*this);
+  return typename ColoredIterators::Iterators(*this);
 }
 
-template<>
-inline CubSComplex::ColoredIterators::Color<1>::Iterators CubSComplex::iterators<1>() {
-  return ColoredIterators::Color<1>::Iterators(*this);
+template<int DIM>
+template<typename CubSComplex<DIM>::Color color>
+inline typename CubSComplex<DIM>::ColoredIterators::template Color<color>::Iterators CubSComplex<DIM>::iterators() {
+  return typename ColoredIterators::template Color<color>::Iterators(*this);
 }
 
-template<>
-inline CubSComplex::ColoredConstIterators::Color<1>::Iterators CubSComplex::iterators<1>() const {
-  return ColoredConstIterators::Color<1>::Iterators(*this);
+template<int DIM>
+template<typename CubSComplex<DIM>::Color color>
+inline typename CubSComplex<DIM>::ColoredConstIterators::template Color<color>::Iterators CubSComplex<DIM>::iterators() const {
+  return typename ColoredConstIterators::template Color<color>::Iterators(*this);
 }
 
+template<int DIM>
 template<typename ImplT>
-inline bool CubSComplex::getUniqueCoFace(const CubCellProxy<ImplT>& cell, DynamicCell& coface) const {
-  if (bCubCellSet.isFreeFace(const_cast< BCubCellSet::BitCoordIterator&>(cell.getBitCoordIt()), coface.getBitCoordIt())) {
+inline bool CubSComplex<DIM>::getUniqueCoFace(const CellProxy<ImplT>& cell, DynamicCell& coface) const {
+  if (bCubCellSet.isFreeFace(const_cast<typename CubSComplex::BCubCellSet::BitCoordIterator&>(cell.getBitCoordIt()), coface.getBitCoordIt())) {
   	 return true;
   } else {
   	 return false;
   }
 }
 
+template<int DIM>
 template<typename ImplT>
-inline bool CubSComplex::getUniqueFace(const CubCellProxy<ImplT>& cell, DynamicCell& coface) const {
-  if (bCubCellSet.isFreeCoFace(const_cast<BCubCellSet::BitCoordIterator&>(cell.getBitCoordIt()), coface.getBitCoordIt())) {
+inline bool CubSComplex<DIM>::getUniqueFace(const CellProxy<ImplT>& cell, DynamicCell& coface) const {
+  if (bCubCellSet.isFreeCoFace(const_cast<typename CubSComplex::BCubCellSet::BitCoordIterator&>(cell.getBitCoordIt()), coface.getBitCoordIt())) {
   	 return true;
   } else {
   	 return false;
   }
 }
 
+template<int DIM>
 template<typename ImplT1, typename ImplT2>
-inline int CubSComplex::coincidenceIndex(const CubCellProxy<ImplT1> &_a, const CubCellProxy<ImplT2> &_b) const {
+inline int CubSComplex<DIM>::coincidenceIndex(const CellProxy<ImplT1> &_a, const CellProxy<ImplT2> &_b) const {
   int res = 0;
   int sgn = 1;
 
-  const BCubCellSet::BitCoordIterator& a = _a.getBitCoordIt();
-  const BCubCellSet::BitCoordIterator& b = _b.getBitCoordIt();
+  const typename CubSComplex::BCubCellSet::BitCoordIterator& a = _a.getBitCoordIt();
+  const typename CubSComplex::BCubCellSet::BitCoordIterator& b = _b.getBitCoordIt();
   
   for (size_t i = 0, end = bCubCellSet.embDim(); i < end; ++i) {
   	 if (! (a[i]/2 == b[i]/2 || a[i]/2 + (a[i]%2) == b[i]/2)) {
@@ -221,6 +235,12 @@ inline int CubSComplex::coincidenceIndex(const CubCellProxy<ImplT1> &_a, const C
   	 }
   }
   return res;
+}
+
+
+template<int DIM>
+boost::shared_ptr<CubSComplex<DIM> > readCubSComplex(std::string fileName) {
+  return boost::shared_ptr<CubSComplex<DIM> >(new CubSComplex<DIM>(readCubCellSet<typename CubSComplex<DIM>::BCubSet, typename CubSComplex<DIM>::BCubCellSet>(fileName.c_str())));
 }
 
 #endif

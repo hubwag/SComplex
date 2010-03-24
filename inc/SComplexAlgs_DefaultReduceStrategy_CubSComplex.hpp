@@ -18,44 +18,51 @@
 #include <capd/homologicalAlgebra/cubSetFunctors.hpp>
 #include <capd/homologicalAlgebra/ReducibleFreeChainComplex.hpp>
 
-#include "CellProxy.hpp"
 #include "SComplexAlgs_DefaultReduceStrategy.hpp"
 #include "CubSComplex.hpp"
 #include <capd/vectalg/MatrixSlice.h>
 
 #include "SComplexAlgs_DefaultReduceStrategyTraits_CubSComplex.hpp"
 
-template<>
-class DefaultReduceStrategy<CubSComplex>: public DefaultReduceStrategyBase<CubSComplex> {
+template<int DIM>
+class DefaultReduceStrategy<CubSComplex<DIM> >: public DefaultReduceStrategyBase<CubSComplex<DIM> > {
 
-  CubSComplex::DynamicCell dynamicCell;  
-public:
+  typename CubSComplex<DIM>::DynamicCell dynamicCell;
+  //using typename DefaultReduceStrategyBase<CubSComplex<DIM> >::Traits;
   
-  DefaultReduceStrategy(CubSComplex& complex): DefaultReduceStrategyBase<CubSComplex>(complex), dynamicCell(complex) {}
+  using DefaultReduceStrategyBase<CubSComplex<DIM> >::complex;
+  
+public:
+  typedef typename DefaultReduceStrategyBase<CubSComplex<DIM> >::Traits Traits;
+  
+  DefaultReduceStrategy(CubSComplex<DIM>& complex): DefaultReduceStrategyBase<CubSComplex<DIM> >(complex), dynamicCell(complex) {}
   
   template<typename ArgT>
-  typename Traits::GetCoreductionPair<ArgT>::result_type
+  typename Traits::template GetCoreductionPair<ArgT>::result_type
   getCoreductionPair(const ArgT& cell)
   {  
   	 if (complex.getUniqueFace(cell, dynamicCell)) {
-		return typename Traits::GetCoreductionPair<ArgT>::result_type(dynamicCell.getImpl());
+		return typename Traits::template GetCoreductionPair<ArgT>::result_type(dynamicCell.getImpl());
   	 } else {
-		return typename Traits::GetCoreductionPair<ArgT>::result_type();
+		return typename Traits::template GetCoreductionPair<ArgT>::result_type();
   	 }
   }
 
   template<typename ArgT>
-  typename Traits::GetReductionPair<ArgT>::result_type
+  typename Traits::template GetReductionPair<ArgT>::result_type
   getReductionPair(const ArgT& cell)
   {
 	 if (complex.getUniqueCoFace(cell, dynamicCell)) {
-		return typename Traits::GetReductionPair<ArgT>::result_type(dynamicCell.getImpl());
+		return typename Traits::template GetReductionPair<ArgT>::result_type(dynamicCell.getImpl());
   	 } else {
-		return typename Traits::GetReductionPair<ArgT>::result_type();
+		return typename Traits::template GetReductionPair<ArgT>::result_type();
   	 }
   }
 
-    
+  size_t getMaxDim() {
+	 return complex.getDim();
+  }
+  
 };
 
 #endif

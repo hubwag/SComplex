@@ -20,19 +20,6 @@ using namespace std;
 #include <algorithm>
 
 
-#include <capd/auxil/Stopwatch.h>
-#include <capd/auxil/CRef.h>
-#include <capd/homologicalAlgebra/embeddingDim.h>
-
-#include <capd/vectalg/MatrixSlice.h>
-#include <capd/matrixAlgorithms/intMatrixAlgorithms.hpp>
-
-#include <capd/homologicalAlgebra/homologicalAlgebra.hpp>
-#include <capd/homologicalAlgebra/homAlgFunctors.hpp>
-#include <capd/homologicalAlgebra/cubSetFunctors.hpp>
-#include <capd/homologicalAlgebra/ReducibleFreeChainComplex.hpp>
-
-
 using namespace boost;
 using namespace boost::assign;
 
@@ -54,7 +41,7 @@ BOOST_AUTO_TEST_CASE(coreduction_line) {
   
   Complex complex(3, dims, kappaMap, 1);
 
-  (CoreductionAlgorithmFactory::createDefault(complex))();
+  (*CoreductionAlgorithmFactory::createDefault(complex))();
 
   BOOST_FOREACH(Complex::Iterators::AllCells::iterator::value_type v,
 					 complex.iterators().allCells()) {
@@ -72,7 +59,7 @@ BOOST_AUTO_TEST_CASE(coreduction_emptyTriangle) {
   
   Complex complex(3, dims, kappaMap, 1);
 
-  (CoreductionAlgorithmFactory::createDefault(complex))();
+  (*CoreductionAlgorithmFactory::createDefault(complex))();
 
   BOOST_CHECK( ++(complex.iterators(1).dimCells((Complex::Dim)1).begin()) == complex.iterators(1).dimCells((Complex::Dim)1).end());
   BOOST_CHECK( complex.iterators(1).dimCells((Complex::Dim)0).begin() == complex.iterators(1).dimCells((Complex::Dim)0).end());
@@ -87,7 +74,7 @@ BOOST_AUTO_TEST_CASE(coreduction_fullTriangle) {
   
   Complex complex(3, dims, kappaMap, 1);
 
-  (CoreductionAlgorithmFactory::createDefault(complex))();
+  (*CoreductionAlgorithmFactory::createDefault(complex))();
 
   BOOST_FOREACH(Complex::Iterators::AllCells::iterator::value_type v,
 					 complex.iterators().allCells()) {
@@ -108,9 +95,9 @@ BOOST_AUTO_TEST_CASE(coreduction_simplicialFullTriangle) {
 	 
   boost::shared_ptr<Complex> complex = builder(simplices, 3, 1);
 
-  BOOST_CHECK_EQUAL(complex->cardinality(), (size_t)7);
+  BOOST_CHECK_EQUAL(complex->size(), (size_t)7);
 
-  (CoreductionAlgorithmFactory::createDefault(*complex))();
+  (*CoreductionAlgorithmFactory::createDefault(*complex))();
 
   BOOST_FOREACH(Complex::Iterators::AllCells::iterator::value_type v,
   					 complex->iterators().allCells()) {
@@ -122,7 +109,7 @@ BOOST_AUTO_TEST_CASE(coreduction_simplicialFullTriangle) {
 
 template<typename TraitsT>
 std::string reduction(SComplex<TraitsT>& complex) {
-  (CoreductionAlgorithmFactory::createDefault(complex))();
+  (*CoreductionAlgorithmFactory::createDefault(complex))();
   
   CRef<ReducibleFreeChainComplexType> RFCComplexCR=
   	 (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SComplex<TraitsT>, ReducibleFreeChainComplexType>(complex))();
@@ -140,7 +127,7 @@ std::string reduction(const T& simplices) {
 
   boost::shared_ptr<Complex> complex = builder(simplices, 3, 1);
 
-  std::cout << complex->cardinality() << std::endl;
+  std::cout << complex->size() << std::endl;
 
   return reduction(*complex);
 }
@@ -155,7 +142,7 @@ BOOST_AUTO_TEST_CASE(coreduction_simplicialEmptyTetrahedron) {
   boost::shared_ptr<Complex> complex = builder(simplices, 3, 1);
   complex->iterators().dimCells(3).begin()->setColor(0);
   
-  BOOST_CHECK_EQUAL(complex->cardinality(), (size_t) 15);
+  BOOST_CHECK_EQUAL(complex->size(), (size_t) 15);
   BOOST_CHECK(complex->iterators(1).dimCells(3).begin() == complex->iterators(1).dimCells(3).end());
   BOOST_CHECK_EQUAL(reduction(*complex), "0,0,1");
 }
@@ -166,7 +153,7 @@ BOOST_AUTO_TEST_CASE(coreduction_simplicialTorus) {
   SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(3);
   std::vector<std::set<int> > simplices = makeSpaceFromWelds(makeTorusWelds());
 
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 3; i++) {
   	 simplices = subdivide3(simplices);
   }
 

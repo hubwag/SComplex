@@ -24,14 +24,14 @@ BOOST_AUTO_TEST_CASE(init) {
   Complex::Dims dims = list_of(1)(0);
   Complex complex(colors, dims, kappaMap);
 
-  BOOST_CHECK_EQUAL(complex.cardinality(), dims.size());
+  BOOST_CHECK_EQUAL(complex.size(), dims.size());
 
   size_t tmpSize = 0;
   BOOST_FOREACH(Complex::Iterators::AllCells::iterator::value_type v,
 					 complex.iterators().allCells()) {
 	 ++tmpSize;
   }
-  BOOST_CHECK_EQUAL(complex.cardinality(), tmpSize);
+  BOOST_CHECK_EQUAL(complex.size(), tmpSize);
   
   const Complex& refComplex = complex;
   
@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(init) {
 			end = refComplex.iterators().allCells().end(); it != end; ++it) {
 	 ++tmpSize;
   }
-  BOOST_CHECK_EQUAL(refComplex.cardinality(), tmpSize);
+  BOOST_CHECK_EQUAL(refComplex.size(), tmpSize);
 
 
   BOOST_CHECK_EQUAL(complex.iterators().dimCells(0).begin()->getId(), (Complex::Id) 1);

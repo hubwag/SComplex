@@ -64,7 +64,7 @@ void CrHomS_torus(int argc,char* argv[])
 	boost::shared_ptr<Complex> complex = builder(tris, 3, 1);
 	cout << " --- built in " << swBuild << std::endl;
 	testReduce(*complex);
-    cout << " --- generated simplicial complex --- \n cardinality: " << complex->cardinality() << endl;
+    cout << " --- generated simplicial complex --- \n cardinality: " << complex->size() << endl;
 }
 
 int main(int argc,char* argv[])

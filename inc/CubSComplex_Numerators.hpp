@@ -5,17 +5,18 @@
 #include <limits>
 #include <boost/shared_ptr.hpp>
 
-class CubSComplex::BasicNumerator {
+template<int DIM>
+class CubSComplex<DIM>::BasicNumerator {
 protected:
   explicit BasicNumerator(const CubSComplex& s): bitCoordIt(s.bCubCellSet) {}
   
 public:
   void toEnd() {
-	 this->bitCoordIt.wIt=const_cast<BCubCellSet::BitCoordIterator::WordIterator>(this->bitCoordIt.getBitmap().getBitmapEnd());
+	 this->bitCoordIt.wIt=const_cast<typename CubSComplex::BCubCellSet::BitCoordIterator::WordIterator>(this->bitCoordIt.getBitmap().end().wIt);
   }
 		
-  CubCellProxy<BitCoordPtrCellImpl> Current(){
-	 return CubCellProxy<BitCoordPtrCellImpl>(BitCoordPtrCellImpl(&bitCoordIt));
+  CellProxy<BitCoordPtrCellImpl> Current(){
+	 return CellProxy<BitCoordPtrCellImpl>(BitCoordPtrCellImpl(&bitCoordIt));
   }
 
   bool operator==(const BasicNumerator& o) const {
@@ -27,11 +28,13 @@ public:
   }
 
 protected:
-  BCubCellSet::BitCoordIterator bitCoordIt;
+  typename CubSComplex::BCubCellSet::BitCoordIterator bitCoordIt;
   
 };
 
-class CubSComplex::CellNumerator: public BasicNumerator{
+template<int DIM>
+class CubSComplex<DIM>::CellNumerator: public BasicNumerator{
+  using BasicNumerator::bitCoordIt;
   
 public:
 	 typedef Cell value_type;
@@ -41,8 +44,8 @@ public:
   
 	 bool MoveNext(){
 		++(bitCoordIt);
-		bitCoordIt.moveToFirstPixel();
-		return bitCoordIt.wIt < bitCoordIt.getBitmap().getBitmapEnd();
+		bitCoordIt.findPoint();
+		return bitCoordIt.wIt < bitCoordIt.getBitmap().end().wIt;
 	 }
 };
 
@@ -107,19 +110,22 @@ public:
 //   const int dim;
 // };
 
-class CubSComplex::BdNumerator: public BasicNumerator{
+template<int DIM>
+class CubSComplex<DIM>::BdNumerator: public BasicNumerator{
+  using BasicNumerator::bitCoordIt;
+  using BasicNumerator::toEnd;
 public:
 	 typedef Cell value_type;
 
   template<typename ImplT>
-  BdNumerator(const CubSComplex& s, const CubCellProxy<ImplT>& c): BasicNumerator(s), center(c.getBitCoordIt()),i(0),downDir(true), dim(s.bCubCellSet.embDim()) {
+  BdNumerator(const CubSComplex& s, const CellProxy<ImplT>& c): BasicNumerator(s), center(c.getBitCoordIt()),i(0),downDir(true), dim(s.bCubCellSet.embDim()) {
 	 }
 		
   bool MoveNext(){
 	 while(i < dim){
 		// process only directions in which cell is degenerate
 		if(!downDir || center.odd(i)){
-		  ((BCubCellSet::BitCoordIterator&)(bitCoordIt)) = center;
+		  ((typename CubSComplex::BCubCellSet::BitCoordIterator&)(bitCoordIt)) = center;
 		  // First check the bottom face
 		  if(downDir){
 			 bitCoordIt.decInDir(i);
@@ -141,7 +147,7 @@ public:
   }
 
 protected:
-  const BCubCellSet::BitCoordIterator center;
+  typename CubSComplex::BCubCellSet::BitCoordIterator center;
   int i;
   bool downDir;
   const int dim;
