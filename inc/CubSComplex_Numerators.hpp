@@ -2,135 +2,155 @@
 #define CUB_SCOMPLEX_NUMERATORS_HPP
 
 #include "CubSComplex.hpp"
+#include <limits>
+#include <boost/shared_ptr.hpp>
 
-class CubSComplex::CellNumerator{
-  
-public:
-	 typedef Cell value_type;
-  
-	 CellNumerator(const CubSComplex& s):cCell(s){
-		  --cCell;
-	 }
-  
-	 bool MoveNext(){
-		  ++cCell;
-		  cCell.moveToFirstPixel();
-		  return cCell.wIt < cCell.getBitmap().getBitmapEnd();
-	 }
-
-	 Cell& Current(){
-		  return cCell;
-	 }
-
-	 void toEnd() {
-		  cCell.toEnd();
-	 }
-  
-	 bool operator==(const CellNumerator& o) const {
-		  return this->cCell.wIt == o.cCell.wIt;
-	 }
-
-	 bool operator!=(const CellNumerator& o) const {
-		  return this->cCell.wIt != o.cCell.wIt;
-	 }
-
+template<int DIM>
+class CubSComplex<DIM>::BasicNumerator {
 protected:
-	 Cell cCell;
-};
-
-class CubSComplex::CellDimNumerator{
+  explicit BasicNumerator(const CubSComplex& s): bitCoordIt(s.bCubCellSet) {}
+  
 public:
-	 typedef Cell value_type;
-		
-	 CellDimNumerator(const CubSComplex& s,int d):cCell(s),dim(d){
-		  --cCell;
-	 }
-
-
-	 bool operator==(const CellDimNumerator& o) const {
-		  return this->cCell.wIt == o.cCell.wIt;
-	 }
-
-	 bool operator!=(const CellDimNumerator& o) const {
-		  return this->cCell.wIt != o.cCell.wIt;
-	 }
-
-	 bool MoveNext(){
-		  for(;;){
-            ++cCell;
-            cCell.moveToFirstPixel();
-            if(cCell.wIt == cCell.getBitmap().getBitmapEnd()) return false;
-            if(cCell.ownDim()==dim) return true;
-		  }
-	 }
-	 
-	 void toEnd() {
-		  cCell.toEnd();
-	 }
-		
-	 Cell& Current(){
-		  return cCell;
-	 }
-protected:
-	 Cell cCell;
-	 int dim;
-};
-
-class CubSComplex::CbdNumerator{
-public:
-	 typedef Cell value_type;
-		
-  CbdNumerator(const Cell& c):center(c),i(0),downDir(true), dim(c.embDim()), cCell(c){
-		//		  cCell=false;
-	 }
-
   void toEnd() {
-	 cCell.toEnd();
+	 this->bitCoordIt.wIt=const_cast<typename CubSComplex::BCubCellSet::BitCoordIterator::WordIterator>(this->bitCoordIt.getBitmap().end().wIt);
   }
 		
-	 bool operator==(const CbdNumerator& o) const {
-		  return this->cCell.wIt == o.cCell.wIt;
-	 }
+  CellProxy<BitCoordPtrCellImpl> Current(){
+	 return CellProxy<BitCoordPtrCellImpl>(BitCoordPtrCellImpl(&bitCoordIt));
+  }
 
-	 bool operator!=(const CbdNumerator& o) const {
-		  return this->cCell.wIt != o.cCell.wIt;
-	 }
+  bool operator==(const BasicNumerator& o) const {
+	 return bitCoordIt.wIt == o.bitCoordIt.wIt;
+  }
 
-	 bool MoveNext(){
-		  while(i < dim){
-            // process only directions in which cell is degenerate
-            if(!downDir || !center.odd(i)){
-					 cCell=center;
-					 // First check the bottom face
-					 if(downDir){
-						  cCell.decInDir(i);
-						  downDir=false;
-						  // and now go to the top face
-					 }else{
-						  cCell.incInDir(i);;
-						  downDir=true;
-						  ++i;
-					 }
-					 return true;
-            }else{
-					 ++i;
-            }
-		  }
-		  //cCell=false;
-		  cCell.toEnd();
-		  return false;
-	 }
-	 Cell& Current(){
-		  return cCell;
-	 }
+  bool operator!=(const BasicNumerator& o) const {
+	 return this->bitCoordIt.wIt != o.bitCoordIt.wIt;
+  }
+
 protected:
-  const Cell& center;
+  typename CubSComplex::BCubCellSet::BitCoordIterator bitCoordIt;
+  
+};
+
+template<int DIM>
+class CubSComplex<DIM>::CellNumerator: public BasicNumerator{
+  using BasicNumerator::bitCoordIt;
+  
+public:
+	 typedef Cell value_type;
+  
+  CellNumerator(const CubSComplex& s): BasicNumerator(s) {
+  }
+  
+	 bool MoveNext(){
+		++(bitCoordIt);
+		bitCoordIt.findPoint();
+		return bitCoordIt.wIt < bitCoordIt.getBitmap().end().wIt;
+	 }
+};
+
+// class CubSComplex::CellDimNumerator: public BasicNumerator {
+// public:
+// 	 typedef Cell value_type;
+		
+//   CellDimNumerator(const CubSComplex& s,int d): BasicNumerator(s),dim(d) {
+// 	 --(bitCoordIt);
+//   }
+
+//   bool MoveNext(){
+// 	 for(;;){
+// 		++(bitCoordIt);
+// 		bitCoordIt.moveToFirstPixel();
+// 		if(bitCoordIt.wIt == bitCoordIt.getBitmap().getBitmapEnd()) return false;
+// 		if(bitCoordIt.getBit() && bitCoordIt.ownDim()==dim) return true;
+// 	 }
+//   }
+	 
+// protected:
+//   int dim;
+// };
+
+// class CubSComplex::CbdNumerator: public BasicNumerator {
+// public:
+//   typedef Cell value_type;
+
+//   template<typename ImplT>
+//   CbdNumerator(const CubSComplex& s, const CubCellProxy<ImplT>& c):BasicNumerator(s), center(c.getBitCoordIt()),i(0),downDir(true), dim(s.bCubCellSet.embDim()){
+//   }
+		
+//   bool MoveNext(){
+// 	 while(i < dim){
+// 		// process only directions in which cell is degenerate
+// 		if(!downDir || !center.odd(i)){
+// 		  ((BCubCellSet::BitCoordIterator&)(bitCoordIt)) = center;
+// 		  // First check the bottom face
+// 		  if(downDir){
+// 			 bitCoordIt.decInDir(i);
+// 			 downDir=false;
+// 			 // and now go to the top face
+// 		  }else{
+// 			 bitCoordIt.incInDir(i);;
+// 			 downDir=true;
+// 			 ++i;
+// 		  }
+// 		  if (bitCoordIt.getBit()) 
+// 			 return true;
+// 		}else{
+// 		  ++i;
+// 		}
+// 	 }
+// 	 //cCell=false;
+// 	 toEnd();
+// 	 return false;
+//   }
+// protected:
+//   const BCubCellSet::BitCoordIterator center;
+//   int i;
+//   bool downDir;
+//   const int dim;
+// };
+
+template<int DIM>
+class CubSComplex<DIM>::BdNumerator: public BasicNumerator{
+  using BasicNumerator::bitCoordIt;
+  using BasicNumerator::toEnd;
+public:
+	 typedef Cell value_type;
+
+  template<typename ImplT>
+  BdNumerator(const CubSComplex& s, const CellProxy<ImplT>& c): BasicNumerator(s), center(c.getBitCoordIt()),i(0),downDir(true), dim(s.bCubCellSet.embDim()) {
+	 }
+		
+  bool MoveNext(){
+	 while(i < dim){
+		// process only directions in which cell is degenerate
+		if(!downDir || center.odd(i)){
+		  ((typename CubSComplex::BCubCellSet::BitCoordIterator&)(bitCoordIt)) = center;
+		  // First check the bottom face
+		  if(downDir){
+			 bitCoordIt.decInDir(i);
+			 downDir=false;
+			 // and now go to the top face
+		  }else{
+			 bitCoordIt.incInDir(i);;
+			 downDir=true;
+			 ++i;
+		  }
+		  return true;
+		}else{
+		  ++i;
+		}
+	 }
+	 //cCell=false;
+	 toEnd();
+	 return false;
+  }
+
+protected:
+  typename CubSComplex::BCubCellSet::BitCoordIterator center;
   int i;
   bool downDir;
   const int dim;
-  Cell cCell;
-
 };
-
 
 #endif // CUB_SCOMPLEX_NUMERATORS_HPP

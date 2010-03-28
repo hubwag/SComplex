@@ -6,8 +6,9 @@
 #include <iterator>
 
 
+template<int DIM>
 template<typename NumeratorT, bool isConst>
-class CubSComplex::IteratorProvider {
+class CubSComplex<DIM>::IteratorProvider {
 public:
 	 typedef NumeratorT Numerator;
 
@@ -41,9 +42,10 @@ private:
 };
 
 
+template<int DIM>
 template<typename NumeratorT, bool isConst>
 template<typename ValueT>
-class CubSComplex::IteratorProvider<NumeratorT, isConst>::IteratorFromNumeratorAdapter: public std::iterator<forward_iterator_tag, ValueT> {
+class CubSComplex<DIM>::IteratorProvider<NumeratorT, isConst>::IteratorFromNumeratorAdapter: public std::iterator<forward_iterator_tag, ValueT> {
 
 	 typedef std::iterator<forward_iterator_tag, ValueT> Base;
 	 typedef typename IteratorProvider<NumeratorT, isConst>::Numerator Numerator;
@@ -67,12 +69,14 @@ public:
 		  return tmp;
 	 }
 
-	 typename Base::reference operator*() {
+  //typename Base::reference operator*() {
+  typename Base::value_type operator*() {
 		  return currentNumerator.Current();
 	 }
 
-	 typename Base::pointer operator->()  {
-		  return &currentNumerator.Current();
+  //typename Base::pointer operator->()  {
+  typename Base::value_type operator->()  {
+		  return currentNumerator.Current();
 	 }
 
 	 bool operator==(const IteratorFromNumeratorAdapter& o) const {

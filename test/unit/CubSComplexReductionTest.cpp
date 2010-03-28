@@ -1,27 +1,16 @@
-#include <iostream>
-using namespace std;
-
-#include <capd/auxil/Stopwatch.h>
-#include <capd/auxil/CRef.h>
-#include <capd/homologicalAlgebra/embeddingDim.h>
-
-#include <capd/vectalg/MatrixSlice.h>
-#include <capd/matrixAlgorithms/intMatrixAlgorithms.hpp>
-
-#include <capd/homologicalAlgebra/homologicalAlgebra.hpp>
-#include <capd/homologicalAlgebra/homAlgFunctors.hpp>
-#include <capd/homologicalAlgebra/cubSetFunctors.hpp>
-#include <capd/homologicalAlgebra/ReducibleFreeChainComplex.hpp>
-
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_io.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
 #include <boost/test/unit_test.hpp>
 
-#include "CubSComplex.hpp"
-#include "SComplexAlgs.hpp"
+#include <iostream>
 
-BOOST_AUTO_TEST_SUITE(CubSComplex_reductions)
+#include <CubSComplex.hpp>
+#include <SComplexAlgs.hpp>
+#include <SComplexAlgs_DefaultReduceStrategy_CubSComplex.hpp>
+
+
+#include <capd/homologicalAlgebra/readCubCellSet.hpp>
 
 
 typedef ElementaryCell ElementaryCellType;
@@ -29,6 +18,8 @@ typedef int ScalarType;
 typedef FreeModule<int,capd::vectalg::Matrix<int,0,0> > FreeModuleType;
 typedef FreeChainComplex<FreeModuleType> FreeChainComplexType;
 typedef ReducibleFreeChainComplex<FreeModuleType,int> ReducibleFreeChainComplexType;
+
+BOOST_AUTO_TEST_SUITE(CubSComplex_reductions)
 
 
 template<typename SComplex>
@@ -39,13 +30,11 @@ boost::tuple<int, int, int, std::string>  CrHomS(const std::string &fileName) {
   Stopwatch swTot;
   BOOST_TEST_MESSAGE(" --- Reading cubical cellular set from  " << fileName);
 
-  CRef<SComplex> SComplexCR(new SComplex(readCubCellSet<BCubSet,BCubCelSet>(fileName.c_str())));
+  CRef<SComplex> SComplexCR(new SComplex(readCubCellSet<typename SComplex::BCubSet, typename SComplex::BCubCellSet>(fileName.c_str())));
   BOOST_TEST_MESSAGE("Successfully read  " << fileName <<
 							" of "  << SComplexCR().cardinality() << " cells ");
 
   get<0>(result) = SComplexCR().cardinality();
-//  SComplexAlgs<CubSComplex>::test(SComplexCR());
-
 
   Stopwatch swComp,swRed;
 
@@ -55,12 +44,12 @@ boost::tuple<int, int, int, std::string>  CrHomS(const std::string &fileName) {
   
   Stopwatch swCoRed;
 
-  (CoreductionAlgorithmFactory::createDefault(SComplexCR()))();
+  (*CoreductionAlgorithmFactory::createDefault(SComplexCR()))();
   BOOST_TEST_MESSAGE(" --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed);
   get<2>(result) = SComplexCR().cardinality();
   
   CRef<ReducibleFreeChainComplexType> RFCComplexCR=
-	 (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<CubSComplex, ReducibleFreeChainComplexType>(SComplexCR()))();
+	 (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SComplex, ReducibleFreeChainComplexType>(SComplexCR()))();
   BOOST_TEST_MESSAGE(" --- RFCC constructed  ");
 
   CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
@@ -75,7 +64,7 @@ boost::tuple<int, int, int, std::string>  CrHomS(const std::string &fileName) {
 
 
 BOOST_AUTO_TEST_CASE(reduction_test) {
-  BOOST_CHECK_EQUAL(CrHomS<CubSComplex>("test/input_1.bmd"), boost::make_tuple(71639264, 817510, 3815, "0,1057"));
+  BOOST_CHECK_EQUAL(CrHomS<CubSComplex<3> >("test/input_1.bmd"), boost::make_tuple(71639264, 817510, 3815, "0,1057"));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

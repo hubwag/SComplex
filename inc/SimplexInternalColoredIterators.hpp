@@ -70,7 +70,8 @@ struct ColoredIterators
         }
     };
 
-    BdCells bdCells(const Simplex &c)
+		template<typename ImplT>
+		BdCells bdCells(const CellProxy<ImplT> &c)
     {
         return BdCells(comp, c, color);
     }
@@ -131,9 +132,10 @@ struct ColoredIterators
             }
         };
 
-        CbdCells cbdCells(const Simplex &c)
+		template<typename ImplT>
+		CbdCells cbdCells(const CellProxy<ImplT> &c)
         {
-            return CbdCells(comp, c, color);
+			 return CbdCells(comp, *c.getImpl(), color);
         }
     };
 };

@@ -2,6 +2,13 @@
 #define _SCOMPLEX_ALGS_COREDUCTION_HPP
 
 #include "SComplexAlgs_DefaultReduceStrategy.hpp"
+#include <deque>
+#include <set>
+#include <boost/pool/object_pool.hpp>
+#include <boost/pool/pool_alloc.hpp>
+#include <boost/shared_ptr.hpp>
+#include <capd/auxil/Stopwatch.h>
+
 
 template<typename StrategyT>
 class CoreductionAlgorithm {
@@ -10,11 +17,9 @@ public:
   typedef StrategyT Strategy;
 
   typedef typename Strategy::SComplex SComplex;
-  typedef typename Strategy::Cell Cell;
-  typedef typename Strategy::CoreductionPair CoreductionPair;
-
+  typedef typename Strategy::Cell Cell;  
   
-  CoreductionAlgorithm(Strategy* _strategy): strategy(_strategy), dummyCell1(_strategy->getComplex()) {}
+  CoreductionAlgorithm(Strategy* _strategy): strategy(_strategy) {}
 
   ~CoreductionAlgorithm() {
 	 if (strategy)
@@ -24,53 +29,76 @@ public:
   int operator()();
 
 private:
-  void storeGenerator(const Cell& c);
-  void storeCoreductionPair(const CoreductionPair& ) {}
+
+  template<typename ImplT>
+  void storeGenerator(const typename Strategy::SComplex::template CellProxy<ImplT>& a) {
+	 collectedHomGenerators.push_back(a);
+  }
+
+  template<typename ImplT1, typename ImplT2>
+  void storeCoreductionPair(const typename Strategy::SComplex::template CellProxy<ImplT1>& a, const typename Strategy::SComplex::template CellProxy<ImplT2>& b) {}
   
-  boost::optional<CoreductionPair> getNextPair();  
-  void addCellsToProcess(const Cell& sourceFace);
+  bool coreduceNextPair();  
+
+  template<typename ImplT>
+  void addCellsToProcess(const typename Strategy::SComplex::template CellProxy<ImplT>& sourceFace) {
+	 // Finally, put all present cofaces of the source face
+	 // into the queue
+	 typename SComplex::ColoredIterators::Iterators::CbdCells cbdCells = strategy->getComplex().template iterators<1>().cbdCells(sourceFace);
+	 for (typename SComplex::ColoredIterators::Iterators::CbdCells::iterator cbdn = cbdCells.begin(),
+			  end = cbdCells.end(); cbdn != end; ++cbdn) {
+		typename SComplex::ColoredIterators::Iterators::CbdCells::iterator::value_type v = *cbdn;
+		if (!cellIdsToProcess[v.getId()]) {
+		  cellsToProcess.push_back(v);
+		  cellIdsToProcess[v.getId()] = true;
+		}
+	 }
+  }
 
 
+  template<typename ImplT1, typename ImplT2>
+  void doCoreduction(const typename Strategy::SComplex::template CellProxy<ImplT1>& a, const typename Strategy::SComplex::template CellProxy<ImplT2>& b) {
+	 storeCoreductionPair(a, b);
+	 strategy->coreduce(a, b);
+	 addCellsToProcess(a);		
+  }
+  
   Strategy* strategy;
   
   std::vector<Cell> collectedHomGenerators;
   std::deque<Cell> cellsToProcess;
-  Cell dummyCell1;
+  std::vector<bool> cellIdsToProcess;
 };
 
 class CoreductionAlgorithmFactory {
 
 public:
   template<typename SComplex>
-  static CoreductionAlgorithm<DefaultReduceStrategy<SComplex> > createDefault(SComplex& s) {
-	 return CoreductionAlgorithm<DefaultReduceStrategy<SComplex> >(new DefaultReduceStrategy<SComplex>(s));
+  static boost::shared_ptr< CoreductionAlgorithm<DefaultReduceStrategy<SComplex> > > createDefault(SComplex& s) {
+	 return boost::shared_ptr< CoreductionAlgorithm<DefaultReduceStrategy<SComplex> > >(new CoreductionAlgorithm<DefaultReduceStrategy<SComplex> >(new DefaultReduceStrategy<SComplex>(s)));
   }
+
 };
 
-
-
 template<typename StrategyT>
-inline void CoreductionAlgorithm<StrategyT>::storeGenerator(const Cell& c){
-  collectedHomGenerators.push_back(c);
-}
-
-
-template<typename StrategyT>
-inline boost::optional<typename CoreductionAlgorithm<StrategyT>::CoreductionPair> CoreductionAlgorithm<StrategyT>::getNextPair() {
+inline bool CoreductionAlgorithm<StrategyT>::coreduceNextPair() {
   
   while (! cellsToProcess.empty() ) {
-	 Cell& cell = cellsToProcess.front();
+	 Cell* cell = &cellsToProcess.front();
 	 
-	 if (! strategy->reduced(cell)) {
-		dummyCell1 = cell;
-		boost::optional<CoreductionPair> coreductionPair = strategy->getCoreductionPair(dummyCell1);
+	 if (! strategy->reduced(*cell)) {
+		typename StrategyT::Traits::template GetCoreductionPair<Cell>::result_type coreductionPair = strategy->getCoreductionPair(*cell);
+		
 		if (coreductionPair) {		
-		  cellsToProcess.pop_front();	 
-		  return coreductionPair;
+		  doCoreduction(*coreductionPair, *cell);
+		  cellIdsToProcess[cell->getId()] = false;
+		  cellsToProcess.pop_front();
+		  return true;
 		} else {
-		  addCellsToProcess(cell);
+		  addCellsToProcess(*cell);
 		}
 	 }
+	 cellIdsToProcess[cell->getId()] = false;
 	 cellsToProcess.pop_front();	 
   }
 
@@ -79,22 +107,24 @@ inline boost::optional<typename CoreductionAlgorithm<StrategyT>::CoreductionPair
   // is exhausted
   // If we know that a coreduction may be there,
   // For instance when treating a non-compact set
-  return strategy->forceCoreductionPair();
+  typename StrategyT::Traits::ForceCoreduction::result_type force = strategy->forceCoreductionPair();
+  if (force) {
+	 doCoreduction(force->first, force->second);
+	 return true;
+  }
+  return false;
 }
 
 
 template<typename StrategyT>
 inline int CoreductionAlgorithm<StrategyT>::operator()(){
+  //cellIdsToProcess.resize(strategy->getComplex().cardinality()); // 
+  cellIdsToProcess.resize(strategy->getComplex().size());
+
   int cnt=0;
 
   for(;;){
-	 boost::optional<CoreductionPair> nextPair = getNextPair();
-	 
-	 if (nextPair) {
-		storeCoreductionPair(*nextPair);
-		addCellsToProcess(strategy->getFace(*nextPair));
-		
-		strategy->coreduce(*nextPair);		
+	 if (coreduceNextPair()) {
 		++cnt;++cnt;
 	 } else {
 		// If the search failed or when we even did not try to search
@@ -102,7 +132,7 @@ inline int CoreductionAlgorithm<StrategyT>::operator()(){
 		// a homology generator like in the case of a vertex in
 		// a compact set, we just pick up such a cell and
 		// remove it from the complex
-		boost::optional<Cell&> sourceFace = strategy->extract();
+		typename StrategyT::Traits::Extract::result_type sourceFace = strategy->extract();
 
 		if(sourceFace){
 		  storeGenerator(*sourceFace);		  
@@ -117,18 +147,6 @@ inline int CoreductionAlgorithm<StrategyT>::operator()(){
   }
   
   return cnt; // the number of cells removed
-}
-
-template<typename StrategyT>
-inline void CoreductionAlgorithm<StrategyT>::addCellsToProcess(const Cell& sourceFace) {
-  // Finally, put all present cofaces of the source face
-  // into the queue
-  for (typename SComplex::ColoredIterators::Iterators::CbdCells::iterator cbdn = strategy->getComplex().template iterators<1>().cbdCells(sourceFace).begin(),
-			end = strategy->getComplex().template iterators<1>().cbdCells(sourceFace).end(); cbdn != end; ++cbdn) {
-	 if (! strategy->reduced(*cbdn)) {
-		cellsToProcess.push_back(*cbdn);
-	 }
-  }
 }
 
 #endif

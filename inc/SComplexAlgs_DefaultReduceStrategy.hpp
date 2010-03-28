@@ -1,78 +1,169 @@
 #ifndef SCOMPLEX_ALGS_DEFAULT_REDUCE_STRATEGY_HPP_
 #define SCOMPLEX_ALGS_DEFAULT_REDUCE_STRATEGY_HPP_
 
+#include <boost/optional.hpp>
+#include <boost/foreach.hpp>
+#include <utility>
+
 template<typename SComplexT>
-class DefaultReduceStrategy {
+class DefaultReduceStrategyTraits {
+public:
+  
+  // template<typename ImplT>
+  // struct Proxy: public CellProxy<ImplT> {
+  // 	 template<typename ImplT2>
+  // 	 Proxy(const ImplT2& impl): CellProxy<ImplT>(impl) {}
+
+  // 	 Proxy(const SComplexT& c): CellProxy<ImplT>(ImplT(c)) {}
+  // };
+
+  // template<typename ImplT>
+  // struct Proxy<CellProxy<ImplT> >: public CellProxy<ImplT> {
+  // 	 template<typename ImplT2>
+  // 	 Proxy(const ImplT2& impl): CellProxy<ImplT>(impl) {}
+  // };
+
+  // template<typename ImplT>
+  // static Proxy<ImplT*> makeProxy(const CellProxy<ImplT>& impl) {
+  // 	 return Proxy<ImplT*>(impl.getImpl());
+  // }
+  
+  template<typename>
+  struct GetReductionPair;  
+
+  template<typename ArgT>
+  struct GetCoreductionPair: public std::unary_function<const ArgT&,
+																		  boost::optional<typename SComplexT::Cell> > {};
+
+  struct ForceCoreduction {
+	 typedef boost::optional<std::pair<typename SComplexT::Cell,
+												  typename SComplexT::Cell> > result_type;
+  };
+
+  struct Extract {
+	 typedef boost::optional<typename SComplexT::Cell >  result_type;
+  };
+};
+
+template<typename SComplexT>
+class DefaultReduceStrategyBase {
 
 public:
   typedef SComplexT SComplex;
+  typedef DefaultReduceStrategyTraits<SComplex> Traits;
   typedef typename SComplex::Cell Cell;
-  typedef std::pair<boost::reference_wrapper<Cell>, boost::reference_wrapper<Cell> > CoreductionPair;
-  typedef std::pair<boost::reference_wrapper<Cell>, boost::reference_wrapper<Cell> > ReductionPair;  
 
 
-  DefaultReduceStrategy(SComplex& _complex): complex(_complex), dummyCell1(_complex), dummyCell2(_complex),  dummyCell3(_complex) {}
+  DefaultReduceStrategyBase(SComplex& _complex): complex(_complex), dummyCell2(_complex),  dummyCell3(_complex) {}
   
   SComplex& getComplex() const {
 	 return complex;
   }
-
-  Cell& getFace(const CoreductionPair& coRedPair) {
-	 return boost::unwrap_ref(coRedPair.first);
-  }
   
-  bool reduced(const Cell& cell) const {
-	 return cell.getColor() == 2;
+  template<typename ImplT>
+  static bool reduced(const typename SComplex::template CellProxy<ImplT>& cell) {
+  	 return cell.getColor() == 2;
   }
 
-  void coreduce(const CoreductionPair& coRedPair) const {
-	 boost::unwrap_ref(coRedPair.first).template setColor<2>();
-	 boost::unwrap_ref(coRedPair.second).template setColor<2>();
+  template<typename ImplT1, typename ImplT2>	 
+  static void coreduce(const typename SComplex::template CellProxy<ImplT1>& a, const typename SComplex::template CellProxy<ImplT2>& b)  {
+  	 a.template setColor<2>();
+  	 b.template setColor<2>();
   }
 
-  void reduce(const ReductionPair& redPair) const {
-	 boost::unwrap_ref(redPair.first).template setColor<2>();
-	 boost::unwrap_ref(redPair.second).template setColor<2>();
+  template<typename ImplT1, typename ImplT2>	 
+  static void reduce(const typename SComplex::template CellProxy<ImplT1>& a, const typename SComplex::template CellProxy<ImplT2>& b)  {
+  	 a.template setColor<2>();
+  	 b.template setColor<2>();
   }
 
-  void reduce(Cell& cell) {
+  template<typename ImplT>
+  static void reduce(const typename SComplex::template CellProxy<ImplT>& cell) {
 	 cell.template setColor<2>();
   }
   
-  boost::optional<Cell&> extract() {
-	 typename SComplex::ColoredIterators::Iterators::DimCells::iterator end = complex.iterators(1).dimCells(0).end(),
-		it = complex.iterators(1).dimCells(0).begin();
+  typename Traits::Extract::result_type extract() {
+	 typename SComplex::ColoredIterators::Iterators::DimCells dimCells = complex.iterators(1).dimCells(0);
+  	 typename SComplex::ColoredIterators::Iterators::DimCells::iterator end = dimCells.end(),
+  		it = dimCells.begin();
 
-	 if (it != end) { 
-		dummyCell1 = *it;
-		return dummyCell1;
-	 }
-	 return boost::optional<Cell&>();	 
+  	 if (it != end) { 
+  		return typename Traits::Extract::result_type::value_type(*it);
+  	 }
+  	 return typename Traits::Extract::result_type();	 
   }
   
-  boost::optional<CoreductionPair> forceCoreductionPair() {
-	 return boost::optional<CoreductionPair>();
+  static typename Traits::ForceCoreduction::result_type forceCoreductionPair() {
+  	 return typename Traits::ForceCoreduction::result_type();
   }
 
-  boost::optional<CoreductionPair> getCoreductionPair(Cell& cell) {
-	 if (complex.getUniqueFace(cell, dummyCell3)) {
-	  	return std::make_pair(boost::ref(dummyCell3), boost::ref(cell));
-	 } else {
-		return boost::optional<ReductionPair>();
-	 }
-  }
-  
-  boost::optional<ReductionPair> getReductionPair(Cell& cell) {
-	 if (complex.getUniqueCoFace(cell, dummyCell2)) {
-	  	return std::make_pair(boost::ref(cell), boost::ref(dummyCell2));
-	 } else {
-		return boost::optional<ReductionPair>();
-	 }
+  template<typename ArgT>
+  typename Traits::template GetCoreductionPair<ArgT>::result_type
+  getCoreductionPair(const ArgT& cell)
+  {
+  	 int times = 0;
+  	 BOOST_FOREACH(typename SComplex::ColoredIterators::Iterators::BdCells::iterator::value_type v,
+  						complex.iterators(1).bdCells(cell)) {
+  		if (times == 0) {
+  		  dummyCell3 = v;
+  		}
+  		++times;
+  		if (times == 2) {
+		  break;
+  		}
+  	 }
+
+  	 if (times == 1) {
+  		return typename Traits::template GetCoreductionPair<ArgT>::result_type(dummyCell3);
+  	 }
+  	 return typename Traits::template GetCoreductionPair<ArgT>::result_type();
   }
 
-private:
+  template<typename ImplT>
+  typename Traits::template GetReductionPair<typename SComplex::template CellProxy<ImplT> >::result_type
+  getReductionPair(typename Traits::template GetReductionPair<typename SComplex::template CellProxy<ImplT> >::argument_type cell)
+  {
+  	 int times = 0;
+  	 BOOST_FOREACH(typename SComplex::ColoredIterators::Iterators::CbdCells::iterator::value_type v,
+  						complex.iterators(1).cbdCells(cell)) {
+  		if (times == 0) {
+  		  dummyCell2 = v;
+  		}
+  		++times;
+  		if (times == 2) {
+  		  break;
+  		}
+  	 }
+
+  	 if (times == 1) {
+  		return typename Traits::template GetReductionPair<typename SComplex::template CellProxy<ImplT> >::result_type(dummyCell2);
+  	 }
+  	 return typename Traits::template GetReductionPair<typename SComplex::template CellProxy<ImplT> >::result_type();
+  }
+
+
+  size_t getMaxDim() {
+	 typename SComplex::Dim maxDim = 0;
+	 for (typename SComplex::ColoredIterators::Iterators::AllCells::iterator it = complex.template iterators<1>().allCells().begin(),
+			  end = complex.template iterators<1>().allCells().end();
+			it != end; ++it) {
+
+		maxDim = std::max(maxDim, (*it).getDim());
+	 }
+	 
+	 return maxDim;
+  }
+
+protected:
   SComplex& complex;
-  Cell dummyCell1, dummyCell2, dummyCell3;
+  Cell dummyCell2, dummyCell3;
+};
+
+template<typename SComplexT>
+class DefaultReduceStrategy: public DefaultReduceStrategyBase<SComplexT> {
+
+public:
+  DefaultReduceStrategy(SComplexT& _complex): DefaultReduceStrategyBase<SComplexT>(_complex) {}
 };
 
 #endif

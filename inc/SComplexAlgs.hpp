@@ -12,9 +12,23 @@
 
 #include <utility>
 #include <algorithm>
+#include <map>
+#include <set>
 
 #include "SComplexAlgs_Coreduction.hpp"
 #include "SComplexAlgs_Shave.hpp"
+#include "SComplexAlgs_DefaultReduceStrategy.hpp"
+
+#include <capd/auxil/Stopwatch.h>
+#include <capd/auxil/CRef.h>
+#include <capd/homologicalAlgebra/embeddingDim.h>
+
+#include <capd/vectalg/MatrixSlice.h>
+#include <capd/matrixAlgorithms/intMatrixAlgorithms.hpp>
+#include <capd/homologicalAlgebra/homologicalAlgebra.hpp>
+#include <capd/homologicalAlgebra/homAlgFunctors.hpp>
+#include <capd/homologicalAlgebra/cubSetFunctors.hpp>
+#include <capd/homologicalAlgebra/ReducibleFreeChainComplex.hpp>
 
 
 template<typename SComplexT, typename ReducibleFreeChainComplexT>
@@ -22,7 +36,7 @@ class ReducibleFreeChainComplexOverZFromSComplexAlgorithm {
 
 public:
   typedef SComplexT SComplex;
-  typedef typename SComplex::Cell Cell;
+  typedef typename DefaultReduceStrategy<SComplexT>::Cell Cell;
 
   typedef ReducibleFreeChainComplexT ReducibleFreeChainComplex;
 
@@ -49,7 +63,6 @@ public:
 				 end = complex.template iterators<1>().bdCells(this->cell).end();
 			  it != end; ++it) {
 		  A_boundary.insert(std::make_pair(SComplexChainCell(complex, *it, embededDim),
-													  //complex.coincidenceIndex(*it, this->cell)
 													  complex.coincidenceIndex(this->cell, *it)
 													  ));
 		}
@@ -70,20 +83,12 @@ private:
   SComplex& s;
 };
 
-
 template<typename SComplexT, typename ReducibleFreeChainComplexT>
 inline CRef<ReducibleFreeChainComplexT> ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SComplexT, ReducibleFreeChainComplexT>::operator()(){
-
-  // Stopwatch sw;
+  
   std::set<SComplexChainCell> cells;
 
-  size_t maxDim = 0;
-  for (typename SComplex::ColoredIterators::Iterators::AllCells::iterator it = s.template iterators<1>().allCells().begin(),
-			end = s.template iterators<1>().allCells().end();
-		 it != end; ++it) {
-
-	 maxDim = std::max<int>(maxDim, it->getDim());
-  }
+  size_t maxDim = (DefaultReduceStrategy<SComplexT>(s)).getMaxDim(); // TODO add strategy as a member
 
   for (typename SComplex::ColoredIterators::Iterators::AllCells::iterator it = s.template iterators<1>().allCells().begin(),
 			end = s.template iterators<1>().allCells().end();
@@ -93,7 +98,6 @@ inline CRef<ReducibleFreeChainComplexT> ReducibleFreeChainComplexOverZFromSCompl
 
   CRef<ReducibleFreeChainComplex> rfccCR( new ReducibleFreeChainComplex(cells));
 
-  // fcout << "Reducible chain complex (over Z) construction of CubCelSet completed in " << sw  << std::endl;
   return rfccCR;
 }
 

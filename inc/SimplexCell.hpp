@@ -10,9 +10,12 @@ class SimplexCell
     Simplex *simp;
 public:
 
-    explicit SimplexCell(Simplex *simplex = 0) : simp(simplex)
-    {
-    }
+  typedef int Dim;
+  typedef int Color;
+  
+	explicit SimplexCell(Simplex *simplex = 0) : simp(simplex)
+	{
+	}
 
     template<typename dummy>
     explicit SimplexCell(dummy &) : simp(0)

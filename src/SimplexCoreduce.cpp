@@ -15,24 +15,10 @@ using namespace std;
 #include "Simplex.hpp"
 #include "SimplexSComplex.hpp"
 
-/*
-template<typename simplex_t, typename out_iter_t>
-void get_neighbours(simplex_t &s, out_iter_t out)
-{
-    for (auto it = s.coborder.begin(), end = s.coborder.end(); it != end; ++it)
-    {
-        for (auto it2 = (*it)->border.begin(), end2 = (*it)->border.end(); it2 != end2; ++it2)
-            *out++ = *it2;
-    }
-}
-*/
-
-/****  CRHomS.cpp            ****/
-/**** (c) Marian Mrozek 2009 ****/
-
 #include <iostream>
 #include <queue>
 #include <deque>
+
 using namespace std;
 #include <capd/auxil/Stopwatch.h>
 #include <capd/auxil/CRef.h>
@@ -47,26 +33,25 @@ using namespace std;
 #include <capd/homologicalAlgebra/cubSetFunctors.hpp>
 #include <capd/homologicalAlgebra/ReducibleFreeChainComplex.hpp>
 
-//#include "CubSComplex.hpp"
 
 ofstreamcout fcout; // ?
 
 #include "SComplexAlgs.hpp"
 
-// typedef ElementaryCell ElementaryCellType;
 typedef int ScalarType;
 typedef FreeModule<int,capd::vectalg::Matrix<int,0,0> > FreeModuleType;
 typedef FreeChainComplex<FreeModuleType> FreeChainComplexType;
 typedef ReducibleFreeChainComplex<FreeModuleType,int> ReducibleFreeChainComplexType;
 
 #include "SimplexSubdivision.hpp"
+#include <CrHomS.hpp>
 
 template<typename SComplex>
 void CrHomS_fromTris(const vector<set<int> > &tris, const string &description)
 {
     Stopwatch swTot;
-
     CRef<SComplex> SComplexCR(new SComplex());
+	 vector<set<int> > tris = makeTest();
 
     for (size_t i = 0; i < tris.size(); i++)
     {

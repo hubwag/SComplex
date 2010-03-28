@@ -10,21 +10,36 @@ using namespace std;
 
 #include <capd/vectalg/MatrixSlice.h>
 #include <capd/matrixAlgorithms/intMatrixAlgorithms.hpp>
-
+#include <capd/bitSet/EuclBitSet.h>
 #include <capd/homologicalAlgebra/homologicalAlgebra.hpp>
 #include <capd/homologicalAlgebra/homAlgFunctors.hpp>
 #include <capd/homologicalAlgebra/cubSetFunctors.hpp>
 #include <capd/homologicalAlgebra/ReducibleFreeChainComplex.hpp>
 
+#include <CubSComplex.hpp>
+#include <SComplexAlgs.hpp>
+#include <SComplexAlgs_DefaultReduceStrategy_CubSComplex.hpp>
+
+
 #include "CubSComplex.hpp"
 #include "SComplexAlgs.hpp"
+#include <SComplexAlgs_DefaultReduceStrategy_CubSComplex.hpp>
 
-typedef ElementaryCell ElementaryCellType;
-typedef int ScalarType;
-typedef FreeModule<int,capd::vectalg::Matrix<int,0,0> > FreeModuleType;
-typedef FreeChainComplex<FreeModuleType> FreeChainComplexType;
-typedef ReducibleFreeChainComplex<FreeModuleType,int> ReducibleFreeChainComplexType;
+#ifndef DIM
+//#error "Define dimension"
+#define DIM EMBEDDING_DIM
+#endif
 
+int COPY = 0;
+void DO_COPY(int* d, const int* s, int n) {
+  for (int i = 0; i < n; ++i)
+	 d[i] = s[i];
+  ++COPY;
+}
+
+int FAILED = 0;
+long INSERTED = 0;
+int CALL = 0;
 
 template<typename SComplex>
 void CrHomS(int argc,char* argv[]){
@@ -36,45 +51,30 @@ void CrHomS(int argc,char* argv[]){
   cout << "Successfully read  " << fileName <<
           " of "  << SComplexCR().cardinality() << " cells " << endl;
 
-//  SComplexAlgs<CubSComplex>::test(SComplexCR());
-
 
   Stopwatch swComp,swRed;
   (ShaveAlgorithmFactory::createDefault(SComplexCR()))();  
   cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
   
-  Stopwatch swCoRed;
-  (CoreductionAlgorithmFactory::createDefault(SComplexCR()))();
-  cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
+   Stopwatch swCoRed;
+  (*CoreductionAlgorithmFactory::createDefault(SComplexCR()))();
+   cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
 
-  CRef<ReducibleFreeChainComplexType> RFCComplexCR=
-		(ReducibleFreeChainComplexOverZFromSComplexAlgorithm<CubSComplex, ReducibleFreeChainComplexType,ElementaryCellType>(SComplexCR()))();
-  cout << " --- RFCC constructed  " << endl;
+  // CRef<ReducibleFreeChainComplexType> RFCComplexCR=
+  // 		(ReducibleFreeChainComplexOverZFromSComplexAlgorithm<CubSComplex, ReducibleFreeChainComplexType>(SComplexCR()))();
+  // cout << " --- RFCC constructed  " << endl;
 
-  CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
-  cout << " --- Computation completed in " << swComp  << std::endl;
-  cout << " --- Computed homology is: \n\n" << homSignCR()  << std::endl;
+  // CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
+  // cout << " --- Computation completed in " << swComp  << std::endl;
+  // cout << " --- Computed homology is: \n\n" << homSignCR()  << std::endl;
 
-  cout << " --- Total computation time is: " << swTot  << std::endl;
+	cout << " --- Total computation time is: " << swTot  << " copy " << COPY << " failed " << FAILED << " inserted :" << INSERTED << "CALL " << CALL << std::endl;
 
 }
 ofstreamcout fcout;
 
 int main(int argc,char* argv[]){
-  std::string outFname="out.txt";
-  fcout.turnOn();
-  fcout.open(outFname.c_str());
 
-  try{
-    CrHomS<CubSComplex>(argc,argv);
-  }catch(std::exception& e){
-    std::cout << "Caught exception: " << e.what() << endl;
-  }catch(std::string& s){
-    std::cout << "Caught exception: " << s.c_str() << endl;
-  }catch(const char* c){
-    std::cout << "Caught exception: " << c << endl;
-  }catch(...){
-    std::cout << "Caught an unknown exception: " << endl;
-  }
+  CrHomS<CubSComplex<DIM> >(argc,argv);
 }
 

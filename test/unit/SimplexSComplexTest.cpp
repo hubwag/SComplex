@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE(shave_and_coreduce_test) {
 	(ShaveAlgorithmFactory::createDefault(comp))();
 	BOOST_CHECK_EQUAL(9, comp.cardinality());
 
-	(CoreductionAlgorithmFactory::createDefault(comp))();
+	(*CoreductionAlgorithmFactory::createDefault(comp))();
 	BOOST_CHECK_EQUAL(2, comp.cardinality());
 }
 
