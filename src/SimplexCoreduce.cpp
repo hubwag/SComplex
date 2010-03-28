@@ -169,7 +169,53 @@ void CrHomS(int argc,char* argv[])
     cout << "\n\n\n";
 }
 
-int main(int argc,char* argv[])
+#include "simplexIO.hpp"
+
+void showObj(const string &s)
+{
+	Stopwatch swTot;
+	ifstream ifs(s.c_str());
+	CRef<SimplexSComplex> SComplexCR(new SimplexSComplex());
+
+	parseObj(ifs, SComplexCR()); //
+
+	cout << SComplexCR().cardinality() << endl;
+
+	Stopwatch swComp,swRed;
+	(ShaveAlgorithmFactory::createDefault(SComplexCR()))();
+    cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
+
+    Stopwatch swCoRed;
+    (CoreductionAlgorithmFactory::createDefault(SComplexCR()))();
+    cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
+
+
+    CRef<ReducibleFreeChainComplexType> RFCComplexCR=
+        (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SimplexSComplex, ReducibleFreeChainComplexType>(SComplexCR()))();
+    cout << " --- RFCC constructed  " << endl;
+
+    CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
+    cout << " --- Computation completed in " << swComp  << std::endl;
+    cout << " --- Computed homology is: \n\n" << homSignCR()  << std::endl;
+    cout << " --- Total computation time is: " << swTot  << std::endl;
+
+    cout << "\n\n\n";
+}
+
+int main()
+{
+	string pref = "c:/Users/hub/Downloads/";
+	string files[] = {"buddha.obj", "bunny.obj", "dragon.obj", "toruses.obj", "s2.obj"};
+
+	for (int i  = 0; i < sizeof(files)/sizeof(*files); i++)
+	{
+		cout << files[i] << endl;
+		showObj(pref + files[i]);
+		cout << endl;
+	}
+}
+
+int __main(int argc,char* argv[])
 {
     std::string outFname="out.txt";
     fcout.turnOn();
@@ -217,15 +263,15 @@ int main(int argc,char* argv[])
         CrHomS_fromTris<SimplexSComplex>(klein, "klein bottle");
         CrHomS_fromTris<SimplexSComplex>(pspace, "real projective space");
 
-        for (int i = 0; i < 1; i++)
+        for (int i = 0; i < 5; i++)
         {
             klein = subdivide6(klein);
-            CrHomS_fromTris<SimplexSComplex>(klein, "klein bottle (after 3-subdivisions)");
+            CrHomS_fromTris<SimplexSComplex>(klein, "klein bottle (after barycntric subdivisions)");
         }
 
         CrHomS_fromTris<SimplexSComplex>(torus, "torus");
 
-        for (int i = 0; i < 0; i++)
+        for (int i = 0; i < 5; i++)
         {
             torus = subdivide3(torus);
             CrHomS_fromTris<SimplexSComplex>(torus, "torus (after 3-subdivisions)");

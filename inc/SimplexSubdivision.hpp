@@ -136,7 +136,6 @@ vector<set<int> > makeSpaceFromWelds(const vector<int> &welds)
 
 	return tris;
 }
-
 // barycentric
 vector<set<int> > subdivide6(const vector<set<int> > &v)
 {
