@@ -15,17 +15,20 @@ class CubSComplex<DIM>::CellProxy: public Enable {
 template<int DIM>
 template<typename CellImplT>
 class CubSComplex<DIM>::CellProxy<CellImplT,
-											 typename boost::enable_if<typename boost::is_base_of<typename CubSComplex<DIM>::CellImpl,
-																													typename boost::remove_pointer<CellImplT>::type >::type
-																				>::type > : public BasicCellProxy<CellImplT> {
+				  typename boost::enable_if<typename boost::is_base_of<typename CubSComplex<DIM>::CellImpl,
+										       typename boost::remove_pointer<CellImplT>::type >::type
+							    >::type > : public BasicCellProxy<CellImplT> {
 protected:
   using BasicCellProxy<CellImplT>::impl;
+
 public:
+
+
   template<typename CubCellImplT2>
   CellProxy(const CubCellImplT2& _impl): BasicCellProxy<CellImplT>(_impl) {}
 
   template<typename CubCellImplT2>
-  CellProxy(const CellProxy<CubCellImplT2>& other): BasicCellProxy<CellImplT>(other.impl) {}
+  CellProxy(const CellProxy<CubCellImplT2>& other): BasicCellProxy<CellImplT>(*other.getImpl()) {}
   
   const typename CubSComplex<DIM>::BCubCellSet::BitCoordIterator& getBitCoordIt() const {
 	 return CellProxy<CellImplT>::getImpl()->getBitCoordIt();

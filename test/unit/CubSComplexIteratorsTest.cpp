@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_SUITE(CubSComplex_iterators)
 
 
 boost::shared_ptr<CubSComplex<3> > createComplex() {
-  return readCubSComplex<3>("test/input_1.bmd");
+  return readCubSComplex<3>(PROJECT_SOURCE_DIR"test/input_1.bmd");
 }
 
   

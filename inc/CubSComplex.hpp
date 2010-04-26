@@ -18,7 +18,7 @@
 
 #include <capd/bitSet/CubCellSetT.hpp>
 #include <capd/bitSet/CubSetT.hpp>
-#include <capd/bitSet/EuclBitSetT.hpp>
+//#include <capd/bitSet/EuclBitSetT.hpp>
 
 
 
@@ -240,6 +240,12 @@ inline int CubSComplex<DIM>::coincidenceIndex(const CellProxy<ImplT1> &_a, const
 
 template<int DIM>
 boost::shared_ptr<CubSComplex<DIM> > readCubSComplex(std::string fileName) {
+  ifstream file;
+  file.open(fileName.c_str());
+  if (!file) {
+    std::cerr << "File not found: " << fileName << std::endl;
+    return boost::shared_ptr<CubSComplex<DIM> >();
+  }
   return boost::shared_ptr<CubSComplex<DIM> >(new CubSComplex<DIM>(readCubCellSet<typename CubSComplex<DIM>::BCubSet, typename CubSComplex<DIM>::BCubCellSet>(fileName.c_str())));
 }
 

@@ -6,10 +6,13 @@
 template<typename CellImplT>
 class BasicCellProxy {
 protected:
-  mutable CellImplT impl;
   //  boost::reference_wrapper<CellImplT> nonConstImpl;
+
+  mutable CellImplT impl;
   
 public:
+
+
   typedef typename CellImplT::Color Color;
   typedef typename CellImplT::Dim Dim;
   typedef typename CellImplT::Id Id;
