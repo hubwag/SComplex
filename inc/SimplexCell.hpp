@@ -3,8 +3,9 @@
 
 #include <cstdlib>
 
-struct Simplex;
+// struct Simplex;
 
+/*
 class SimplexCell
 {
     Simplex *simp;
@@ -12,7 +13,7 @@ public:
 
   typedef int Dim;
   typedef int Color;
-  
+
 	explicit SimplexCell(Simplex *simplex = 0) : simp(simplex)
 	{
 	}
@@ -54,6 +55,6 @@ public:
     void setColor();
 
     int getDim() const;
-};
+};*/
 
 #endif

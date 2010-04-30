@@ -8,6 +8,9 @@
 #include <cassert>
 // #include <array>
 #include <list>
+#include <queue>
+#include <deque>
+
 using namespace std;
 
 #include "simple_set.h"
@@ -15,11 +18,8 @@ using namespace std;
 #include "Simplex.hpp"
 #include "SimplexSComplex.hpp"
 
-#include <iostream>
-#include <queue>
-#include <deque>
 
-using namespace std;
+
 #include <capd/auxil/Stopwatch.h>
 #include <capd/auxil/CRef.h>
 
@@ -36,22 +36,23 @@ using namespace std;
 
 ofstreamcout fcout; // ?
 
-#include "SComplexAlgs.hpp"
-
 typedef int ScalarType;
 typedef FreeModule<int,capd::vectalg::Matrix<int,0,0> > FreeModuleType;
 typedef FreeChainComplex<FreeModuleType> FreeChainComplexType;
 typedef ReducibleFreeChainComplex<FreeModuleType,int> ReducibleFreeChainComplexType;
 
+#include "SComplexAlgs.hpp"
+
+
 #include "SimplexSubdivision.hpp"
-#include <CrHomS.hpp>
+// #include "CrHomS.hpp"
 
 template<typename SComplex>
 void CrHomS_fromTris(const vector<set<int> > &tris, const string &description)
 {
     Stopwatch swTot;
     CRef<SComplex> SComplexCR(new SComplex());
-	 vector<set<int> > tris = makeTest();
+	// vector<set<int> > tris = makeTest();
 
     for (size_t i = 0; i < tris.size(); i++)
     {
@@ -76,17 +77,20 @@ void CrHomS_fromTris(const vector<set<int> > &tris, const string &description)
 
     //  SComplexAlgs<CubSComplex>::test(SComplexCR());
 
-    Stopwatch swComp,swRed;
+    /*Stopwatch swComp,swRed;
     (ShaveAlgorithmFactory::createDefault(SComplexCR()))();
     cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
 
     Stopwatch swCoRed;
-    (CoreductionAlgorithmFactory::createDefault(SComplexCR()))();
+    (*CoreductionAlgorithmFactory::createDefault(SComplexCR()))();
+
     cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
 
     CRef<ReducibleFreeChainComplexType> RFCComplexCR=
         (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SimplexSComplex, ReducibleFreeChainComplexType>(SComplexCR()))();
     cout << " --- RFCC constructed  " << endl;
+
+    */
 
     /*cout << "debug " << endl;
 
@@ -98,17 +102,49 @@ void CrHomS_fromTris(const vector<set<int> > &tris, const string &description)
     }
     */
 
+    /*
+
     CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
     cout << " --- Computation completed in " << swComp  << std::endl;
     cout << " --- Computed homology is: \n\n" << homSignCR()  << std::endl;
 
     cout << " --- Total computation time is: " << swTot  << std::endl;
 
-    cout << "\n\n\n";
+    cout << "\n\n\n"; */
+
+
+    boost::shared_ptr<CoreductionAlgorithm<DefaultReduceStrategy<SimplexSComplex> > >
+    cored = CoreductionAlgorithmFactory::createDefault(SComplexCR());
+
+    (*cored)();
+
+//    cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
+
+    testReduce(*cored->getStrategy()->outputComplex);
+    delete cored->getStrategy()->outputComplex;
+}
+
+
+template<typename SComplex>
+void testReduce(SComplex& complex) {
+
+	cout << "\n\ntesting on morse-smale complex\n\n";
+	 Stopwatch swComp,swRed;
+	 //(ShaveAlgorithmFactory::createDefault(SComplexCR()))();
+    //cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
+
+
+	 CRef<ReducibleFreeChainComplexType> RFCComplexCR=
+		(ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SComplex, ReducibleFreeChainComplexType>(complex))();
+	 cout << " --- RFCC constructed  " << endl;
+
+	 CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
+	 cout << " --- Computation completed in " << swComp  << std::endl;
+	 cout << " --- Computed homology is: \n\n" << homSignCR()  << std::endl;
 }
 
 template<typename SComplex>
-void CrHomS(int argc,char* argv[])
+void CrHomS()
 {
     Stopwatch swTot;
 
@@ -134,14 +170,14 @@ void CrHomS(int argc,char* argv[])
 //  SComplexAlgs<CubSComplex>::test(SComplexCR());
 
     Stopwatch swComp,swRed;
-    // (ShaveAlgorithmFactory::createDefault(SComplexCR()))();
-    // cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
+    (ShaveAlgorithmFactory::createDefault(SComplexCR()))();
+    cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
 
     // Stopwatch swCoRed;
     // (CoreductionAlgorithmFactory::createDefault(SComplexCR()))();
     // cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
 
-
+/*
     CRef<ReducibleFreeChainComplexType> RFCComplexCR=
         (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SimplexSComplex, ReducibleFreeChainComplexType>(SComplexCR()))();
     cout << " --- RFCC constructed  " << endl;
@@ -151,10 +187,22 @@ void CrHomS(int argc,char* argv[])
     cout << " --- Computed homology is: \n\n" << homSignCR()  << std::endl;
     cout << " --- Total computation time is: " << swTot  << std::endl;
 
-    cout << "\n\n\n";
+    cout << "\n\n\n";*/
+
+    boost::shared_ptr<CoreductionAlgorithm<DefaultReduceStrategy<SimplexSComplex> > >
+    cored = CoreductionAlgorithmFactory::createDefault(SComplexCR());
+
+    (*cored)();
+
+//    cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
+
+    testReduce(*cored->getStrategy()->outputComplex);
+    delete cored->getStrategy()->outputComplex;
 }
 
 #include "simplexIO.hpp"
+
+
 
 void showObj(const string &s)
 {
@@ -164,27 +212,25 @@ void showObj(const string &s)
 
 	parseObj(ifs, SComplexCR()); //
 
-	cout << SComplexCR().cardinality() << endl;
+	cout << "parsed file, cardinality: " << SComplexCR().cardinality() << endl;
+	cout << "it took: " << swTot << endl;
 
 	Stopwatch swComp,swRed;
-	(ShaveAlgorithmFactory::createDefault(SComplexCR()))();
-    cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
+	//(ShaveAlgorithmFactory::createDefault(SComplexCR()))();
+    // cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
+
 
     Stopwatch swCoRed;
-    (CoreductionAlgorithmFactory::createDefault(SComplexCR()))();
-    cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
 
+    boost::shared_ptr<CoreductionAlgorithm<DefaultReduceStrategy<SimplexSComplex> > >
+    cored = CoreductionAlgorithmFactory::createDefault(SComplexCR());
 
-    CRef<ReducibleFreeChainComplexType> RFCComplexCR=
-        (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SimplexSComplex, ReducibleFreeChainComplexType>(SComplexCR()))();
-    cout << " --- RFCC constructed  " << endl;
+    (*cored)();
 
-    CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
-    cout << " --- Computation completed in " << swComp  << std::endl;
-    cout << " --- Computed homology is: \n\n" << homSignCR()  << std::endl;
-    cout << " --- Total computation time is: " << swTot  << std::endl;
+    cout << " --- AKQ Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
 
-    cout << "\n\n\n";
+    testReduce(*cored->getStrategy()->outputComplex);
+    delete cored->getStrategy()->outputComplex;
 }
 
 int main()
@@ -199,8 +245,23 @@ int main()
 		cout << endl;
 	}
 }
+using namespace std;
+
 
 int __main(int argc,char* argv[])
+{
+   vector<set<int> > torus = makeSpaceFromWelds(makeProjectiveSpaceWelds());
+   // vector<set<int> > torus;
+
+   // for (int i = 0; i < 4; i++)
+   //	torus = subdivide6(torus);
+   CrHomS_fromTris<SimplexSComplex>(torus, "torus");
+   // showObj("c:/users/hub/downloads/bunny.obj");
+}
+
+
+/*
+int main(int argc,char* argv[])
 {
     std::string outFname="out.txt";
     fcout.turnOn();
@@ -240,6 +301,8 @@ int __main(int argc,char* argv[])
     ex.push_back(make_int_set(3,4));
     ex.push_back(make_int_set(0,5));
 
+    CrHomS_fromTris<SimplexSComplex>(klein, "klein bottle (after barycntric subdivisions)");
+
     try
     {
         CrHomS_fromTris<SimplexSComplex>(ex, "example from the article");
@@ -248,7 +311,7 @@ int __main(int argc,char* argv[])
         CrHomS_fromTris<SimplexSComplex>(klein, "klein bottle");
         CrHomS_fromTris<SimplexSComplex>(pspace, "real projective space");
 
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 4; i++)
         {
             klein = subdivide6(klein);
             CrHomS_fromTris<SimplexSComplex>(klein, "klein bottle (after barycntric subdivisions)");
@@ -283,3 +346,5 @@ int __main(int argc,char* argv[])
         std::cout << "Caught an unknown exception: " << endl;
     }
 }
+
+*/

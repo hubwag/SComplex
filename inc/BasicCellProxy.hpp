@@ -8,19 +8,19 @@ class BasicCellProxy {
 protected:
   mutable CellImplT impl;
   //  boost::reference_wrapper<CellImplT> nonConstImpl;
-  
+
 public:
   typedef typename CellImplT::Color Color;
   typedef typename CellImplT::Dim Dim;
   typedef typename CellImplT::Id Id;
-  
+
   typedef CellImplT Impl;
-  
+
   BasicCellProxy(const CellImplT& _impl): impl(_impl) {} //, nonConstImpl(impl) {}
 
   template<typename ImplT2>
   BasicCellProxy(const ImplT2& _impl): impl(_impl) {}
-  
+
   Color getColor() const{
 	 return impl.getColor();
   }
@@ -33,7 +33,7 @@ public:
   void setColor(const Color& color) const {
 	 impl.setColor(color);
   }
-	 
+
   Dim getDim() const {
 	 return impl.getDim();
   }
@@ -41,7 +41,7 @@ public:
   Id getId() const {
 	 return impl.getId();
   }
-  
+
   bool operator<(const BasicCellProxy& b) const {
 	 return impl < b.impl;
   }
@@ -60,6 +60,7 @@ protected:
 public:
   typedef typename CellImplT::Color Color;
   typedef typename CellImplT::Dim Dim;
+  typedef typename CellImplT::Id Id;
 
   typedef CellImplT Impl;
 
@@ -68,6 +69,10 @@ public:
 
   BasicCellProxy(const BasicCellProxy<CellImplT>& other): impl(other.getImpl()) {}
 																//nonConstImpl(*impl) {}
+  Id getId() const
+  {
+  	 return impl->getId();
+  }
 
   Color getColor() const{
 	 return impl->getColor();
@@ -81,13 +86,13 @@ public:
   void setColor(const Color& color) const {
 	 impl->setColor(color);
   }
-	 
+
   Dim getDim() const {
 	 return impl->getDim();
   }
 
   bool operator<(const BasicCellProxy& b) const {
-	 return *impl < b->impl;
+	 return *impl < *b.impl;
   }
 
   CellImplT* getImpl() const {

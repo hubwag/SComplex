@@ -50,6 +50,23 @@ typedef ReducibleFreeChainComplex<FreeModuleType,int> ReducibleFreeChainComplexT
 
 #include "SimplexSubdivision.hpp"
 #include <CrHomS.hpp>
+template<typename SComplex>
+void testReduceMS(SComplex& complex) {
+
+	cout << "\n\ntesting on morse-smale complex\n\n";
+	 Stopwatch swComp,swRed;
+	 //(ShaveAlgorithmFactory::createDefault(SComplexCR()))();
+    //cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
+
+
+	 CRef<ReducibleFreeChainComplexType> RFCComplexCR=
+		(ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SComplex, ReducibleFreeChainComplexType>(complex))();
+	 cout << " --- RFCC constructed  " << endl;
+
+	 CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
+	 cout << " --- Computation completed in " << swComp  << std::endl;
+	 cout << " --- Computed homology is: \n\n" << homSignCR()  << std::endl;
+}
 
 
 void CrHomS_torus(int argc,char* argv[])
@@ -57,14 +74,23 @@ void CrHomS_torus(int argc,char* argv[])
     Stopwatch swTot;
 	 vector<set<int> > tris = makeTest();
 
-	 Stopwatch swBuild;
+	Stopwatch swBuild;
 	typedef SComplex<SComplexDefaultTraits> Complex;
 	SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(1234567);
 
 	boost::shared_ptr<Complex> complex = builder(tris, 3, 1);
 	cout << " --- built in " << swBuild << std::endl;
-	testReduce(*complex);
-    cout << " --- generated simplicial complex --- \n cardinality: " << complex->size() << endl;
+
+	boost::shared_ptr<CoreductionAlgorithm<DefaultReduceStrategy<Complex> > >
+    cored = CoreductionAlgorithmFactory::createDefault(*complex);
+
+    (*cored)();
+
+	testReduceMS(*cored->getStrategy()->outputComplex);
+    delete cored->getStrategy()->outputComplex;
+
+	// testReduce(*complex);
+    // cout << " --- generated simplicial complex --- \n cardinality: " << complex->size() << endl;
 }
 
 int main(int argc,char* argv[])

@@ -1,3 +1,4 @@
+/*
 #include "SimplexCell.hpp"
 #include "Simplex.hpp"
 
@@ -19,3 +20,4 @@ int SimplexCell::getDim() const
 bool SimplexCell::operator<(const SimplexCell& b) const {
   return (this->simp->nrs) < (b.simp->nrs);
 }
+*/

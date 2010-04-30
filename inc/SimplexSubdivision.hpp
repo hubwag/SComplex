@@ -208,7 +208,7 @@ vector<set<int> > subdivide3(const vector<set<int> > &v)
 	return ret;
 }
 
-int __main()
+int ___main()
 {
 	vector<set<int> > comp = makeSpaceFromWelds(makeKleinWelds());
 

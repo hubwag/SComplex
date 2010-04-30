@@ -17,18 +17,6 @@
 
 #include "SComplexAlgs_Coreduction.hpp"
 #include "SComplexAlgs_Shave.hpp"
-#include "SComplexAlgs_DefaultReduceStrategy.hpp"
-
-#include <capd/auxil/Stopwatch.h>
-#include <capd/auxil/CRef.h>
-#include <capd/homologicalAlgebra/embeddingDim.h>
-
-#include <capd/vectalg/MatrixSlice.h>
-#include <capd/matrixAlgorithms/intMatrixAlgorithms.hpp>
-#include <capd/homologicalAlgebra/homologicalAlgebra.hpp>
-#include <capd/homologicalAlgebra/homAlgFunctors.hpp>
-#include <capd/homologicalAlgebra/cubSetFunctors.hpp>
-#include <capd/homologicalAlgebra/ReducibleFreeChainComplex.hpp>
 
 
 template<typename SComplexT, typename ReducibleFreeChainComplexT>
@@ -85,7 +73,7 @@ private:
 
 template<typename SComplexT, typename ReducibleFreeChainComplexT>
 inline CRef<ReducibleFreeChainComplexT> ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SComplexT, ReducibleFreeChainComplexT>::operator()(){
-  
+
   std::set<SComplexChainCell> cells;
 
   size_t maxDim = (DefaultReduceStrategy<SComplexT>(s)).getMaxDim(); // TODO add strategy as a member
@@ -100,6 +88,23 @@ inline CRef<ReducibleFreeChainComplexT> ReducibleFreeChainComplexOverZFromSCompl
 
   return rfccCR;
 }
+
+
+
+#include "SComplexAlgs_DefaultReduceStrategy.hpp"
+
+#include <capd/auxil/Stopwatch.h>
+#include <capd/auxil/CRef.h>
+#include <capd/homologicalAlgebra/embeddingDim.h>
+
+#include <capd/vectalg/MatrixSlice.h>
+#include <capd/matrixAlgorithms/intMatrixAlgorithms.hpp>
+#include <capd/homologicalAlgebra/homologicalAlgebra.hpp>
+#include <capd/homologicalAlgebra/homAlgFunctors.hpp>
+#include <capd/homologicalAlgebra/cubSetFunctors.hpp>
+#include <capd/homologicalAlgebra/ReducibleFreeChainComplex.hpp>
+
+
 
 
 #endif // SCOMPLEX_ALGS_HPP_
