@@ -13,12 +13,17 @@ add_executable(SComplexUnitTest
   SComplexInitTest.cpp
   SComplexColorTest.cpp
   SComplexReductionTest.cpp
-  CubSComplexIteratorsTest.cpp
+#  CubSComplexIteratorsTest.cpp
 #  CubSComplexReductionTest.cpp
 )
 
+add_executable(COAKQTest  COAKQTest.cpp   SComplexUnitTestMain.cpp)
+
 target_link_libraries(SComplexUnitTest capd)
 target_link_libraries(SComplexUnitTest ${Boost_LIBRARIES})
+
+target_link_libraries(COAKQTest capd)
+target_link_libraries(COAKQTest ${Boost_LIBRARIES})
 
 
 if (WIN32)
@@ -37,9 +42,9 @@ else ()
 endif ()
 
 add_test(SComplexUnitTest SComplexUnitTest --output_format=${TEST_OUTPUT_FORMAT} --log_level=${TEST_LOG_LEVEL} --report_level=${TEST_REPORT_LEVEL} --run_test=${TEST_RUN})
-
-message("${LD_VARNAME}=${LD_PATH}")
-
 set_tests_properties(SComplexUnitTest PROPERTIES ENVIRONMENT "${LD_VARNAME}=${LD_PATH}")
+
+add_test(COAKQTest COAKQTest --output_format=${TEST_OUTPUT_FORMAT} --log_level=${TEST_LOG_LEVEL} --report_level=${TEST_REPORT_LEVEL} --run_test=${TEST_RUN})
+set_tests_properties(COAKQTest PROPERTIES ENVIRONMENT "${LD_VARNAME}=${LD_PATH}")
 
 
