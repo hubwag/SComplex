@@ -83,6 +83,10 @@ public:
   }
 
 
+  Strategy& getStrategy() {
+    return *strategy;
+  }
+
 private:
 
 
@@ -114,15 +118,5 @@ private:
 
 };
 
-
-class COAKQAlgorithmFactory {
-
-public:
-  template<typename SComplex>
-  static boost::shared_ptr< COAKQAlgorithm<COAKQStrategy<SComplex> > > createDefault(SComplex& s) {
-	 return boost::shared_ptr< COAKQAlgorithm<COAKQStrategy<SComplex> > >(new COAKQAlgorithm<COAKQStrategy<SComplex> >(new COAKQStrategy<SComplex>(s)));
-  }
-
-};
 
 #endif

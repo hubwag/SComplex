@@ -31,24 +31,24 @@ BOOST_AUTO_TEST_SUITE(COAKQSuite)
 
 BOOST_AUTO_TEST_CASE(init) {
   typedef SComplex<SComplexDefaultTraits> Complex;
-  
-  std::vector<std::set<int> > simplices = makeSpaceFromWelds(makeTorusWelds());
 
-  for (int i = 0; i < 3; i++) {
-  	 simplices = subdivide3(simplices);
+  Complex::Dims dims = list_of(0)(1)(0)(1)(0);
+  Complex::KappaMap kappaMap = tuple_list_of(1, 0, 1)(1, 2, 1)(3, 2, 1)(3, 4, 1); // .-.-.
+  
+  Complex complex(3, dims, kappaMap, 1);
+
+  COAKQAlgorithm<COAKQStrategy<Complex, Complex> > algorithm(new COAKQStrategy<Complex, Complex>(complex));
+
+  algorithm();
+
+  BOOST_FOREACH(Complex::Iterators::AllCells::iterator::value_type v,
+					 complex.iterators().allCells()) {
+	 BOOST_CHECK_EQUAL(v.getColor(), (Complex::Color)2);
   }
 
-  SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(300);
-  boost::shared_ptr<Complex> complex = builder(simplices, 3, 1);
+  BOOST_CHECK(complex.iterators(1).allCells().begin() == complex.iterators(1).allCells().end());  
 
-  CRef<ReducibleFreeChainComplexType> RFCComplexCR=
-    (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<Complex, ReducibleFreeChainComplexType>(*complex))();
-  CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
-  std::string betti = homSignCR().bettiVector();
-
-  BOOST_CHECK_EQUAL(betti, "0,2,1");
-
-
+  BOOST_CHECK_EQUAL(algorithm.getStrategy().getOutputComplex().size(), 1);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
