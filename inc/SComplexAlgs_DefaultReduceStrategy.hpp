@@ -75,11 +75,18 @@ public:
     {
     	cout << "CHECKING MAX DIM BRUTALLY! ADD getMaxDim to SCOMPLEX!!!!" << endl;
     	max_d = 0;
+    	typename SComplex::Iterators::AllCells::iterator it = complex.iterators().allCells().begin();
+    	typename SComplex::Iterators::AllCells::iterator end = complex.iterators().allCells().end();
+
+    	for (; it != end; ++it)
+			max_d = max<int>(max_d, it->getDim());
+
+		/*
     	BOOST_FOREACH(typename SComplex::Iterators::AllCells::iterator::value_type v,
                       complex.iterators().allCells())
                       {
                       	max_d = max<int>(max_d, v.getDim());
-                      }
+                      }*/
 	}
 
     SComplex& getComplex() const
