@@ -118,7 +118,7 @@ public:
 	    aces.push_back(*it);
 	    akq[*it] = 'a';
 
-	    std::cerr << "Extracted " << it->getId() << " " << it->getDim() << " " << v << std::endl;
+	    // std::cerr << "Extracted " << it->getId() << " " << it->getDim() << " " << v << std::endl;
 	    return typename Traits::Extract::result_type::value_type(*it);
 	  }
       }
@@ -149,7 +149,7 @@ public:
     std::stack<std::pair<Cell, int> > S; // no cycles!
     S.push(std::make_pair(c, 1));
     
-    std::cerr << "follow_path " << c.getId() << std::endl;
+    // std::cerr << "follow_path " << c.getId() << std::endl;
 
     while(S.size())
       {
@@ -157,7 +157,7 @@ public:
 	int accumulated_weight = S.top().second;
 	S.pop();
 
-	std::cerr << "curr " << curr.getId() << " " << accumulated_weight << std::endl;
+	// std::cerr << "curr " << curr.getId() << " " << accumulated_weight << std::endl;
 
 
 	BOOST_ASSERT(akq[curr] != 'q');
@@ -166,8 +166,8 @@ public:
 	  {
 	    ++num_paths_between[make_pair(c.getId(), curr.getId())];
 
-	    std::cerr << "found path from: " << c.getId() << " to " << curr.getId() << std::endl;
-	    std::cerr << "between values: " << morse[c.getId()] << "and " << morse[curr.getId()] << " with coef product" << accumulated_weight << std::endl;
+	    // std::cerr << "found path from: " << c.getId() << " to " << curr.getId() << std::endl;
+	    // std::cerr << "between values: " << morse[c.getId()] << "and " << morse[curr.getId()] << " with coef product" << accumulated_weight << std::endl;
 	      
 	    coeffs[make_pair(c.getId(), curr.getId())] += accumulated_weight;
 	    continue;
@@ -180,7 +180,7 @@ public:
 	  {
 	    if (akq[to] == 'a' && morse[to.getId()] > our_value)
 	      {
-		std::cerr << "case 1 " << to.getId() << std::endl;
+		// std::cerr << "case 1 " << to.getId() << std::endl;
 		S.push(make_pair(to, accumulated_weight * toAceCoeff(curr, to)));
 	      }
 	  }
@@ -194,7 +194,7 @@ public:
 	    BOOST_ASSERT(akq[to] == 'k');
 	    if (morse[to.getId()] > our_value)
 	      {
-		std::cerr << "case 2 " << curr.getId() << " " << to.getId() << " " << cbd.getId() << std::endl;
+		// std::cerr << "case 2 " << curr.getId() << " " << to.getId() << " " << cbd.getId() << std::endl;
 		S.push(make_pair(to, accumulated_weight * toKingCoeff(curr, to, cbd)));
 	      }
 	  }
@@ -203,19 +203,19 @@ public:
 
   void report_paths()
   {
-    std::cerr << " asow bylo: " << aces.size() << std::endl;
+    // std::cerr << " asow bylo: " << aces.size() << std::endl;
     for (size_t i = 0; i < aces.size(); i++)
       {
-	std::cerr << aces[i].getId() << " ";
+	// std::cerr << aces[i].getId() << " ";
       }
-    std::cerr << std::endl;
+    // std::cerr << std::endl;
 
-    std::cerr << " morse: " << morse.size() << std::endl;
+    // std::cerr << " morse: " << morse.size() << std::endl;
     for(typename std::map<int, int>::iterator it = morse.begin(); it != morse.end(); ++it)
       {
-      std::cerr << "(" << it->first << ", " << it->second << ")";
+      // std::cerr << "(" << it->first << ", " << it->second << ")";
       }
-    std::cerr << std::endl;
+    // std::cerr << std::endl;
 
 
     BOOST_FOREACH(Cell ace, aces)
@@ -225,19 +225,19 @@ public:
 
     typedef std::pair<std::pair<int,int>,int> Pair;
 
-    std::cerr << "\n\n\n";
+    // std::cerr << "\n\n\n";
 
 
-    std::cerr << "num paths between: \n";
+    // std::cerr << "num paths between: \n";
     BOOST_FOREACH(Pair p, num_paths_between)
       {
-	std::cerr << p.first.first << " " << p.first.second << " = " << p.second << std::endl;
+	// std::cerr << p.first.first << " " << p.first.second << " = " << p.second << std::endl;
       }
 
-    std::cerr << "coefficients: \n";
+    // std::cerr << "coefficients: \n";
     BOOST_FOREACH(Pair p, coeffs)
       {
-	std::cerr << p.first.first << " " << p.first.second << " => " << p.second << std::endl;
+	// std::cerr << p.first.first << " " << p.first.second << " => " << p.second << std::endl;
       }
       
 
@@ -257,7 +257,7 @@ public:
     time_t t = time(0);
     srand(t);
 
-    std::cerr << "constructing general SComplex" << std::endl;
+    // std::cerr << "constructing general SComplex" << std::endl;
 
     BOOST_FOREACH(Pair p, coeffs)
       {
@@ -267,7 +267,7 @@ public:
 	kap.push_back(boost::make_tuple(from0[p.first.first], from0[p.first.second], coef));
 
 	
-	std::cerr << from0[p.first.first] << "[d=" <<dims[from0[p.first.first]] << "]" << " : " << from0[p.first.second] << "[d="<<dims[from0[p.first.second]] << "]" << " => " << coef << std::endl;
+	// std::cerr << from0[p.first.first] << "[d=" <<dims[from0[p.first.first]] << "]" << " : " << from0[p.first.second] << "[d="<<dims[from0[p.first.second]] << "]" << " => " << coef << std::endl;
       
       }
 

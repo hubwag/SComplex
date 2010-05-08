@@ -15,9 +15,13 @@
 #include <boost/assign/list_of.hpp>
 
 #include <algorithm>
+#include <string>
+#include <sstream>
+#include<fstream>
 
 using namespace boost;
 using namespace boost::assign;
+using namespace std;
 
 typedef ElementaryCell ElementaryCellType;
 typedef int ScalarType;
@@ -25,6 +29,30 @@ typedef FreeModule<int,capd::vectalg::Matrix<int,0,0> > FreeModuleType;
 typedef FreeChainComplex<FreeModuleType> FreeChainComplexType;
 typedef ReducibleFreeChainComplex<FreeModuleType,int> ReducibleFreeChainComplexType;
 
+
+
+vector<set<int> > parseDat(istream &stream)
+{
+  
+  vector<set<int> > simplices;
+
+  for (string s; std::getline(stream, s); )
+    {
+      if (s.size() == 0 || s[0] == '#')
+	continue;
+
+      stringstream ss(s);
+
+      set<int> simp;
+
+      for (int v; ss >> v;)
+	simp.insert(v);
+
+      simplices.push_back(simp);
+    }
+
+  return simplices;
+}
 
 BOOST_AUTO_TEST_SUITE(COAKQSuite)
 
@@ -151,6 +179,38 @@ BOOST_AUTO_TEST_CASE(torus) {
   std::string betti = homSignCR().bettiVector();
 
   BOOST_CHECK_EQUAL(betti, "1,2,1");
+
+}
+
+BOOST_AUTO_TEST_CASE(data_bing) {
+  typedef SComplex<SComplexDefaultTraits> Complex;
+
+  fstream file(PROJECT_SOURCE_DIR"/data/spaces/bing.dat");
+  std::vector<std::set<int> > simplices = parseDat(file);
+
+  SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(3);
+  boost::shared_ptr<Complex> complex = builder(simplices, 3, 1);
+  COAKQAlgorithm<COAKQStrategy<Complex, Complex> > algorithm(new COAKQStrategy<Complex, Complex>(*complex));
+
+  algorithm();
+
+  BOOST_FOREACH(Complex::Iterators::AllCells::iterator::value_type v,
+					 complex->iterators().allCells()) {
+	 BOOST_CHECK_EQUAL(v.getColor(), (Complex::Color)2);
+  }
+
+  BOOST_CHECK(complex->iterators(1).allCells().begin() == complex->iterators(1).allCells().end());  
+
+  Complex& coAKQ = algorithm.getStrategy().getOutputComplex();
+  BOOST_CHECK_EQUAL(coAKQ.size(), 1);
+
+  CRef<ReducibleFreeChainComplexType> RFCComplexCR=
+  	 (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<Complex, ReducibleFreeChainComplexType>(coAKQ))();
+  CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
+
+  std::string betti = homSignCR().bettiVector();
+
+  BOOST_CHECK_EQUAL(betti, "1");
 
 }
 
