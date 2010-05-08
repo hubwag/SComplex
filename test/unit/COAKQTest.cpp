@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE(coreduction_fullTriangle) {
   BOOST_CHECK(complex.iterators(1).allCells().begin() == complex.iterators(1).allCells().end());  
 
   Complex& coAKQ = algorithm.getStrategy().getOutputComplex();
-  BOOST_CHECK_EQUAL(coAKQ.size(), 2);
+  BOOST_CHECK_EQUAL(coAKQ.size(), 1);
 
   CRef<ReducibleFreeChainComplexType> RFCComplexCR=
   	 (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<Complex, ReducibleFreeChainComplexType>(coAKQ))();
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE(coreduction_fullTriangle) {
 
   std::string betti = homSignCR().bettiVector();
 
-  BOOST_CHECK_EQUAL(betti, "");
+  BOOST_CHECK_EQUAL(betti, "1");
 
 }
 
