@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(line) {
 }
 
 
-BOOST_AUTO_TEST_CASE(coreduction_emptyTriangle) {
+BOOST_AUTO_TEST_CASE(emptyTriangle) {
   typedef SComplex<SComplexDefaultTraits> Complex;
   
   Complex::Dims dims = list_of(0)(1)(0)(1)(0)(1);
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(coreduction_emptyTriangle) {
 
 }
 
-BOOST_AUTO_TEST_CASE(coreduction_fullTriangle) {
+BOOST_AUTO_TEST_CASE(fullTriangle) {
   typedef SComplex<SComplexDefaultTraits> Complex;
 
 
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(coreduction_fullTriangle) {
 }
 
 
-BOOST_AUTO_TEST_CASE(coreduction_fullTriangle) {
+BOOST_AUTO_TEST_CASE(torus) {
   typedef SComplex<SComplexDefaultTraits> Complex;
 
   SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(3);
@@ -129,10 +129,7 @@ BOOST_AUTO_TEST_CASE(coreduction_fullTriangle) {
   	 simplices = subdivide3(simplices);
   }
 
-  SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(300);
   boost::shared_ptr<Complex> complex = builder(simplices, 3, 1);
-  
-
   COAKQAlgorithm<COAKQStrategy<Complex, Complex> > algorithm(new COAKQStrategy<Complex, Complex>(*complex));
 
   algorithm();
@@ -145,7 +142,7 @@ BOOST_AUTO_TEST_CASE(coreduction_fullTriangle) {
   BOOST_CHECK(complex->iterators(1).allCells().begin() == complex->iterators(1).allCells().end());  
 
   Complex& coAKQ = algorithm.getStrategy().getOutputComplex();
-  BOOST_CHECK_EQUAL(coAKQ.size(), -1);
+  BOOST_CHECK_EQUAL(coAKQ.size(), 4);
 
   CRef<ReducibleFreeChainComplexType> RFCComplexCR=
   	 (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<Complex, ReducibleFreeChainComplexType>(coAKQ))();
@@ -153,7 +150,7 @@ BOOST_AUTO_TEST_CASE(coreduction_fullTriangle) {
 
   std::string betti = homSignCR().bettiVector();
 
-  BOOST_CHECK_EQUAL(betti, "");
+  BOOST_CHECK_EQUAL(betti, "1,2,1");
 
 }
 
