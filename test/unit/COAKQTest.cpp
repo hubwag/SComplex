@@ -492,6 +492,83 @@ BOOST_AUTO_TEST_CASE(knot) {
 }
 
 
+BOOST_AUTO_TEST_CASE(bjorner) {
+  typedef SComplex<SComplexDefaultTraits> Complex;
+
+  fstream file(PROJECT_SOURCE_DIR"/data/spaces/bjorner.dat");
+  std::vector<std::set<int> > simplices = parseDat(file);
+
+  SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(3);
+  boost::shared_ptr<Complex> complex = builder(simplices, 3, 1);
+
+  CRef<ReducibleFreeChainComplexType> RFCComplexCR_orginal=
+  	 (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<Complex, ReducibleFreeChainComplexType>(*complex))();
+  CRef<HomologySignature> homSignCR_orginal=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR_orginal);
+
+  COAKQAlgorithm<COAKQStrategy<Complex, Complex> > algorithm(new COAKQStrategy<Complex, Complex>(*complex));
+
+  algorithm();
+
+  BOOST_FOREACH(Complex::Iterators::AllCells::iterator::value_type v,
+					 complex->iterators().allCells()) {
+	 BOOST_CHECK_EQUAL(v.getColor(), (Complex::Color)2);
+  }
+
+  BOOST_CHECK(complex->iterators(1).allCells().begin() == complex->iterators(1).allCells().end());  
+
+  Complex& coAKQ = algorithm.getStrategy().getOutputComplex();
+  BOOST_CHECK_EQUAL(coAKQ.size(), 4);
+
+  CRef<ReducibleFreeChainComplexType> RFCComplexCR=
+  	 (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<Complex, ReducibleFreeChainComplexType>(coAKQ))();
+  CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
+
+  std::ostringstream signature;
+  signature << "coAKQ: " << homSignCR()<< " | org: " << homSignCR_orginal();
+  std::string sig = signature.str();
+  std::replace(sig.begin(), sig.end(), '\n', '#');
+  BOOST_CHECK_EQUAL(sig, "coAKQ:   H^0 = Z^1#  H^1 = 0#  H^2 = Z^1# | org:   H^0 = Z^1#  H^1 = 0#  H^2 = Z^1#");
+}
+
+
+BOOST_AUTO_TEST_CASE(randomSimplices) {
+  typedef SComplex<SComplexDefaultTraits> Complex;
+
+  fstream file(PROJECT_SOURCE_DIR"/data/randomSimplices.dat");
+  std::vector<std::set<int> > simplices = parseDat(file);
+
+  SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(3);
+  boost::shared_ptr<Complex> complex = builder(simplices, 3, 1);
+
+  CRef<ReducibleFreeChainComplexType> RFCComplexCR_orginal=
+  	 (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<Complex, ReducibleFreeChainComplexType>(*complex))();
+  CRef<HomologySignature> homSignCR_orginal=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR_orginal);
+
+  COAKQAlgorithm<COAKQStrategy<Complex, Complex> > algorithm(new COAKQStrategy<Complex, Complex>(*complex));
+
+  algorithm();
+
+  BOOST_FOREACH(Complex::Iterators::AllCells::iterator::value_type v,
+					 complex->iterators().allCells()) {
+	 BOOST_CHECK_EQUAL(v.getColor(), (Complex::Color)2);
+  }
+
+  BOOST_CHECK(complex->iterators(1).allCells().begin() == complex->iterators(1).allCells().end());  
+
+  Complex& coAKQ = algorithm.getStrategy().getOutputComplex();
+  BOOST_CHECK_EQUAL(coAKQ.size(), 174);
+
+  CRef<ReducibleFreeChainComplexType> RFCComplexCR=
+  	 (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<Complex, ReducibleFreeChainComplexType>(coAKQ))();
+  CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
+
+  std::ostringstream signature;
+  signature << "coAKQ: " << homSignCR()<< " | org: " << homSignCR_orginal();
+  std::string sig = signature.str();
+  std::replace(sig.begin(), sig.end(), '\n', '#');
+  BOOST_CHECK_EQUAL(sig, "coAKQ:   H^0 = Z^1#  H^1 = Z^39#  H^2 = Z^84# | org:   H^0 = Z^1#  H^1 = Z^39#  H^2 = Z^84#");
+}
+
 
 BOOST_AUTO_TEST_SUITE_END()
 
