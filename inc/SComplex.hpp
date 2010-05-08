@@ -313,7 +313,8 @@ public:
 	 BOOST_FOREACH(typename KappaMap::value_type kappa, kappaMap) {
 		Id coface = get<0>(kappa);
 		Id face = get<1>(kappa);
-		//std::cout << "Kappa " << coface << " " << face << std::endl;
+// 		std::cout << "Kappa " << coface << "[" << dims[coface] << "]" 
+// 			  << face << "[" << dims[face] << "]" << get<2>(kappa) << std::endl;
 		BOOST_ASSERT(coface != face);
 		typename NeighbourLink::IteratorInNeighbour bdIteratorInNeighbour = boundaries[coface].add(NeighbourLink(cells.allObjects()[face]), cells.allObjects()[face]->getColor());
 		typename NeighbourLink::IteratorInNeighbour cbdIteratorInNeighbour = coboundaries[face].add(NeighbourLink(cells.allObjects()[coface]), cells.allObjects()[coface]->getColor());

@@ -89,6 +89,9 @@ public:
   void reduce(const typename SComplex::template CellProxy<ImplT1>& a, const typename SComplex::template CellProxy<ImplT2>& b)  {
     BOOST_ASSERT(a.getDim() < b.getDim());
 
+    //std::cerr << "Reduce " << a.getId() << "[" << a.getDim() << "]" << " " 
+    //      << b.getId() << "[" << b.getDim() << "]" << std::endl;
+
     king_gets_married(a, b);
 
     a.template setColor<2>();
@@ -118,7 +121,7 @@ public:
 	    aces.push_back(*it);
 	    akq[*it] = 'a';
 
-	    // std::cerr << "Extracted " << it->getId() << " " << it->getDim() << " " << v << std::endl;
+	    //std::cerr << "Extracted " << it->getId() << " " << it->getDim() << " " << v << std::endl;
 	    return typename Traits::Extract::result_type::value_type(*it);
 	  }
       }
@@ -166,10 +169,10 @@ public:
 	  {
 	    ++num_paths_between[make_pair(c.getId(), curr.getId())];
 
-	    // std::cerr << "found path from: " << c.getId() << " to " << curr.getId() << std::endl;
-	    // std::cerr << "between values: " << morse[c.getId()] << "and " << morse[curr.getId()] << " with coef product" << accumulated_weight << std::endl;
+	    //std::cerr << "found path from: " << c.getId() << " to " << curr.getId() << std::endl;
+	    //std::cerr << "between values: " << morse[c.getId()] << "and " << morse[curr.getId()] << " with coef product" << accumulated_weight << std::endl;
 	      
-	    coeffs[make_pair(c.getId(), curr.getId())] += accumulated_weight;
+	    coeffs[make_pair(curr.getId(), c.getId())] += accumulated_weight;
 	    continue;
 	  }
 
@@ -203,19 +206,19 @@ public:
 
   void report_paths()
   {
-    // std::cerr << " asow bylo: " << aces.size() << std::endl;
+    //std::cerr << " asow bylo: " << aces.size() << std::endl;
     for (size_t i = 0; i < aces.size(); i++)
       {
-	// std::cerr << aces[i].getId() << " ";
+	//std::cerr << aces[i].getId() << " ";
       }
-    // std::cerr << std::endl;
+    //    std::cerr << std::endl;
 
-    // std::cerr << " morse: " << morse.size() << std::endl;
+    //std::cerr << " morse: " << morse.size() << std::endl;
     for(typename std::map<int, int>::iterator it = morse.begin(); it != morse.end(); ++it)
       {
-      // std::cerr << "(" << it->first << ", " << it->second << ")";
+	//std::cerr << "(" << it->first << ", " << it->second << ")";
       }
-    // std::cerr << std::endl;
+    //std::cerr << std::endl;
 
 
     BOOST_FOREACH(Cell ace, aces)
@@ -225,7 +228,7 @@ public:
 
     typedef std::pair<std::pair<int,int>,int> Pair;
 
-    // std::cerr << "\n\n\n";
+    //std::cerr << "\n\n\n";
 
 
     // std::cerr << "num paths between: \n";

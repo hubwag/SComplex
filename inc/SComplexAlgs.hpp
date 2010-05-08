@@ -59,13 +59,13 @@ public:
 	 }
 
 	 void boundary(std::map<SComplexChainCell,int>& A_boundary) const {
-		for (typename SComplex::ColoredIterators::Iterators::BdCells::iterator it = complex.template iterators<1>().bdCells(this->cell).begin(),
-				 end = complex.template iterators<1>().bdCells(this->cell).end();
-			  it != end; ++it) {
-		  A_boundary.insert(std::make_pair(SComplexChainCell(complex, *it, embededDim),
-													  complex.coincidenceIndex(this->cell, *it)
-													  ));
-		}
+	   for (typename SComplex::ColoredIterators::Iterators::BdCells::iterator it = complex.template iterators<1>().bdCells(this->cell).begin(),
+		  end = complex.template iterators<1>().bdCells(this->cell).end();
+		it != end; ++it) {
+	     A_boundary.insert(std::make_pair(SComplexChainCell(complex, *it, embededDim),
+					      complex.coincidenceIndex(this->cell, *it)
+					      ));
+	   }
 	 }
 
 	 bool operator<(const SComplexChainCell& b) const {

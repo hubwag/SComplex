@@ -123,12 +123,9 @@ std::string reduction(const T& simplices) {
   typedef SComplex<SComplexDefaultTraits> Complex;  
   SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(300);
 
-  std::cout << simplices.size() << std::endl;
-
   boost::shared_ptr<Complex> complex = builder(simplices, 3, 1);
-
-  std::cout << complex->size() << std::endl;
-
+  
+ std:cerr << "Complex size: " << complex->size() << std::endl;
   return reduction(*complex);
 }
 
@@ -158,6 +155,14 @@ BOOST_AUTO_TEST_CASE(coreduction_simplicialTorus) {
   }
 
   BOOST_CHECK_EQUAL(reduction(simplices), "0,2,1");
+}
+
+BOOST_AUTO_TEST_CASE(coreduction_simplicialKlein) {
+  typedef SComplex<SComplexDefaultTraits> Complex;
+  
+  std::vector<std::set<int> > simplices = makeSpaceFromWelds(makeKleinWelds());
+
+  BOOST_CHECK_EQUAL(reduction(simplices), "0,1");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
