@@ -48,6 +48,7 @@ public:
       {
 	max_d = std::max<int>(max_d, v.getDim());
       }
+    dimPhase = max_d;
   }
   
   SComplex& getComplex() const {
@@ -104,9 +105,9 @@ public:
   }
   
   typename Traits::Extract::result_type extract() {
-    for (int d = max_d; d >= 0; d--)
+    for (;dimPhase >= 0; dimPhase--)
       {
-	typename SComplex::ColoredIterators::Iterators::DimCells dimCells = complex.iterators(1).dimCells(d);
+	typename SComplex::ColoredIterators::Iterators::DimCells dimCells = complex.iterators(1).dimCells(dimPhase);
 	typename SComplex::ColoredIterators::Iterators::DimCells::iterator end = dimCells.end(),
 	  it = dimCells.begin();
 
@@ -114,7 +115,7 @@ public:
 	  {
 	    int v = 0;
 
-	    if (d != max_d)
+	    if (dimPhase != max_d)
 	      v = calc_morse_value(*it);
 
 	    morse[it->getId()] = v;
@@ -170,7 +171,7 @@ public:
 	    ++num_paths_between[make_pair(c.getId(), curr.getId())];
 
 	    //std::cerr << "found path from: " << c.getId() << " to " << curr.getId() << std::endl;
-	    //std::cerr << "between values: " << morse[c.getId()] << "and " << morse[curr.getId()] << " with coef product" << accumulated_weight << std::endl;
+	    //std::cerr << "between values: " << morse[c.getId()] << "and " << morse[curr.getId()] << " with coef product" << accumulated1_weight << std::endl;
 	      
 	    coeffs[make_pair(curr.getId(), c.getId())] += accumulated_weight;
 	    continue;
@@ -257,9 +258,6 @@ public:
 
     typename OutputComplexT::KappaMap kap;
 
-    time_t t = time(0);
-    srand(t);
-
     // std::cerr << "constructing general SComplex" << std::endl;
 
     BOOST_FOREACH(Pair p, coeffs)
@@ -278,8 +276,9 @@ public:
   }
 
   typename Traits::ForceReduction::result_type forceReductionPair() {
-    for (int d = max_d; d >= 0; d--)
+    for (int d = dimPhase; dimPhase - d <= 1 && d >= 0; d--)
       {
+
 	typedef typename SComplex::ColoredIterators::Iterators::DimCells DimCells;
 	DimCells  dimCells = complex.iterators(1).dimCells(d);
 	typename DimCells::iterator end = dimCells.end(),
@@ -294,7 +293,6 @@ public:
 	  ++it;
 	}
       }
-  
     return typename Traits::ForceReduction::result_type();
   }
 
@@ -345,7 +343,8 @@ protected:
   std::map<Cell, Cell> her_king;
   std::map<std::pair<int,int>, int> num_paths_between;
   int max_d;
-  
+  int dimPhase;
+
 };
 
 template<typename SComplexT, typename OutputComplexT>
