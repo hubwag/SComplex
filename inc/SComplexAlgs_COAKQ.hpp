@@ -36,7 +36,7 @@ public:
 	typename StrategyT::Traits::template GetReductionPair<Cell>::result_type reductionPair = strategy->getReductionPair(*cell);
 		
 	if (reductionPair) {		
-	  doReduction(*reductionPair, *cell);
+	  doReduction(*cell, *reductionPair);
 	  cellIdsToProcess[cell->getId()] = false;
 	  cellsToProcess.pop_front();
 	  return true;
@@ -94,7 +94,7 @@ private:
   void doReduction(const typename Strategy::SComplex::template CellProxy<ImplT1>& a, const typename Strategy::SComplex::template CellProxy<ImplT2>& b) {
     //storeReductionPair(a, b);
 	 strategy->reduce(a, b);
-	 addCellsToProcess(a);		
+	 addCellsToProcess(b);		
   }
 
   template<typename ImplT>
