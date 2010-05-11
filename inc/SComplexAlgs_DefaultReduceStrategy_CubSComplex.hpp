@@ -19,7 +19,7 @@
 #include <capd/homologicalAlgebra/ReducibleFreeChainComplex.hpp>
 
 #include "SComplexAlgs_DefaultReduceStrategy.hpp"
-#include "CubSComplex.hpp"
+#include "complex/cubical/CubSComplex.hpp"
 #include <capd/vectalg/MatrixSlice.h>
 
 #include "SComplexAlgs_DefaultReduceStrategyTraits_CubSComplex.hpp"

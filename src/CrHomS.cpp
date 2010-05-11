@@ -16,13 +16,8 @@ using namespace std;
 #include <capd/homologicalAlgebra/cubSetFunctors.hpp>
 #include <capd/homologicalAlgebra/ReducibleFreeChainComplex.hpp>
 
-#include <CubSComplex.hpp>
+#include <complex/cubical/CubSComplex.hpp>
 #include <SComplexAlgs.hpp>
-#include <SComplexAlgs_DefaultReduceStrategy_CubSComplex.hpp>
-
-
-#include "CubSComplex.hpp"
-#include "SComplexAlgs.hpp"
 #include <SComplexAlgs_DefaultReduceStrategy_CubSComplex.hpp>
 
 #ifndef DIM

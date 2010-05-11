@@ -1,7 +1,7 @@
 
 add_library(${PROJECT_NAME} STATIC 
-CubSComplex_Cell.cpp
-SimplexCell.cpp
+complex/cubical/CubSComplex_Cell.cpp
+complex/simplicial/SimplexCell.cpp
 )
 
 install(TARGETS ${PROJECT_NAME}
