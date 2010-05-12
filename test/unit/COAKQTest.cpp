@@ -1,12 +1,11 @@
-#include <SComplexAlgs_COAKQ.hpp>
+#include <redHom/algorithm/COAKQ.hpp>
+#include <redHom/algorithm/Algorithms.hpp>
 
-#include <SComplex.hpp>
-#include <SComplexDefaultTraits.hpp>
+#include <redHom/complex/scomplex/SComplex.hpp>
+#include <redHom/complex/scomplex/SComplexDefaultTraits.hpp>
+#include <redHom/complex/scomplex/SComplexBuilderFromSimplices.hpp>
 
-#include <SComplexAlgs.hpp>
-#include <SComplexBuilderFromSimplices.hpp>
-
-#include <SimplexSubdivision.hpp>
+#include <redHom/SimplexSubdivision.hpp>
 
 
 #include <boost/test/unit_test.hpp>

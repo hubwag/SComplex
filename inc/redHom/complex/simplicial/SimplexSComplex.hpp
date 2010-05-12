@@ -7,7 +7,7 @@
 
 #include "SimplexCell.hpp"
 #include "simple_set.h"
-#include "BasicCellProxy.hpp"
+#include "../BasicCellProxy.hpp"
 
 using namespace std;
 
@@ -22,7 +22,11 @@ public:
         return distance(all_begin(), all_end()); // slow
     }
 
-  typedef SimplexCell Cell;
+  int cardinality() { 
+    return size(); 
+  }
+  
+typedef SimplexCell Cell;
 
   template<typename ImplT>
   class CellProxy: public BasicCellProxy<ImplT> {

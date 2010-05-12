@@ -2,7 +2,7 @@
 #define CUB_SCOMPLEX_ITERATORS_HPP
 
 #include "CubSComplex.hpp"
-#include "util/Iterators.hpp"
+#include "../../util/Iterators.hpp"
 
 #include <boost/mpl/if.hpp>
 #include <boost/iterator/iterator_facade.hpp>

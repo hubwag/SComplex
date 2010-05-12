@@ -1,5 +1,5 @@
-#include "SimplexCell.hpp"
-#include "Simplex.hpp"
+#include <redHom/complex/simplicial/SimplexCell.hpp>
+#include <redHom/complex/simplicial/Simplex.hpp>
 
 int SimplexCell::getColor() const
 {

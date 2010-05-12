@@ -21,8 +21,7 @@ using namespace std;
 #include <capd/homologicalAlgebra/cubSetFunctors.hpp>
 #include <capd/homologicalAlgebra/ReducibleFreeChainComplex.hpp>
 
-//#include "CubSComplex.hpp"
-#include "SComplexAlgs.hpp"
+#include "redHom/algorithm/Algorithms.hpp"
 
 typedef ElementaryCell ElementaryCellType;
 typedef int ScalarType;
@@ -36,10 +35,9 @@ typedef FreeModule<int,capd::vectalg::Matrix<int,0,0> > FreeModuleType;
 typedef FreeChainComplex<FreeModuleType> FreeChainComplexType;
 typedef ReducibleFreeChainComplex<FreeModuleType,int> ReducibleFreeChainComplexType;
 
-#include "Simplex.hpp"
-#include "SimplexSComplex.hpp"
+#include "redHom/complex/simplicial/Simplex.hpp"
+#include "redHom/complex/simplicial/SimplexSComplex.hpp"
 
-#include "SComplexAlgs.hpp"
 
 BOOST_AUTO_TEST_SUITE(SimplexSComplex_basic)
 

@@ -6,6 +6,8 @@ set(TEST_LOG_LEVEL message)
 set(TEST_REPORT_LEVEL short)
 set(TEST_RUN *)
 
+set(ARGS "${ARGS} -VV")
+
 #add_definitions(-DBOOST_TEST_DYN_LINK)
 
 add_executable(SComplexUnitTest
@@ -13,8 +15,9 @@ add_executable(SComplexUnitTest
   SComplexInitTest.cpp
   SComplexColorTest.cpp
   SComplexReductionTest.cpp
-#  CubSComplexIteratorsTest.cpp
-#  CubSComplexReductionTest.cpp
+#  SimplexSComplexTest.cpp
+  CubSComplexIteratorsTest.cpp
+  CubSComplexReductionTest.cpp
 )
 
 add_executable(COAKQTest  COAKQTest.cpp   SComplexUnitTestMain.cpp)
@@ -45,6 +48,7 @@ add_test(SComplexUnitTest SComplexUnitTest --output_format=${TEST_OUTPUT_FORMAT}
 set_tests_properties(SComplexUnitTest PROPERTIES ENVIRONMENT "${LD_VARNAME}=${LD_PATH}")
 
 add_test(COAKQTest COAKQTest --output_format=${TEST_OUTPUT_FORMAT} --log_level=${TEST_LOG_LEVEL} --report_level=${TEST_REPORT_LEVEL} --run_test=${TEST_RUN})
+
 set_tests_properties(COAKQTest PROPERTIES ENVIRONMENT "${LD_VARNAME}=${LD_PATH}")
 
 

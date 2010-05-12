@@ -5,9 +5,9 @@
 
 #include <iostream>
 
-#include <CubSComplex.hpp>
-#include <SComplexAlgs.hpp>
-#include <SComplexAlgs_DefaultReduceStrategy_CubSComplex.hpp>
+#include <redHom/complex/cubical/CubSComplex.hpp>
+#include <redHom/algorithm/Algorithms.hpp>
+#include <redHom/algorithm/strategy/DefaultReduceStrategy_CubSComplex.hpp>
 
 
 typedef ElementaryCell ElementaryCellType;

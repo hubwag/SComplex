@@ -1,7 +1,7 @@
 #ifndef _SCOMPLEX_ALGS_COREDUCTION_HPP
 #define _SCOMPLEX_ALGS_COREDUCTION_HPP
 
-#include "SComplexAlgs_DefaultReduceStrategy.hpp"
+#include "strategy/DefaultReduceStrategy.hpp"
 #include <deque>
 #include <set>
 #include <boost/pool/object_pool.hpp>

@@ -1,4 +1,4 @@
-#include "complex/cubical/CubSComplex.hpp"
+#include "redHom/complex/cubical/CubSComplex.hpp"
 #include <functional>
 #include <boost/utility/enable_if.hpp>
 

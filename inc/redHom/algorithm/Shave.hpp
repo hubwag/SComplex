@@ -1,8 +1,8 @@
 #ifndef _SCOMPLEX_ALGS_SHAVE_HPP
 #define _SCOMPLEX_ALGS_SHAVE_HPP
 
-#include "SComplexAlgs_DefaultReduceStrategy.hpp"
-#include "SComplexAlgs_DefaultReduceStrategy_CubSComplex.hpp"
+#include "strategy/DefaultReduceStrategy.hpp"
+#include "strategy/DefaultReduceStrategy_CubSComplex.hpp"
 
 template<typename StrategyT>
 class ShaveAlgorithm {

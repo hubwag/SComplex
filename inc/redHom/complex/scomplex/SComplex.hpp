@@ -20,8 +20,8 @@
 #include <boost/weak_ptr.hpp>
 #include <boost/utility.hpp>
 
-#include "util/Iterators.hpp"
-#include "BasicCellProxy.hpp"
+#include "redHom/util/Iterators.hpp"
+#include "../BasicCellProxy.hpp"
 
 template<typename TraitsT>
 class SComplex: boost::noncopyable {

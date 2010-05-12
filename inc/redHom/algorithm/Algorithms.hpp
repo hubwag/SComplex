@@ -15,9 +15,9 @@
 #include <map>
 #include <set>
 
-#include "SComplexAlgs_Coreduction.hpp"
-#include "SComplexAlgs_Shave.hpp"
-#include "SComplexAlgs_DefaultReduceStrategy.hpp"
+#include "Coreduction.hpp"
+#include "Shave.hpp"
+#include "strategy/DefaultReduceStrategy.hpp"
 
 #include <capd/auxil/Stopwatch.h>
 #include <capd/auxil/CRef.h>

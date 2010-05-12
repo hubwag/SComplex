@@ -18,7 +18,7 @@ using namespace std;
 
 #include <redHom/complex/cubical/CubSComplex.hpp>
 #include <redHom/algorithm/Algorithms.hpp>
-#include <redHom/startegy/DefaultReduceStrategy_CubSComplex.hpp>
+#include <redHom/algorithm/strategy/DefaultReduceStrategy_CubSComplex.hpp>
 
 #ifndef DIM
 //#error "Define dimension"

@@ -1,8 +1,8 @@
 #include <iostream>
 using namespace std;
 
-#include <SComplex.hpp>
-#include <SComplexDefaultTraits.hpp>
+#include <redHom/complex/scomplex/SComplex.hpp>
+#include <redHom/complex/scomplex/SComplexDefaultTraits.hpp>
 
 
 #include <boost/test/unit_test.hpp>

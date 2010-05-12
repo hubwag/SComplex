@@ -1,7 +1,7 @@
 #ifndef _SCOMPLEX_ALGS_COAKQ_HPP
 #define _SCOMPLEX_ALGS_COAKQ_HPP
 
-#include "SComplexAlgs_COAKQStrategy.hpp"
+#include "strategy/COAKQStrategy.hpp"
 #include <deque>
 #include <set>
 #include <vector>

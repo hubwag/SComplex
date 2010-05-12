@@ -10,7 +10,7 @@ using namespace std;
 #include <capd/auxil/Stopwatch.h>
 #include <capd/auxil/CRef.h>
 
-#include "CubSComplex.hpp"
+#include <redHom/complex/cubical/CubSComplex.hpp>
 
 BOOST_AUTO_TEST_SUITE(CubSComplex_iterators)
 

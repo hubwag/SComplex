@@ -2,7 +2,7 @@
 #define __SCOMPLEX_DEFUALT_TRAITS_HPP
 
 #include <cstring>
-#include "util/ColoredObjectsListModel.hpp"
+#include "redHom/util/ColoredObjectsListModel.hpp"
 
 
 class SComplexDefaultTraits {
