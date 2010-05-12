@@ -16,9 +16,9 @@ using namespace std;
 #include <capd/homologicalAlgebra/cubSetFunctors.hpp>
 #include <capd/homologicalAlgebra/ReducibleFreeChainComplex.hpp>
 
-#include <complex/cubical/CubSComplex.hpp>
-#include <SComplexAlgs.hpp>
-#include <SComplexAlgs_DefaultReduceStrategy_CubSComplex.hpp>
+#include <redHom/complex/cubical/CubSComplex.hpp>
+#include <redHom/algorithm/Algorithms.hpp>
+#include <redHom/startegy/DefaultReduceStrategy_CubSComplex.hpp>
 
 #ifndef DIM
 //#error "Define dimension"
