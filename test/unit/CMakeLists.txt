@@ -16,8 +16,8 @@ add_executable(SComplexUnitTest
   SComplexColorTest.cpp
   SComplexReductionTest.cpp
 #  SimplexSComplexTest.cpp
-  CubSComplexIteratorsTest.cpp
-  CubSComplexReductionTest.cpp
+#  CubSComplexIteratorsTest.cpp
+#  CubSComplexReductionTest.cpp
 )
 
 add_executable(COAKQTest  COAKQTest.cpp   SComplexUnitTestMain.cpp)
