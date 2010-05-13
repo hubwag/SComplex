@@ -2,6 +2,8 @@
 #define _SCOMPLEX_ALGS_COREDUCTION_HPP
 
 #include "SComplexAlgs_DefaultReduceStrategy.hpp"
+#include "OldCored.hpp"
+
 #include <deque>
 #include <set>
 #include <boost/pool/object_pool.hpp>
@@ -50,6 +52,13 @@ private:
 	 for (typename SComplex::ColoredIterators::Iterators::CbdCells::iterator cbdn = cbdCells.begin(),
 			  end = cbdCells.end(); cbdn != end; ++cbdn) {
 		typename SComplex::ColoredIterators::Iterators::CbdCells::iterator::value_type v = *cbdn;
+
+
+		if (cellIdsToProcess.size() <= v.getId())
+		{
+			cerr << "@" << this << " size: " << cellIdsToProcess.size() << " id: " << v.getId() << endl;
+			system("pause");
+		}
 		if (!cellIdsToProcess[v.getId()]) {
 		  cellsToProcess.push_back(v);
 		  cellIdsToProcess[v.getId()] = true;
@@ -78,6 +87,16 @@ public:
   template<typename SComplex>
   static boost::shared_ptr< CoreductionAlgorithm<DefaultReduceStrategy<SComplex> > > createDefault(SComplex& s) {
 	 return boost::shared_ptr< CoreductionAlgorithm<DefaultReduceStrategy<SComplex> > >(new CoreductionAlgorithm<DefaultReduceStrategy<SComplex> >(new DefaultReduceStrategy<SComplex>(s)));
+  }
+
+};
+
+class OldCoreductionAlgorithmFactory {
+
+public:
+  template<typename SComplex>
+  static boost::shared_ptr< CoreductionAlgorithm<OldReduceStrategy<SComplex> > > createDefault(SComplex& s) {
+	 return boost::shared_ptr< CoreductionAlgorithm<OldReduceStrategy<SComplex> > >(new CoreductionAlgorithm<OldReduceStrategy<SComplex> >(new OldReduceStrategy<SComplex>(s)));
   }
 
 };
@@ -121,7 +140,12 @@ inline bool CoreductionAlgorithm<StrategyT>::coreduceNextPair() {
 template<typename StrategyT>
 inline int CoreductionAlgorithm<StrategyT>::operator()(){
   //cellIdsToProcess.resize(strategy->getComplex().cardinality()); //
-  cellIdsToProcess.resize(strategy->getComplex().size());
+
+  cout << "@" << this << " resizing to: " << strategy->getComplex().size() << " !!!" << endl;
+
+  cout << "RESIZING BRUTALLY TO 3MLN!!!!";
+  // cellIdsToProcess.resize(strategy->getComplex().size());
+  cellIdsToProcess.resize(3000000);
 
   int cnt=0;
 

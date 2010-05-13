@@ -143,6 +143,9 @@ void testReduce(SComplex& complex) {
 	 cout << " --- Computed homology is: \n\n" << homSignCR()  << std::endl;
 }
 
+#include "SComplex.hpp"
+#include "SComplexDefaultTraits.hpp"
+
 template<typename SComplex>
 void CrHomS()
 {
@@ -194,15 +197,24 @@ void CrHomS()
 
     (*cored)();
 
+
+    boost::shared_ptr<CoreductionAlgorithm<DefaultReduceStrategy< ::SComplex<SComplexDefaultTraits> > > >
+    cored2 = CoreductionAlgorithmFactory::createDefault(*cored->getStrategy()->outputComplex);
+
+    (*cored2)();
+
+    cout << *cored2->getStrategy()->outputComplex.size() << endl;
+
 //    cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
 
-    testReduce(*cored->getStrategy()->outputComplex);
+    testReduce(*cored2->getStrategy()->outputComplex);
     delete cored->getStrategy()->outputComplex;
+    delete cored2->getStrategy()->outputComplex;
 }
 
 #include "simplexIO.hpp"
 
-
+#include "OldCored.hpp"
 
 void showObj(const string &s)
 {
@@ -210,7 +222,17 @@ void showObj(const string &s)
 	ifstream ifs(s.c_str());
 	CRef<SimplexSComplex> SComplexCR(new SimplexSComplex());
 
-	parseObj(ifs, SComplexCR()); //
+	if (s.find(".obj") != string::npos)
+	{
+		cerr << "parsing obj simplex file" << endl;
+		parseObj(ifs, SComplexCR());
+	}
+	else {
+		cout << "parsing dat or plain txt simplex file" << endl;
+		parseDat(ifs, SComplexCR());
+	}
+
+	// SComplexCR() = subdivide3(SComplexCR());
 
 	cout << "parsed file, cardinality: " << SComplexCR().cardinality() << endl;
 	cout << "it took: " << swTot << endl;
@@ -219,29 +241,99 @@ void showObj(const string &s)
 	//(ShaveAlgorithmFactory::createDefault(SComplexCR()))();
     // cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
 
-
     Stopwatch swCoRed;
+
+     //boost::shared_ptr< CoreductionAlgorithm<OldReduceStrategy<SComplex> > > old_red (new CoreductionAlgorithm<OldReduceStrategy<SComplex> >(new OldReduceStrategy<SComplex>(SComplexCR())));
+
+boost::shared_ptr<CoreductionAlgorithm<OldReduceStrategy<SimplexSComplex> > >
+    old = OldCoreductionAlgorithmFactory::createDefault(SComplexCR());
+
+	(*old)();
+
+	cout << "~DOBRE HOMOLOGIE PO ZWYKLYCH KOREDUKCJACH: \n";
+    testReduce(SComplexCR());
+
 
     boost::shared_ptr<CoreductionAlgorithm<DefaultReduceStrategy<SimplexSComplex> > >
     cored = CoreductionAlgorithmFactory::createDefault(SComplexCR());
 
     (*cored)();
 
-    cout << " --- AKQ Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
-
+	cout << "DOBRE HOMOLOGIE PO MORSIE: \n";
     testReduce(*cored->getStrategy()->outputComplex);
+
+	boost::shared_ptr<CoreductionAlgorithm<DefaultReduceStrategy< ::SComplex<SComplexDefaultTraits> > > >
+    cored2 = CoreductionAlgorithmFactory::createDefault(*cored->getStrategy()->outputComplex);
+
+    (*cored2)();
+
+    boost::shared_ptr<CoreductionAlgorithm<DefaultReduceStrategy< ::SComplex<SComplexDefaultTraits> > > >
+    cored3 = CoreductionAlgorithmFactory::createDefault(*cored2->getStrategy()->outputComplex);
+
+    (*cored3)();
+
+    // cout << *cored3->getStrategy()->outputComplex.cardinality() << endl;
+
+//    cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
+
+
+
+
+    // cout << " --- AKQ Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
+
+    testReduce(*cored3->getStrategy()->outputComplex);
     delete cored->getStrategy()->outputComplex;
+    delete cored2->getStrategy()->outputComplex;
+    delete cored3->getStrategy()->outputComplex;
 }
 
-int main()
+int main(int n, char **v)
 {
-	string pref = "c:/Users/hub/Downloads/";
+	if (n <= 1)
+	{
+		cerr << "nie ma argumentow!!";
+		exit(1);
+	}
+
+
+/*	string files[] = {"bing.dat",
+"bjorner.dat",
+"c-ns.dat",
+"c-ns2.dat",
+"c-ns3.dat",
+"dunce.dat",
+"dunce_hat.dat",
+"gruenbaum.dat",
+"knot.dat",
+"lockeberg.dat",
+"mani-walkup-C.dat",
+"mani-walkup-D.dat",
+"nc_sphere.dat",
+"nonextend.dat",
+"nonpl_sphere.dat",
+"poincare.dat",
+"projective.dat",
+"rudin.dat",
+"simon.dat",
+"simon2.dat",
+"solid_2_torus.dat",
+"ziegler.dat"};
+*/
+
+	// string pref = "c:/Users/hub/Downloads/library/";
+	// string pref = "c:/Users/hub/Downloads/";
+	// string files[] = {"knot.dat"};
+
+	// string files[] = {"poincare.dat"};
+
+	// string files[] = {"first.txt", "second.txt", "third.txt", "fourth.txt", "fifth.txt"};
+
 	string files[] = {"buddha.obj", "bunny.obj", "dragon.obj", "toruses.obj", "s2.obj"};
 
-	for (int i  = 0; i < sizeof(files)/sizeof(*files); i++)
+	//for (int i  = 0; i < sizeof(files)/sizeof(*files); i++)
 	{
-		cout << files[i] << endl;
-		showObj(pref + files[i]);
+		//cout << files[i] << endl;
+		showObj(v[1]);
 		cout << endl;
 	}
 }

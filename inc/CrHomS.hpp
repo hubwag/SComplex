@@ -24,8 +24,8 @@ void testReduce(SComplex& complex) {
     //cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
 
     Stopwatch swCoRed;
-    (*CoreductionAlgorithmFactory::createDefault(complex))();
-    cout << " --- Coreduction reduced the size to " << complex.size() << " in " << swCoRed <<  endl;
+    //(*CoreductionAlgorithmFactory::createDefault(complex))();
+    //cout << " --- Coreduction reduced the size to " << complex.size() << " in " << swCoRed <<  endl;
 
 	 CRef<ReducibleFreeChainComplexType> RFCComplexCR=
 		(ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SComplex, ReducibleFreeChainComplexType>(complex))();

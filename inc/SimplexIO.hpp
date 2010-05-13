@@ -32,8 +32,8 @@ void parseDat(istream &stream, SimplexSComplex &comp)
 	}
 
 	//simplices = subdivide3(simplices);
-	//simplices = subdivide6(simplices);
-	//simplices = subdivide6(simplices);
+	//simplices = subdivide3(simplices);
+	//simplices = subdivide3(simplices);
 	//simplices = subdivide3(simplices);
 	//simplices = subdivide3(simplices);
 
@@ -67,11 +67,6 @@ void parseObj(istream &stream, SimplexSComplex &comp)
 
 		// comp.addSimplex(simp);
 	}
-
-	simplices = subdivide3(simplices);
-	simplices = subdivide3(simplices);
-	simplices = subdivide3(simplices);
-	//simplices = subdivide3(simplices);
 
 	for (int i = 0; i < simplices.size(); i++)
 		comp.addSimplex(simplices[i]);

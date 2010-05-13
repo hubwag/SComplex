@@ -12,7 +12,7 @@
 
 //#include <boost/tuples/tuple.hpp>
 
-const bool verbose = true;
+const bool verbose = false;
 
 template<typename SComplexT>
 class DefaultReduceStrategyTraits
@@ -20,7 +20,7 @@ class DefaultReduceStrategyTraits
 public:
 
     // template<typename ImplT>
-    // struct Proxy: public CellProxy<ImplT> {
+    // struct Proxy: pu	blic CellProxy<ImplT> {
     // 	 template<typename ImplT2>
     // 	 Proxy(const ImplT2& impl): CellProxy<ImplT>(impl) {}
 
@@ -109,8 +109,6 @@ public:
     		val = max(val, morse[el.getId()]);
     	}
 
-    	// cout << val + 1 << endl;
-
     	return val + 1;
     }
 
@@ -123,7 +121,6 @@ public:
         morse[king.getId()] = v;
         morse[queen.getId()] = v;
         her_king.insert(make_pair(queen, king));
-        // her_king[queen] = king;
     }
 
     template<typename ImplT1, typename ImplT2>
@@ -172,6 +169,11 @@ public:
     void follow_path(Cell c)
     {
     	stack<pair<Cell, int> > S; // no cycles!
+    	stack<set<Cell> > Spath;
+    	set<Cell> _s;
+    	_s.insert(c);
+
+    	Spath.push(_s);
     	S.push(make_pair(c, 1));
 
     	while(S.size())
@@ -179,6 +181,9 @@ public:
     		Cell curr = S.top().first;
     		int accumulated_weight = S.top().second;
     		S.pop();
+
+    		set<Cell> path = Spath.top();
+    		Spath.pop();
 
     		BOOST_ASSERT(akq[curr] != 'q');
 
@@ -191,6 +196,7 @@ public:
 					cout << "between values: " << morse[c.getId()] << "and " << morse[curr.getId()] << " with coef product" << accumulated_weight << endl;
     			}
     			coeffs[make_pair(c.getId(), curr.getId())] += accumulated_weight;
+
     			continue;
     		}
 
@@ -199,9 +205,16 @@ public:
 			// case 1: to ace
     		BOOST_FOREACH(Cell to, complex.iterators().bdCells(curr))
     		{
-    			if (akq[to] == 'a' && morse[to.getId()] < our_value)
+    			if (akq[to] == 'a')
     			{
-    				S.push(make_pair(to, accumulated_weight * toAceCoeff(curr, to)));
+    				BOOST_ASSERT(morse[to.getId()] < our_value);
+
+    				if (path.count(to) == 0)
+    				{
+    					path.insert(to);
+						Spath.push(path);
+						S.push(make_pair(to, accumulated_weight * toAceCoeff(curr, to)));
+    				}
     			}
     		}
 
@@ -214,9 +227,15 @@ public:
     			// Cell to = her_king[bd];
     			Cell to = her_king.find(bd)->second;
     			BOOST_ASSERT(akq[to] == 'k');
-    			if (morse[to.getId()] < our_value)
+
     			{
-    				S.push(make_pair(to, accumulated_weight * toKingCoeff(curr, to, bd)));
+    				if (path.count(to) == 0)
+    				{
+    					BOOST_ASSERT(morse[to.getId()] < our_value);
+    					path.insert(to);
+    					Spath.push(path);
+						S.push(make_pair(to, accumulated_weight * toKingCoeff(curr, to, bd)));
+    				}
     			}
     		}
     	}
