@@ -131,14 +131,14 @@ void testReduce(SComplex& complex) {
 	cout << "\n\ntesting on morse-smale complex\n\n";
 	 Stopwatch swComp,swRed;
 	 //(ShaveAlgorithmFactory::createDefault(SComplexCR()))();
-    //cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
+     //cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
 
 
 	 CRef<ReducibleFreeChainComplexType> RFCComplexCR=
 		(ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SComplex, ReducibleFreeChainComplexType>(complex))();
 	 cout << " --- RFCC constructed  " << endl;
 
-	 CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
+	 CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR(RFCComplexCR);
 	 cout << " --- Computation completed in " << swComp  << std::endl;
 	 cout << " --- Computed homology is: \n\n" << homSignCR()  << std::endl;
 }
@@ -146,77 +146,11 @@ void testReduce(SComplex& complex) {
 #include "SComplex.hpp"
 #include "SComplexDefaultTraits.hpp"
 
-template<typename SComplex>
-void CrHomS()
-{
-    Stopwatch swTot;
-
-    CRef<SComplex> SComplexCR(new SComplex());
-
-    int n = 1000;
-    int mod = n; // = 4
-    unsigned d = 4;
-
-    for (int i = 0; i < n; i++)
-    {
-        set<int> s;
-        while (s.size() < d)
-        {
-            s.insert(rand()%mod);
-        }
-
-        SComplexCR().addSimplex(s);
-    }
-
-    cout << " --- generated random simplicial complex --- \n cardinality: " << SComplexCR().cardinality() << endl;
-
-//  SComplexAlgs<CubSComplex>::test(SComplexCR());
-
-    Stopwatch swComp,swRed;
-    (ShaveAlgorithmFactory::createDefault(SComplexCR()))();
-    cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
-
-    // Stopwatch swCoRed;
-    // (CoreductionAlgorithmFactory::createDefault(SComplexCR()))();
-    // cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
-
-/*
-    CRef<ReducibleFreeChainComplexType> RFCComplexCR=
-        (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SimplexSComplex, ReducibleFreeChainComplexType>(SComplexCR()))();
-    cout << " --- RFCC constructed  " << endl;
-
-    CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
-    cout << " --- Computation completed in " << swComp  << std::endl;
-    cout << " --- Computed homology is: \n\n" << homSignCR()  << std::endl;
-    cout << " --- Total computation time is: " << swTot  << std::endl;
-
-    cout << "\n\n\n";*/
-
-    boost::shared_ptr<CoreductionAlgorithm<DefaultReduceStrategy<SimplexSComplex> > >
-    cored = CoreductionAlgorithmFactory::createDefault(SComplexCR());
-
-    (*cored)();
-
-
-    boost::shared_ptr<CoreductionAlgorithm<DefaultReduceStrategy< ::SComplex<SComplexDefaultTraits> > > >
-    cored2 = CoreductionAlgorithmFactory::createDefault(*cored->getStrategy()->outputComplex);
-
-    (*cored2)();
-
-    cout << *cored2->getStrategy()->outputComplex.size() << endl;
-
-//    cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
-
-    testReduce(*cored2->getStrategy()->outputComplex);
-    delete cored->getStrategy()->outputComplex;
-    delete cored2->getStrategy()->outputComplex;
-}
-
 #include "simplexIO.hpp"
 
 #include "OldCored.hpp"
 
-void showObj(const string &s)
+void showObj(const string &s, const string &method = "KMS", int subdivs = 0)
 {
 	Stopwatch swTot;
 	ifstream ifs(s.c_str());
@@ -225,11 +159,11 @@ void showObj(const string &s)
 	if (s.find(".obj") != string::npos)
 	{
 		cerr << "parsing obj simplex file" << endl;
-		parseObj(ifs, SComplexCR());
+		parseObj(ifs, SComplexCR(), subdivs);
 	}
 	else {
 		cout << "parsing dat or plain txt simplex file" << endl;
-		parseDat(ifs, SComplexCR());
+		parseDat(ifs, SComplexCR(), subdivs);
 	}
 
 	// SComplexCR() = subdivide3(SComplexCR());
@@ -237,21 +171,33 @@ void showObj(const string &s)
 	cout << "parsed file, cardinality: " << SComplexCR().cardinality() << endl;
 	cout << "it took: " << swTot << endl;
 
-	Stopwatch swComp,swRed;
+	Stopwatch swComp;
 	//(ShaveAlgorithmFactory::createDefault(SComplexCR()))();
     // cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
 
-    Stopwatch swCoRed;
-
      //boost::shared_ptr< CoreductionAlgorithm<OldReduceStrategy<SComplex> > > old_red (new CoreductionAlgorithm<OldReduceStrategy<SComplex> >(new OldReduceStrategy<SComplex>(SComplexCR())));
 
-boost::shared_ptr<CoreductionAlgorithm<OldReduceStrategy<SimplexSComplex> > >
-    old = OldCoreductionAlgorithmFactory::createDefault(SComplexCR());
+	if (method == "KMS")
+	{
+		cout << "RUNNING KMS: \n";
+		testReduce(SComplexCR());
 
-	(*old)();
+		cout << "calculations completed in: " << swComp << endl;
+		return;
 
-	cout << "~DOBRE HOMOLOGIE PO ZWYKLYCH KOREDUKCJACH: \n";
-    testReduce(SComplexCR());
+	}
+	else if (method == "CORED")
+	{
+		cout << "RUNNING STANDARD REDUCTIONS THEN KMS";
+		boost::shared_ptr<CoreductionAlgorithm<OldReduceStrategy<SimplexSComplex> > >
+		old = OldCoreductionAlgorithmFactory::createDefault(SComplexCR());
+		(*old)();
+
+		testReduce(SComplexCR());
+
+		cout << "calculations completed in: " << swComp << endl;
+		return;
+	}
 
 
     boost::shared_ptr<CoreductionAlgorithm<DefaultReduceStrategy<SimplexSComplex> > >
@@ -259,13 +205,15 @@ boost::shared_ptr<CoreductionAlgorithm<OldReduceStrategy<SimplexSComplex> > >
 
     (*cored)();
 
-	cout << "DOBRE HOMOLOGIE PO MORSIE: \n";
+	cout << "HOMOLOGIE PO MORSIE: \n";
     testReduce(*cored->getStrategy()->outputComplex);
 
-	boost::shared_ptr<CoreductionAlgorithm<DefaultReduceStrategy< ::SComplex<SComplexDefaultTraits> > > >
+    cout << "calculations completed in: " << swComp << endl;
+
+	/*boost::shared_ptr<CoreductionAlgorithm<DefaultReduceStrategy< ::SComplex<SComplexDefaultTraits> > > >
     cored2 = CoreductionAlgorithmFactory::createDefault(*cored->getStrategy()->outputComplex);
 
-    (*cored2)();
+//    (*cored2)();
 
     boost::shared_ptr<CoreductionAlgorithm<DefaultReduceStrategy< ::SComplex<SComplexDefaultTraits> > > >
     cored3 = CoreductionAlgorithmFactory::createDefault(*cored2->getStrategy()->outputComplex);
@@ -274,27 +222,38 @@ boost::shared_ptr<CoreductionAlgorithm<OldReduceStrategy<SimplexSComplex> > >
 
     // cout << *cored3->getStrategy()->outputComplex.cardinality() << endl;
 
-//    cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
-
-
-
+	// cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
 
     // cout << " --- AKQ Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
 
     testReduce(*cored3->getStrategy()->outputComplex);
     delete cored->getStrategy()->outputComplex;
     delete cored2->getStrategy()->outputComplex;
-    delete cored3->getStrategy()->outputComplex;
+    delete cored3->getStrategy()->outputComplex;*/
+
+    delete cored->getStrategy()->outputComplex;
 }
 
 int main(int n, char **v)
 {
+	string method = "AKQ";
+	int subdivs = 0;
 	if (n <= 1)
 	{
-		cerr << "nie ma argumentow!!";
+		cerr << "no arguments - quitting\n";
 		exit(1);
 	}
+	if (n >= 3)
+	{
+		cerr << "using the supplied method!\n";
+		method = v[2];
+	}
 
+	if (n >= 4)
+	{
+		cerr << "using the supplied number of subdivisions (simple, not barycentric for now)!\n";
+		subdivs = atoi(v[3]);
+	}
 
 /*	string files[] = {"bing.dat",
 "bjorner.dat",
@@ -328,29 +287,15 @@ int main(int n, char **v)
 
 	// string files[] = {"first.txt", "second.txt", "third.txt", "fourth.txt", "fifth.txt"};
 
-	string files[] = {"buddha.obj", "bunny.obj", "dragon.obj", "toruses.obj", "s2.obj"};
+	// string files[] = {"buddha.obj", "bunny.obj", "dragon.obj", "toruses.obj", "s2.obj"};
 
-	//for (int i  = 0; i < sizeof(files)/sizeof(*files); i++)
-	{
-		//cout << files[i] << endl;
-		showObj(v[1]);
-		cout << endl;
-	}
+	Stopwatch all;
+
+	showObj(v[1], method, subdivs);
+	cout << "total time: " << all  << endl;
+
 }
 using namespace std;
-
-
-int __main(int argc,char* argv[])
-{
-   vector<set<int> > torus = makeSpaceFromWelds(makeProjectiveSpaceWelds());
-   // vector<set<int> > torus;
-
-   // for (int i = 0; i < 4; i++)
-   //	torus = subdivide6(torus);
-   CrHomS_fromTris<SimplexSComplex>(torus, "torus");
-   // showObj("c:/users/hub/downloads/bunny.obj");
-}
-
 
 /*
 int main(int argc,char* argv[])

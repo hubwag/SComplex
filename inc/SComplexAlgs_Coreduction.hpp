@@ -141,11 +141,11 @@ template<typename StrategyT>
 inline int CoreductionAlgorithm<StrategyT>::operator()(){
   //cellIdsToProcess.resize(strategy->getComplex().cardinality()); //
 
-  cout << "@" << this << " resizing to: " << strategy->getComplex().size() << " !!!" << endl;
+  // cout << "@" << this << " resizing to: " << strategy->getComplex().size() << " !!!" << endl;
 
-  cout << "RESIZING BRUTALLY TO 3MLN!!!!";
-  // cellIdsToProcess.resize(strategy->getComplex().size());
-  cellIdsToProcess.resize(3000000);
+  // cout << "RESIZING BRUTALLY TO 3MLN!!!!";
+  cellIdsToProcess.resize(strategy->getComplex().size());
+  // cellIdsToProcess.resize(3000000);
 
   int cnt=0;
 

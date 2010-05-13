@@ -7,7 +7,7 @@
 
 class SimplexSComplex;
 
-void parseDat(istream &stream, SimplexSComplex &comp)
+void parseDat(istream &stream, SimplexSComplex &comp, int subdivs = 0)
 {
 	using std::string;
 	using std::stringstream;
@@ -31,17 +31,14 @@ void parseDat(istream &stream, SimplexSComplex &comp)
 		// comp.addSimplex(simp);
 	}
 
-	//simplices = subdivide3(simplices);
-	//simplices = subdivide3(simplices);
-	//simplices = subdivide3(simplices);
-	//simplices = subdivide3(simplices);
-	//simplices = subdivide3(simplices);
+	for (int i = 0; i < subdivs; i++)
+		simplices = subdivide3(simplices);
 
 	for (int i = 0; i < simplices.size(); i++)
 		comp.addSimplex(simplices[i]);
 }
 
-void parseObj(istream &stream, SimplexSComplex &comp)
+void parseObj(istream &stream, SimplexSComplex &comp, int subdivs = 0)
 {
 	using std::string;
 	using std::stringstream;
@@ -67,6 +64,9 @@ void parseObj(istream &stream, SimplexSComplex &comp)
 
 		// comp.addSimplex(simp);
 	}
+
+	for (int i = 0; i < subdivs; i++)
+		simplices = subdivide3(simplices);
 
 	for (int i = 0; i < simplices.size(); i++)
 		comp.addSimplex(simplices[i]);
