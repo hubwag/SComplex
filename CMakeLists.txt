@@ -4,10 +4,8 @@ project(SComplex CXX)
 
 #set(RUNTIME_OUTPUT_DIRECTORY build)
 
-set(Boost_DEBUG ON)
-set(Boost_USE_STATIC_LIBS OFF)
 SET(Boost_ADDITIONAL_VERSIONS "1.42" "1.42.0")
-find_package(Boost 1.42 COMPONENTS unit_test_framework test_exec_monitor REQUIRED)
+find_package(Boost 1.42)
 
 
 set(CODE ${PROJECT_SOURCE_DIR}/)

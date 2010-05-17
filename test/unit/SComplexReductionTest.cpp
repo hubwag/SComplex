@@ -1,7 +1,4 @@
 #include <iostream>
-using namespace std;
-
-#include <capd/auxil/Stopwatch.h>
 
 #include <redHom/complex/scomplex/SComplex.hpp>
 #include <redHom/complex/scomplex/SComplexDefaultTraits.hpp>

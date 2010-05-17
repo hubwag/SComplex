@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include <redHom/complex/cubical/CubSComplex.hpp>
+#include <redHom/complex/cubical/CubSComplexReader.hpp>
 #include <redHom/algorithm/Algorithms.hpp>
 #include <redHom/algorithm/strategy/DefaultReduceStrategy_CubSComplex.hpp>
 
@@ -27,7 +28,8 @@ boost::tuple<int, int, int, std::string>  CrHomS() {
   Stopwatch swTot;
   BOOST_TEST_MESSAGE(" --- Reading cubical cellular set ");
 
-  boost::shared_ptr<CubSComplex<3> > complex = readCubSComplex<3>(PROJECT_SOURCE_DIR"test/input_1.bmd"); 
+  CubSComplexReader<3> reader;
+  boost::shared_ptr<CubSComplex<3> > complex = reader(PROJECT_SOURCE_DIR"/data/cubical/torus.cub"); 
 
   get<0>(result) = complex->cardinality();
 

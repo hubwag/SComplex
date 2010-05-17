@@ -4,19 +4,8 @@
 #include <iostream>
 using namespace std;
 
-#include <capd/auxil/Stopwatch.h>
-#include <capd/auxil/CRef.h>
-#include <capd/homologicalAlgebra/embeddingDim.h>
-
-#include <capd/vectalg/MatrixSlice.h>
-#include <capd/matrixAlgorithms/intMatrixAlgorithms.hpp>
-#include <capd/bitSet/EuclBitSet.h>
-#include <capd/homologicalAlgebra/homologicalAlgebra.hpp>
-#include <capd/homologicalAlgebra/homAlgFunctors.hpp>
-#include <capd/homologicalAlgebra/cubSetFunctors.hpp>
-#include <capd/homologicalAlgebra/ReducibleFreeChainComplex.hpp>
-
 #include <redHom/complex/cubical/CubSComplex.hpp>
+#include <redHom/complex/cubical/CubSComplexReader.hpp>
 #include <redHom/algorithm/Algorithms.hpp>
 #include <redHom/algorithm/strategy/DefaultReduceStrategy_CubSComplex.hpp>
 
@@ -42,18 +31,20 @@ void CrHomS(int argc,char* argv[]){
   string fileName=argc>1 ? string(argv[1]) : "sphere1d.txt";
   cout << " --- Reading cubical cellular set from  " << fileName  << endl;
 
-  CRef<SComplex> SComplexCR(new SComplex(readCubCellSet<BCubSet,BCubCelSet>(fileName.c_str())));
+  CubSComplexReader<DIM> reader;
+  boost::shared_ptr<SComplex> complex = reader(fileName.c_str());
+
   cout << "Successfully read  " << fileName <<
-          " of "  << SComplexCR().cardinality() << " cells " << endl;
+          " of "  << complex->cardinality() << " cells " << endl;
 
 
   Stopwatch swComp,swRed;
-  (ShaveAlgorithmFactory::createDefault(SComplexCR()))();  
-  cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
+  (ShaveAlgorithmFactory::createDefault(*complex))();  
+  cout << " --- Shave reduced the size to " << complex->cardinality() << " in " << swRed <<  endl;
   
    Stopwatch swCoRed;
-  (*CoreductionAlgorithmFactory::createDefault(SComplexCR()))();
-   cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
+  (*CoreductionAlgorithmFactory::createDefault(*complex))();
+   cout << " --- Coreduction reduced the size to " << complex->cardinality() << " in " << swCoRed <<  endl;
 
   // CRef<ReducibleFreeChainComplexType> RFCComplexCR=
   // 		(ReducibleFreeChainComplexOverZFromSComplexAlgorithm<CubSComplex, ReducibleFreeChainComplexType>(SComplexCR()))();

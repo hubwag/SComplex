@@ -2,22 +2,7 @@
 #define SCOMPLEX_ALGS_CUBSCOMPLEX_REDUCE_STRATEGY_HPP_
 
 
-#include <capd/homologicalAlgebra/embeddingDim.h>
-
-#include <capd/vectalg/MatrixSlice.h>
-#include <capd/matrixAlgorithms/intMatrixAlgorithms.hpp>
-
-#include <capd/homologicalAlgebra/homologicalAlgebra.hpp>
-#include <capd/homologicalAlgebra/homAlgFunctors.hpp>
-#include <capd/homologicalAlgebra/cubSetFunctors.hpp>
-#include <capd/homologicalAlgebra/ReducibleFreeChainComplex.hpp>
-
-#include <capd/matrixAlgorithms/matrixAlgorithmsLib.h>
-#include <capd/homologicalAlgebra/homologicalAlgebra.hpp>
-#include <capd/homologicalAlgebra/homAlgFunctors.hpp>
-#include <capd/homologicalAlgebra/cubSetFunctors.hpp>
-#include <capd/homologicalAlgebra/ReducibleFreeChainComplex.hpp>
-#include <capd/vectalg/MatrixSlice.h>
+#include "../../RedHomCAPD.h"
 
 #include "DefaultReduceStrategy.hpp"
 #include "DefaultReduceStrategyTraits_CubSComplex.hpp"

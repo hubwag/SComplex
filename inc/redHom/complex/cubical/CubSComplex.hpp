@@ -4,22 +4,7 @@
 #include <boost/assert.hpp>
 #include <boost/optional.hpp>
 #include <utility>
-
-
-#include <capd/auxil/CRef.h>
-#include <capd/homologicalAlgebra/embeddingDim.h>
-#include <capd/vectalg/MatrixSlice.h>
-#include <capd/matrixAlgorithms/intMatrixAlgorithms.hpp>
-#include <capd/homologicalAlgebra/homologicalAlgebra.hpp>
-#include <capd/homologicalAlgebra/homAlgFunctors.hpp>
-#include <capd/homologicalAlgebra/cubSetFunctors.hpp>
-#include <capd/homologicalAlgebra/ReducibleFreeChainComplex.hpp>
-#include <capd/homologicalAlgebra/readCubCellSet.hpp>
-
-#include <capd/bitSet/CubCellSetT.hpp>
-#include <capd/bitSet/CubSetT.hpp>
-//#include <capd/bitSet/EuclBitSetT.hpp>
-
+#include "../../RedHomCAPD.h"
 
 
 
@@ -88,12 +73,10 @@ public:
   typedef ColoredIteratorsImpl<false> ColoredIterators;
   typedef ColoredIteratorsImpl<true> ColoredConstIterators;
   
-  CubSComplex();
-  CubSComplex(const int* A_w, bool clear=false);
-  explicit CubSComplex(CRef<BCubCellSet> _bCubCellSet);
+  explicit CubSComplex(RepSet<ElementaryCube>& repSet);
 
   size_t cardinality() {  return bCubCellSet.cardinality(); }
-  size_t size() const { return bCubCellSet.getBmpSizeInBits(); }
+  size_t size() const { return const_cast<BCubCellSet&>(bCubCellSet).getBmpSizeInBits(); }
 
   Dim getDim() { return bCubCellSet.embDim(); }
   
@@ -119,8 +102,7 @@ public:
   int coincidenceIndex(const CellProxy<ImplT1> &a, const CellProxy<ImplT2> &b) const;
   
 protected:
-  CRef<BCubCellSet> _bCubCellSetCR;
-  BCubCellSet& bCubCellSet;
+  BCubCellSet bCubCellSet;
   
   template<bool isConst>
   friend class IteratorsImpl;
@@ -133,16 +115,9 @@ protected:
 #include "CubSComplex_ColoredIterators.hpp"
 #include "CubSComplex_Numerators.hpp"
 
-// inline CubSComplex::CubSComplex():
-//   bCubCellSetCR(new BCubCellSet()), baseDimension(0)
-// {}
-
-// inline CubSComplex::CubSComplex(const int* A_w, bool clear):
-//   bCubCellSetCR(new BCubCelSet(A_w,clear)),baseDimension(0)
-// {}
 
 template<int DIM>
-inline CubSComplex<DIM>::CubSComplex(CRef<BCubCellSet> _bCubCellSetCR): _bCubCellSetCR(_bCubCellSetCR), bCubCellSet(_bCubCellSetCR()) {
+inline CubSComplex<DIM>::CubSComplex(RepSet<ElementaryCube>& repSet): bCubCellSet(repSet) {
   bCubCellSet.addEmptyCollar();
 }
 
@@ -237,17 +212,6 @@ inline int CubSComplex<DIM>::coincidenceIndex(const CellProxy<ImplT1> &_a, const
   return res;
 }
 
-
-template<int DIM>
-boost::shared_ptr<CubSComplex<DIM> > readCubSComplex(std::string fileName) {
-  ifstream file;
-  file.open(fileName.c_str());
-  if (!file) {
-    std::cerr << "File not found: " << fileName << std::endl;
-    return boost::shared_ptr<CubSComplex<DIM> >();
-  }
-  return boost::shared_ptr<CubSComplex<DIM> >(new CubSComplex<DIM>(readCubCellSet<typename CubSComplex<DIM>::BCubSet, typename CubSComplex<DIM>::BCubCellSet>(fileName.c_str())));
-}
 
 #endif
 

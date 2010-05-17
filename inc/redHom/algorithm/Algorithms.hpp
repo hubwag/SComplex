@@ -19,16 +19,7 @@
 #include "Shave.hpp"
 #include "strategy/DefaultReduceStrategy.hpp"
 
-#include <capd/auxil/Stopwatch.h>
-#include <capd/auxil/CRef.h>
-#include <capd/homologicalAlgebra/embeddingDim.h>
-
-#include <capd/vectalg/MatrixSlice.h>
-#include <capd/matrixAlgorithms/intMatrixAlgorithms.hpp>
-#include <capd/homologicalAlgebra/homologicalAlgebra.hpp>
-#include <capd/homologicalAlgebra/homAlgFunctors.hpp>
-#include <capd/homologicalAlgebra/cubSetFunctors.hpp>
-#include <capd/homologicalAlgebra/ReducibleFreeChainComplex.hpp>
+#include "../RedHomCAPD.h"
 
 
 template<typename SComplexT, typename ReducibleFreeChainComplexT>

@@ -5,18 +5,19 @@
 #include <algorithm>
 
 #include <iostream>
-using namespace std;
-
-#include <capd/auxil/Stopwatch.h>
-#include <capd/auxil/CRef.h>
 
 #include <redHom/complex/cubical/CubSComplex.hpp>
+#include <redHom/complex/cubical/CubSComplexReader.hpp>
+
+using namespace std;
 
 BOOST_AUTO_TEST_SUITE(CubSComplex_iterators)
 
 
 boost::shared_ptr<CubSComplex<3> > createComplex() {
-  return readCubSComplex<3>(PROJECT_SOURCE_DIR"test/input_1.bmd");
+  CubSComplexReader<3> reader;
+  
+  return reader(PROJECT_SOURCE_DIR"data/cubical/torus.cub");
 }
 
   
@@ -47,7 +48,7 @@ BOOST_AUTO_TEST_CASE(iterators_AllCells_forEach_test) {
   boost::shared_ptr<SComplex> s = createComplex();
 	 const int initSize = s->cardinality();
 	 
-	 BOOST_CHECK_EQUAL(s->cardinality(), 71639264);
+	 BOOST_CHECK_EQUAL(s->cardinality(), 3456);
 
 	 int cnt = 0;
 	 for (SComplex::Iterators::AllCells::iterator it = s->iterators(1).allCells().begin();

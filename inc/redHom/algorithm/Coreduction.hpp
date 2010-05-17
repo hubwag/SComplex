@@ -7,7 +7,7 @@
 #include <boost/pool/object_pool.hpp>
 #include <boost/pool/pool_alloc.hpp>
 #include <boost/shared_ptr.hpp>
-#include <capd/auxil/Stopwatch.h>
+
 
 
 template<typename StrategyT>
