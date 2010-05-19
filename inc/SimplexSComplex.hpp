@@ -16,7 +16,7 @@ class SimplexSComplex
 public:
 
     template<typename ImplT>
-class CellProxy: public BasicCellProxy<ImplT>
+	class CellProxy: public BasicCellProxy<ImplT>
     {
     public:
         CellProxy(const ImplT& impl): BasicCellProxy<ImplT>(impl) {}
@@ -189,8 +189,6 @@ class CellProxy: public BasicCellProxy<ImplT>
         }
     };
 
-
-
     int size()
     {
         return distance(all_begin(), all_end()); // slow
@@ -202,7 +200,6 @@ class CellProxy: public BasicCellProxy<ImplT>
     }
 
     // typedef SimplexCell Cell;
-
 
 
 // to be changed later!!
@@ -236,7 +233,7 @@ private:
     map<int, per_dimension_storage_type> per_dimension;
     per_dimension_storage_type all_simplices;
 
-    static const int MAX_VERTICES = 100000;
+    static const int MAX_VERTICES = 10000;
     vector<Simplex*> base;
 
     void simplexAddedEvent(Simplex &s)
@@ -245,11 +242,22 @@ private:
         all_simplices.push_back(&s);
     }
 
+    void resizeBase(int v)
+    {
+    	while(v >= base.size())
+			base.push_back(0);
+    }
+
     Simplex* makeBaseSimplex(vertex_set &s)
     {
         assert(s.size() == 1);
 
         const int v = *s.begin();
+
+        if (v >= base.size())
+        {
+        	resizeBase(v);
+        }
 
         if (base[v] == 0)
         {
@@ -277,9 +285,6 @@ public:
         for (per_dimension_storage_type::const_iterator it = all_simplices.begin(), end = all_simplices.end(); it != end; ++it)
             delete *it;
     }
-
-    typedef vector<Simplex*> memo_type;
-    memo_type memo;
 
     long getInt(const simple_set<int> &s)
     {
@@ -379,12 +384,8 @@ public:
 
     Simplex* addSimplex(const set<int> &s)
     {
-        memo.resize(1u<<s.size(), 0);
-
         vertex_set faster(s.begin(), s.end());
         Simplex *ret = addSimplex(faster);
-
-        memo.clear();
 
         return ret;
     }
@@ -428,29 +429,19 @@ SimplexSComplex::Simplex* SimplexSComplex::getSimplex(const iterable_t &s)
 {
     // assert(s.size() > 0);
 
-    long cv = -1;
-
-    if (memo.size())
-    {
-        cv = getInt(s);
-
-        if (cv >= 0 && memo[cv])
-        {
-            return memo[cv];
-        }
-    }
-    // vector<int> v(s.begin(), s.end()); // sorted
-
     for (typename iterable_t::const_iterator it = s.begin(), end = s.end(); it != end; ++it)
     {
         int vert = *it;
 
-        if (base[vert] == 0)
+        if (vert >= base.size() || base[vert] == 0)
             return 0;
     }
 
     typename iterable_t::const_iterator it = s.begin();
     int vert = *it++;
+
+    if (vert >= base.size())
+		resizeBase(vert);
 
     Simplex *simplex = base[vert];
 
@@ -481,9 +472,6 @@ SimplexSComplex::Simplex* SimplexSComplex::getSimplex(const iterable_t &s)
 
         simplex = coface;
     }
-
-    if (cv >= 0)
-        memo[cv] = simplex;
 
     return simplex;
 }

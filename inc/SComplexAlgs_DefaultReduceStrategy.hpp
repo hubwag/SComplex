@@ -63,13 +63,10 @@ class AKQReduceStrategyBase
 {
 
 public:
+	enum AKQType {ACE, KING, QUEEN};
     typedef SComplexT SComplex;
     typedef AKQReduceStrategyTraits<SComplex> Traits;
     typedef typename SComplex::Cell Cell;
-
-    map<int, int> morse;
-    map<Cell, char> akq;
-    vector<Cell> aces;
 
     AKQReduceStrategyBase(SComplex& _complex): complex(_complex), dummyCell2(_complex),  dummyCell3(_complex)
     {
@@ -78,15 +75,11 @@ public:
     	typename SComplex::Iterators::AllCells::iterator it = complex.iterators().allCells().begin();
     	typename SComplex::Iterators::AllCells::iterator end = complex.iterators().allCells().end();
 
-    	for (; it != end; ++it)
-			max_d = max<int>(max_d, it->getDim());
+		max_d = getMaxDim();
 
-		/*
-    	BOOST_FOREACH(typename SComplex::Iterators::AllCells::iterator::value_type v,
-                      complex.iterators().allCells())
-                      {
-                      	max_d = max<int>(max_d, v.getDim());
-                      }*/
+		morse.resize(_complex.cardinality());
+		akq.resize(_complex.cardinality());
+		her_king.resize(_complex.cardinality());
 	}
 
     SComplex& getComplex() const
@@ -115,12 +108,13 @@ public:
     template<typename T1, typename T2>
     void king_gets_married(const T1 &king, const T2 &queen)
     {
-    	akq[king] = 'k';
-		akq[queen] = 'q';
+    	akq[king.getId()] = KING;
+		akq[queen.getId()] = QUEEN;
         int v = calc_morse_value(king);
         morse[king.getId()] = v;
         morse[queen.getId()] = v;
-        her_king.insert(make_pair(queen, king));
+        her_king[queen.getId()] = king;
+        // her_king.insert(make_pair(queen, king));
     }
 
     template<typename ImplT1, typename ImplT2>
@@ -138,11 +132,6 @@ public:
         b.template setColor<2>();
     }
 
-	int max_d;
-    map<pair<int,int>, int> coeffs;
-    map<Cell, Cell> her_king;
-    map<pair<int,int>, int> num_paths_between;
-
     template<typename T, typename U>
     pair<T, U> make_sorted_pair(const T &a, const U &b)
     {
@@ -151,8 +140,8 @@ public:
 
     int toAceCoeff(Cell x, Cell y)
     {
-    	BOOST_ASSERT(akq[y] == 'a');
-    	BOOST_ASSERT(akq[x] != 'q');
+    	BOOST_ASSERT(akq[y.getId()] == ACE);
+    	BOOST_ASSERT(akq[x.getId()] != QUEEN);
 
     	return complex.coincidenceIndex(x, y);
     }
@@ -160,9 +149,9 @@ public:
 	//
     int toKingCoeff(Cell x, Cell y, Cell y_star)
     {
-    	BOOST_ASSERT(akq[x] != 'q');
-    	BOOST_ASSERT(akq[y_star] == 'q');
-    	BOOST_ASSERT(akq[y] == 'k');
+    	BOOST_ASSERT(akq[x.getId()] != QUEEN);
+    	BOOST_ASSERT(akq[y_star.getId()] == QUEEN);
+    	BOOST_ASSERT(akq[y.getId()] == KING);
 
     	return -1 * complex.coincidenceIndex(x, y_star) / complex.coincidenceIndex(y, y_star);
     }
@@ -182,9 +171,9 @@ public:
     		int accumulated_weight = S.top().second;
     		S.pop();
 
-    		BOOST_ASSERT(akq[curr] != 'q');
+    		BOOST_ASSERT(akq[curr.getId()] != QUEEN);
 
-    		if (curr.getId() != c.getId() && akq[curr] == 'a')
+    		if (curr.getId() != c.getId() && akq[curr.getId()] == ACE)
     		{
     			++num_paths_between[make_pair(c.getId(), curr.getId())];
     			if (verbose)
@@ -202,7 +191,7 @@ public:
 			// case 1: to ace
     		BOOST_FOREACH(Cell to, complex.iterators().bdCells(curr))
     		{
-    			if (akq[to] == 'a' && morse[to.getId()] < our_value)
+    			if (akq[to.getId()] == ACE && morse[to.getId()] < our_value)
     			{
 					S.push(make_pair(to, accumulated_weight * toAceCoeff(curr, to)));
     			}
@@ -211,18 +200,16 @@ public:
 			// case 2: to king
     		BOOST_FOREACH(Cell bd, complex.iterators().bdCells(curr))
     		{
-    			if (akq[bd] != 'q')
+    			if (akq[bd.getId()] != QUEEN)
 					continue;
 
     			// Cell to = her_king[bd];
-    			Cell to = her_king.find(bd)->second;
-    			BOOST_ASSERT(akq[to] == 'k');
+    			Cell to = her_king[bd.getId()];
+    			BOOST_ASSERT(akq[to.getId()] == KING);
 
 				if (morse[to.getId()] < our_value)
     			{
-    				{
-						S.push(make_pair(to, accumulated_weight * toKingCoeff(curr, to, bd)));
-    				}
+					S.push(make_pair(to, accumulated_weight * toKingCoeff(curr, to, bd)));
     			}
     		}
     	}
@@ -264,16 +251,15 @@ public:
     		Spath.pop();
     		Sordered.pop();
 
-    		BOOST_ASSERT(akq[curr] != 'q');
+    		BOOST_ASSERT(akq[curr] != QUEEN);
 
-    		if (curr.getId() != c.getId() && akq[curr] == 'a')
+    		if (curr.getId() != c.getId() && akq[curr] == ACE)
     		{
     			if (verbose)
     			{
 					cout << "found path from: " << c.getId() << " to " << curr.getId() << endl;
 					cout << "between values: " << morse[c.getId()] << "and " << morse[curr.getId()] << " with coef product" << accumulated_weight << endl;
     			}
-
 
     			ordered_path_ret = ordered_path;
 
@@ -285,7 +271,7 @@ public:
 			// case 1: to ace
     		BOOST_FOREACH(Cell to, complex.iterators().bdCells(curr))
     		{
-    			if (akq[to] == 'a')
+    			if (akq[to] == ACE)
     			{
     				BOOST_ASSERT(morse[to.getId()] < our_value);
 
@@ -303,12 +289,12 @@ public:
 			// case 2: to king
     		BOOST_FOREACH(Cell bd, complex.iterators().bdCells(curr))
     		{
-    			if (akq[bd] != 'q')
+    			if (akq[bd] != QUEEN)
 					continue;
 
     			// Cell to = her_king[bd];
     			Cell to = her_king.find(bd)->second;
-    			BOOST_ASSERT(akq[to] == 'k');
+    			BOOST_ASSERT(akq[to] == KING);
 
 				if (path.count(to) == 0)
 				{
@@ -328,6 +314,7 @@ public:
     void report_paths()
     {
     	cout << " asow bylo: " << aces.size() << endl;
+    	cout << " all reductions done in: " << sw << endl;
 
     	if (verbose)
     	for (size_t i = 0; i < aces.size(); i++)
@@ -369,8 +356,8 @@ public:
 				cout << path[i].getId() << " " << akq[path[i]] << " " << "[wart: " << morse[path[i].getId()] << "] ";
 			}
 
-			akq[path.back()] = 'q';
-			akq[path[0]] = 'k';
+			akq[path.back()] = QUEEN;
+			akq[path[0]] = KING;
 
 			for (int i = (int)path.size() - 1; i >= 1; i-=2)
 				her_king[path[i]] = path[i-1];
@@ -456,7 +443,7 @@ public:
 
 				morse[it->getId()] = v;
 				aces.push_back(*it);
-				akq[*it] = 'a';
+				akq[it->getId()] = ACE;
 
 				// cout << "AS!" << it->getId() << ' ' << it->getDim() << "with M = " << v << endl;
 
@@ -540,6 +527,18 @@ public:
     }
 
 protected:
+
+	vector<int> morse;
+	vector<AKQType> akq;
+	vector<Cell> her_king;
+    vector<Cell> aces;
+
+    Stopwatch sw;
+
+	int max_d;
+    map<pair<int,int>, int> coeffs;
+    map<pair<int,int>, int> num_paths_between; // only between aces - small
+
     SComplex& complex;
     Cell dummyCell2, dummyCell3;
 };

@@ -128,11 +128,9 @@ void CrHomS_fromTris(const vector<set<int> > &tris, const string &description)
 template<typename SComplex>
 void testReduce(SComplex& complex) {
 
-	cout << "\n\ntesting on morse-smale complex\n\n";
 	 Stopwatch swComp,swRed;
 	 //(ShaveAlgorithmFactory::createDefault(SComplexCR()))();
      //cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
-
 
 	 CRef<ReducibleFreeChainComplexType> RFCComplexCR=
 		(ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SComplex, ReducibleFreeChainComplexType>(complex))();
@@ -166,16 +164,10 @@ void showObj(const string &s, const string &method = "KMS", int subdivs = 0)
 		parseDat(ifs, SComplexCR(), subdivs);
 	}
 
-	// SComplexCR() = subdivide3(SComplexCR());
-
 	cout << "parsed file, cardinality: " << SComplexCR().cardinality() << endl;
 	cout << "it took: " << swTot << endl;
 
 	Stopwatch swComp;
-	//(ShaveAlgorithmFactory::createDefault(SComplexCR()))();
-    // cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
-
-     //boost::shared_ptr< CoreductionAlgorithm<OldReduceStrategy<SComplex> > > old_red (new CoreductionAlgorithm<OldReduceStrategy<SComplex> >(new OldReduceStrategy<SComplex>(SComplexCR())));
 
 	if (method == "KMS")
 	{
@@ -184,10 +176,7 @@ void showObj(const string &s, const string &method = "KMS", int subdivs = 0)
 
 		cout << "calculations completed in: " << swComp << endl;
 		return;
-
-	}
-	else if (method == "CORED")
-	{
+	} else if (method == "CORED") {
 		cout << "RUNNING STANDARD REDUCTIONS THEN KMS";
 		boost::shared_ptr<CoreductionAlgorithm<DefaultReduceStrategy<SimplexSComplex> > >
 		old = CoreductionAlgorithmFactory::createDefault(SComplexCR());
@@ -204,25 +193,39 @@ void showObj(const string &s, const string &method = "KMS", int subdivs = 0)
 
     (*cored)();
 
-    delete cored->getStrategy()->outputComplex;
+    cout << "AKQ completed in: " << swComp << endl;
 
 	cout << "HOMOLOGIE PO MORSIE: \n";
     testReduce(*cored->getStrategy()->outputComplex);
 
     cout << "calculations completed in: " << swComp << endl;
 
-
+    delete cored->getStrategy()->outputComplex;
 }
 
 int main(int n, char **v)
 {
+	ios_base::sync_with_stdio(false);
+
 	string method = "AKQ";
+	// string file = "c:/users/hub/Downloads/buddha.obj";
+	// string file = "c:/users/hub/Downloads/library/knot.dat";
+	string file;
+
 	int subdivs = 0;
 	if (n <= 1)
 	{
+		// cerr << "using default file - probably nonexistent...\n";
+		cerr << "usage: filename [AKQ|CORED|MKS] [number_of_subdivisions]" << endl;
 		cerr << "no arguments - quitting\n";
 		exit(1);
 	}
+
+	if (n > 1)
+ 	{
+		file = v[1];
+	}
+
 	if (n >= 3)
 	{
 		cerr << "using the supplied method!\n";
@@ -235,45 +238,12 @@ int main(int n, char **v)
 		subdivs = atoi(v[3]);
 	}
 
-/*	string files[] = {"bing.dat",
-"bjorner.dat",
-"c-ns.dat",
-"c-ns2.dat",
-"c-ns3.dat",
-"dunce.dat",
-"dunce_hat.dat",
-"gruenbaum.dat",
-"knot.dat",
-"lockeberg.dat",
-"mani-walkup-C.dat",
-"mani-walkup-D.dat",
-"nc_sphere.dat",
-"nonextend.dat",
-"nonpl_sphere.dat",
-"poincare.dat",
-"projective.dat",
-"rudin.dat",
-"simon.dat",
-"simon2.dat",
-"solid_2_torus.dat",
-"ziegler.dat"};
-*/
-
-	// string pref = "c:/Users/hub/Downloads/library/";
-	// string pref = "c:/Users/hub/Downloads/";
-	// string files[] = {"knot.dat"};
-
-	// string files[] = {"poincare.dat"};
-
-	// string files[] = {"first.txt", "second.txt", "third.txt", "fourth.txt", "fifth.txt"};
-
-	// string files[] = {"buddha.obj", "bunny.obj", "dragon.obj", "toruses.obj", "s2.obj"};
-
 	Stopwatch all;
 
-	showObj(v[1], method, subdivs);
+	showObj(file.c_str(), method, subdivs);
 	cout << "total time: " << all  << endl;
 
+	return 0;
 }
 using namespace std;
 

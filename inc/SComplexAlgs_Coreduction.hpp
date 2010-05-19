@@ -53,12 +53,6 @@ private:
 			  end = cbdCells.end(); cbdn != end; ++cbdn) {
 		typename SComplex::ColoredIterators::Iterators::CbdCells::iterator::value_type v = *cbdn;
 
-
-		if (cellIdsToProcess.size() <= v.getId())
-		{
-			cerr << "@" << this << " size: " << cellIdsToProcess.size() << " id: " << v.getId() << endl;
-			system("pause");
-		}
 		if (!cellIdsToProcess[v.getId()]) {
 		  cellsToProcess.push_back(v);
 		  cellIdsToProcess[v.getId()] = true;
@@ -79,16 +73,6 @@ private:
   std::vector<Cell> collectedHomGenerators;
   std::deque<Cell> cellsToProcess;
   std::vector<bool> cellIdsToProcess;
-};
-
-class __CoreductionAlgorithmFactory {
-
-public:
-  template<typename SComplex>
-  static boost::shared_ptr< CoreductionAlgorithm<DefaultReduceStrategy<SComplex> > > createDefault(SComplex& s) {
-	 return boost::shared_ptr< CoreductionAlgorithm<DefaultReduceStrategy<SComplex> > >(new CoreductionAlgorithm<DefaultReduceStrategy<SComplex> >(new DefaultReduceStrategy<SComplex>(s)));
-  }
-
 };
 
 class CoreductionAlgorithmFactory {
