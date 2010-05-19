@@ -15,7 +15,7 @@
 const bool verbose = false;
 
 template<typename SComplexT>
-class DefaultReduceStrategyTraits
+class AKQReduceStrategyTraits
 {
 public:
 
@@ -59,19 +59,19 @@ struct GetCoreductionPair : public std::unary_function<const ArgT&,
 };
 
 template<typename SComplexT>
-class DefaultReduceStrategyBase
+class AKQReduceStrategyBase
 {
 
 public:
     typedef SComplexT SComplex;
-    typedef DefaultReduceStrategyTraits<SComplex> Traits;
+    typedef AKQReduceStrategyTraits<SComplex> Traits;
     typedef typename SComplex::Cell Cell;
 
     map<int, int> morse;
     map<Cell, char> akq;
     vector<Cell> aces;
 
-    DefaultReduceStrategyBase(SComplex& _complex): complex(_complex), dummyCell2(_complex),  dummyCell3(_complex)
+    AKQReduceStrategyBase(SComplex& _complex): complex(_complex), dummyCell2(_complex),  dummyCell3(_complex)
     {
     	cout << "CHECKING MAX DIM BRUTALLY! ADD getMaxDim to SCOMPLEX!!!!" << endl;
     	max_d = 0;
@@ -545,11 +545,11 @@ protected:
 };
 
 template<typename SComplexT>
-class DefaultReduceStrategy: public DefaultReduceStrategyBase<SComplexT>
+class AKQReduceStrategy: public AKQReduceStrategyBase<SComplexT>
 {
 
 public:
-    DefaultReduceStrategy(SComplexT& _complex): DefaultReduceStrategyBase<SComplexT>(_complex) {}
+    AKQReduceStrategy(SComplexT& _complex): AKQReduceStrategyBase<SComplexT>(_complex) {}
 };
 
 

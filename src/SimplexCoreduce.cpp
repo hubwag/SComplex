@@ -189,8 +189,8 @@ void showObj(const string &s, const string &method = "KMS", int subdivs = 0)
 	else if (method == "CORED")
 	{
 		cout << "RUNNING STANDARD REDUCTIONS THEN KMS";
-		boost::shared_ptr<CoreductionAlgorithm<OldReduceStrategy<SimplexSComplex> > >
-		old = OldCoreductionAlgorithmFactory::createDefault(SComplexCR());
+		boost::shared_ptr<CoreductionAlgorithm<DefaultReduceStrategy<SimplexSComplex> > >
+		old = CoreductionAlgorithmFactory::createDefault(SComplexCR());
 		(*old)();
 
 		testReduce(SComplexCR());
@@ -199,39 +199,19 @@ void showObj(const string &s, const string &method = "KMS", int subdivs = 0)
 		return;
 	}
 
-
-    boost::shared_ptr<CoreductionAlgorithm<DefaultReduceStrategy<SimplexSComplex> > >
-    cored = CoreductionAlgorithmFactory::createDefault(SComplexCR());
+    boost::shared_ptr<CoreductionAlgorithm<AKQReduceStrategy<SimplexSComplex> > >
+    cored = CoreductionAlgorithmFactory::createAKQ(SComplexCR());
 
     (*cored)();
+
+    delete cored->getStrategy()->outputComplex;
 
 	cout << "HOMOLOGIE PO MORSIE: \n";
     testReduce(*cored->getStrategy()->outputComplex);
 
     cout << "calculations completed in: " << swComp << endl;
 
-	/*boost::shared_ptr<CoreductionAlgorithm<DefaultReduceStrategy< ::SComplex<SComplexDefaultTraits> > > >
-    cored2 = CoreductionAlgorithmFactory::createDefault(*cored->getStrategy()->outputComplex);
 
-//    (*cored2)();
-
-    boost::shared_ptr<CoreductionAlgorithm<DefaultReduceStrategy< ::SComplex<SComplexDefaultTraits> > > >
-    cored3 = CoreductionAlgorithmFactory::createDefault(*cored2->getStrategy()->outputComplex);
-
-    (*cored3)();
-
-    // cout << *cored3->getStrategy()->outputComplex.cardinality() << endl;
-
-	// cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
-
-    // cout << " --- AKQ Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
-
-    testReduce(*cored3->getStrategy()->outputComplex);
-    delete cored->getStrategy()->outputComplex;
-    delete cored2->getStrategy()->outputComplex;
-    delete cored3->getStrategy()->outputComplex;*/
-
-    delete cored->getStrategy()->outputComplex;
 }
 
 int main(int n, char **v)

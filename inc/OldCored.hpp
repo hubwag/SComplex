@@ -7,7 +7,7 @@
 
 
 template<typename SComplexT>
-class OldReduceStrategyTraits
+class DefaultReduceStrategyTraits
 {
 public:
 
@@ -50,16 +50,16 @@ struct GetCoreductionPair: public std::unary_function<const ArgT&,
 };
 
 template<typename SComplexT>
-class OldReduceStrategyBase
+class DefaultReduceStrategyBase
 {
 
 public:
     typedef SComplexT SComplex;
-    typedef OldReduceStrategyTraits<SComplex> Traits;
+    typedef DefaultReduceStrategyTraits<SComplex> Traits;
     typedef typename SComplex::Cell Cell;
 
 
-    OldReduceStrategyBase(SComplex& _complex): complex(_complex), dummyCell2(_complex), dummyCell3(_complex) {}
+    DefaultReduceStrategyBase(SComplex& _complex): complex(_complex), dummyCell2(_complex), dummyCell3(_complex) {}
 
     SComplex& getComplex() const
     {
@@ -183,11 +183,11 @@ protected:
 };
 
 template<typename SComplexT>
-class OldReduceStrategy: public OldReduceStrategyBase<SComplexT>
+class DefaultReduceStrategy: public DefaultReduceStrategyBase<SComplexT>
 {
 
 public:
-    OldReduceStrategy(SComplexT& _complex): OldReduceStrategyBase<SComplexT>(_complex) {}
+    DefaultReduceStrategy(SComplexT& _complex): DefaultReduceStrategyBase<SComplexT>(_complex) {}
 };
 
 

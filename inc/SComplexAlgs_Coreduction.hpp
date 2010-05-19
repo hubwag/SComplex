@@ -81,7 +81,7 @@ private:
   std::vector<bool> cellIdsToProcess;
 };
 
-class CoreductionAlgorithmFactory {
+class __CoreductionAlgorithmFactory {
 
 public:
   template<typename SComplex>
@@ -91,12 +91,17 @@ public:
 
 };
 
-class OldCoreductionAlgorithmFactory {
+class CoreductionAlgorithmFactory {
 
 public:
   template<typename SComplex>
-  static boost::shared_ptr< CoreductionAlgorithm<OldReduceStrategy<SComplex> > > createDefault(SComplex& s) {
-	 return boost::shared_ptr< CoreductionAlgorithm<OldReduceStrategy<SComplex> > >(new CoreductionAlgorithm<OldReduceStrategy<SComplex> >(new OldReduceStrategy<SComplex>(s)));
+  static boost::shared_ptr< CoreductionAlgorithm<DefaultReduceStrategy<SComplex> > > createDefault(SComplex& s) {
+	 return boost::shared_ptr< CoreductionAlgorithm<DefaultReduceStrategy<SComplex> > >(new CoreductionAlgorithm<DefaultReduceStrategy<SComplex> >(new DefaultReduceStrategy<SComplex>(s)));
+  }
+
+  template<typename SComplex>
+  static boost::shared_ptr< CoreductionAlgorithm<AKQReduceStrategy<SComplex> > > createAKQ(SComplex& s) {
+	 return boost::shared_ptr< CoreductionAlgorithm<AKQReduceStrategy<SComplex> > >(new CoreductionAlgorithm<AKQReduceStrategy<SComplex> >(new AKQReduceStrategy<SComplex>(s)));
   }
 
 };
