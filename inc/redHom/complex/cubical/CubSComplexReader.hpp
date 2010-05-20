@@ -58,14 +58,14 @@ class CubSComplexReader {
 
     //boost::shared_ptr<CubicalSet> getRepSet() {
     CubicalSet* getRepSet() {
-      return cubicalSet;
+      return cubicalSet.get();
     }
 
   private:
     bool fullCubes;
     int embDim;
-    //boost::shared_ptr<CubicalSet> cubicalSet;
-    CubicalSet* cubicalSet;
+    boost::shared_ptr<CubicalSet> cubicalSet;
+    //CubicalSet* cubicalSet;
   };
 
 public:
@@ -80,9 +80,8 @@ public:
 
     BmpCubSetBuilder csb;
     readCubicalSet(file,csb);
-    //typename CubSComplex<DIM>::BCubCellSet(*csb.getRepSet());
+
     return boost::shared_ptr<CubSComplex<DIM> >(new CubSComplex<DIM>(*csb.getRepSet()));
-    //return boost::shared_ptr<CubSComplex<DIM> >();
   }
 
   
