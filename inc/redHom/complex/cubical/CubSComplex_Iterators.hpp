@@ -100,7 +100,8 @@ public:
 	 
 	 void findDim() {
 		while (coordIt->wIt < coordIt->getBitmap().end().wIt) {
-		  coordIt->findPoint();
+		  if (!coordIt->findPoint())
+		    break;
 		  if(coordIt->getBit() && coordIt->ownDim()==dim)
 			 return;
 		  ++(*coordIt);

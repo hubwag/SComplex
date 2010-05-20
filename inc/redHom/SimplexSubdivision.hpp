@@ -112,11 +112,11 @@ vector<set<int> > makeSpaceFromWelds(const vector<int> &welds)
 
 		tris.push_back(make_int_set(find_set(x,a), find_set(x,b), find_set(x,d)));
 
-		print_set(tris.back());
+		//print_set(tris.back());
 
 		tris.push_back(make_int_set(find_set(x,a), find_set(x,c), find_set(x,d)));
 
-		print_set(tris.back());
+		//print_set(tris.back());
 	}
 
 	return tris;

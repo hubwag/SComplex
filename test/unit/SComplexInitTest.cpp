@@ -2,6 +2,7 @@
 using namespace std;
 
 #include <redHom/complex/scomplex/SComplex.hpp>
+#include <redHom/complex/scomplex/SComplexReader.hpp>
 #include <redHom/complex/scomplex/SComplexDefaultTraits.hpp>
 
 #include <boost/test/unit_test.hpp>
@@ -110,5 +111,6 @@ BOOST_AUTO_TEST_CASE(boundarySize) {
   BOOST_CHECK_EQUAL_COLLECTIONS(tmpBdSizes.begin(), tmpBdSizes.end(), bdSizes.begin(), bdSizes.end());
 
 }
+
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -28,20 +28,21 @@ boost::tuple<int, int, int, std::string>  CrHomS() {
   Stopwatch swTot;
   BOOST_TEST_MESSAGE(" --- Reading cubical cellular set ");
 
-  CubSComplexReader<3> reader;
-  boost::shared_ptr<CubSComplex<3> > complex = reader(PROJECT_SOURCE_DIR"/data/cubical/torus.cub"); 
+  CubSComplexReader<8> reader;
+  boost::shared_ptr<SComplex> complex = reader(PROJECT_SOURCE_DIR"data/cubical/qtorus.cub"); 
 
   get<0>(result) = complex->cardinality();
 
   Stopwatch swComp,swRed;
 
-  (ShaveAlgorithmFactory::createDefault(*complex))();  
+  //(ShaveAlgorithmFactory::createDefault(*complex))();  
   BOOST_TEST_MESSAGE(" --- Shave reduced the size to " << complex->cardinality() << " in " << swRed);
   get<1>(result) = complex->cardinality();
   
   Stopwatch swCoRed;
 
   (*CoreductionAlgorithmFactory::createDefault(*complex))();
+
   BOOST_TEST_MESSAGE(" --- Coreduction reduced the size to " << complex->cardinality() << " in " << swCoRed);
   get<2>(result) = complex->cardinality();
   
@@ -61,7 +62,7 @@ boost::tuple<int, int, int, std::string>  CrHomS() {
 
 
 BOOST_AUTO_TEST_CASE(reduction_test) {
-  BOOST_CHECK_EQUAL(CrHomS<CubSComplex<3> >(), boost::make_tuple(71639264, 817510, 3815, "0,1057"));
+  BOOST_CHECK_EQUAL(CrHomS<CubSComplex<8> >(), boost::make_tuple(168, 168, 33, "0,2,1"));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

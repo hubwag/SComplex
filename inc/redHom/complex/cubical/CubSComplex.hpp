@@ -3,6 +3,7 @@
 
 #include <boost/assert.hpp>
 #include <boost/optional.hpp>
+#include <boost/shared_ptr.hpp>
 #include <utility>
 #include "../../RedHomCAPD.h"
 
@@ -17,6 +18,7 @@ class CubSComplex {
   typedef EuclBitSetT<BitSet, DIM> EuclBitSet;
   
 public:
+
   typedef CubSetT<EuclBitSet> BCubSet;
   typedef CubCellSetT<EuclBitSet> BCubCellSet;
 
@@ -102,6 +104,7 @@ public:
   int coincidenceIndex(const CellProxy<ImplT1> &a, const CellProxy<ImplT2> &b) const;
   
 protected:
+  //  boost::shared_ptr<RepSet<ElementaryCube> > repSet;
   BCubCellSet bCubCellSet;
   
   template<bool isConst>
@@ -117,7 +120,9 @@ protected:
 
 
 template<int DIM>
-inline CubSComplex<DIM>::CubSComplex(RepSet<ElementaryCube>& repSet): bCubCellSet(repSet) {
+inline CubSComplex<DIM>::CubSComplex(RepSet<ElementaryCube>& _repSet): 
+  //repSet(_repSet),
+  bCubCellSet(_repSet) {
   bCubCellSet.addEmptyCollar();
 }
 

@@ -4,6 +4,7 @@
 #include "CubSComplex.hpp"
 #include "../../RedHomCAPD.h"
 
+#include <boost/shared_ptr.hpp>
 
 
 template<int DIM>
@@ -14,7 +15,8 @@ class CubSComplexReader {
   public:
     BmpCubSetBuilder():
       fullCubes(true),
-      embDim(0)
+      embDim(0),
+      cubicalSet(new CubicalSet())
     {}
 
     void setFullCubes(bool b){
@@ -25,6 +27,9 @@ class CubSComplexReader {
     void setDim(int A_embDim){
       // Dostarcza wymiar wlozenia
       embDim=A_embDim;
+      if (embDim != DIM) {
+	throw std::runtime_error("Wrong dimension!");
+      }
     }
     void addCell(int coords[]){
       // Dostarcza n wspolrzednych kostki, gdzie n to wymiar wlozenia
@@ -38,7 +43,7 @@ class CubSComplexReader {
         for(int i=0;i<embDim;++i){
           data.push_back(2*coords[i]+1);
         }
-        cubicalSet.insert(ElementaryCube(data));
+        cubicalSet->insert(ElementaryCube(data));
       }else{
         std::vector<int> data;
         bool* parity=new bool[embDim];
@@ -47,18 +52,20 @@ class CubSComplexReader {
           data.push_back(coords[i]/2);
           parity[i]=(coords[i] % 2);
         }
-        cubicalSet.insert(ElementaryCube(&data[0],parity,embDim));
+        cubicalSet->insert(ElementaryCube(&data[0],parity,embDim));
       }
     }
 
+    //boost::shared_ptr<CubicalSet> getRepSet() {
     CubicalSet* getRepSet() {
-      return new CubicalSet(cubicalSet);
+      return cubicalSet;
     }
 
   private:
     bool fullCubes;
     int embDim;
-    CubicalSet cubicalSet;
+    //boost::shared_ptr<CubicalSet> cubicalSet;
+    CubicalSet* cubicalSet;
   };
 
 public:
@@ -73,8 +80,9 @@ public:
 
     BmpCubSetBuilder csb;
     readCubicalSet(file,csb);
-
+    //typename CubSComplex<DIM>::BCubCellSet(*csb.getRepSet());
     return boost::shared_ptr<CubSComplex<DIM> >(new CubSComplex<DIM>(*csb.getRepSet()));
+    //return boost::shared_ptr<CubSComplex<DIM> >();
   }
 
   
