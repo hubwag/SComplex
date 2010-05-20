@@ -169,9 +169,9 @@ BOOST_AUTO_TEST_CASE(cubicalEmptyRectangle) {
   typedef SComplexReader<SComplexDefaultTraits> Reader;
   typedef Reader::Complex Complex;
   Reader reader;
-  boost::shared_ptr<Complex> complex = reader(PROJECT_SOURCE_DIR"data/cubical/rectangle.cub", 3, 1);
+  boost::shared_ptr<Complex> complex = reader(PROJECT_SOURCE_DIR"data/cubical/qtorus.cub", 3, 1);
 
-  BOOST_CHECK_EQUAL(reduction(*complex), "0,1");
+  BOOST_CHECK_EQUAL(reduction(*complex), "0,2,1");
 
 }
 
