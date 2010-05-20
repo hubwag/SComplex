@@ -51,21 +51,21 @@ template<typename SComplex>
 void CrHomS_fromTris(const vector<set<int> > &tris, const string &description)
 {
     Stopwatch swTot;
-    CRef<SComplex> SComplexCR(new SComplex());
+    SComplex complex;
 	// vector<set<int> > tris = makeTest();
 
     for (size_t i = 0; i < tris.size(); i++)
     {
-        SComplexCR().addSimplex(tris[i]);
+        complex.addSimplex(tris[i]);
     }
 
-    cout << " --- generated " << description << " simplicial complex --- \n cardinality: " << SComplexCR().cardinality() << endl;
+    cout << " --- generated " << description << " simplicial complex --- \n cardinality: " << complex.cardinality() << endl;
 
-    if (SComplexCR().cardinality() < 1000)
+    if (complex.cardinality() < 1000)
     {
         Stopwatch swAlgebra;
         CRef<ReducibleFreeChainComplexType> RFCComplexCR=
-            (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SimplexSComplex, ReducibleFreeChainComplexType>(SComplexCR()))();
+            (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SimplexSComplex, ReducibleFreeChainComplexType>(complex))();
         cout << " --- RFCC constructed  " << endl;
 
 
@@ -75,26 +75,26 @@ void CrHomS_fromTris(const vector<set<int> > &tris, const string &description)
 
     }
 
-    //  SComplexAlgs<CubSComplex>::test(SComplexCR());
+    //  SComplexAlgs<CubSComplex>::test(complex);
 
     /*Stopwatch swComp,swRed;
-    (ShaveAlgorithmFactory::createDefault(SComplexCR()))();
-    cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
+    (ShaveAlgorithmFactory::createDefault(complex))();
+    cout << " --- Shave reduced the size to " << complex.cardinality() << " in " << swRed <<  endl;
 
     Stopwatch swCoRed;
-    (*CoreductionAlgorithmFactory::createDefault(SComplexCR()))();
+    (*CoreductionAlgorithmFactory::createDefault(complex))();
 
-    cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
+    cout << " --- Coreduction reduced the size to " << complex.cardinality() << " in " << swCoRed <<  endl;
 
     CRef<ReducibleFreeChainComplexType> RFCComplexCR=
-        (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SimplexSComplex, ReducibleFreeChainComplexType>(SComplexCR()))();
+        (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SimplexSComplex, ReducibleFreeChainComplexType>(complex))();
     cout << " --- RFCC constructed  " << endl;
 
     */
 
     /*cout << "debug " << endl;
 
-    for (SimplexSComplex::iterator it = SComplexCR().all_begin(), end = SComplexCR().all_end(); it != end; ++it)
+    for (SimplexSComplex::iterator it = complex.all_begin(), end = complex.all_end(); it != end; ++it)
     {
         Simplex &s = (Simplex&)*it;
         cout << distance(s.border_begin(1), s.border_end(1)) << endl;
@@ -114,11 +114,11 @@ void CrHomS_fromTris(const vector<set<int> > &tris, const string &description)
 
 
     boost::shared_ptr<CoreductionAlgorithm<DefaultReduceStrategy<SimplexSComplex> > >
-    cored = CoreductionAlgorithmFactory::createDefault(SComplexCR());
+    cored = CoreductionAlgorithmFactory::createDefault(complex);
 
     (*cored)();
 
-//    cout << " --- Coreduction reduced the size to " << SComplexCR().cardinality() << " in " << swCoRed <<  endl;
+//    cout << " --- Coreduction reduced the size to " << complex.cardinality() << " in " << swCoRed <<  endl;
 
     testReduce(*cored->getStrategy()->outputComplex);
     delete cored->getStrategy()->outputComplex;
@@ -129,8 +129,8 @@ template<typename SComplex>
 void testReduce(SComplex& complex) {
 
 	 Stopwatch swComp,swRed;
-	 //(ShaveAlgorithmFactory::createDefault(SComplexCR()))();
-     //cout << " --- Shave reduced the size to " << SComplexCR().cardinality() << " in " << swRed <<  endl;
+	 //(ShaveAlgorithmFactory::createDefault(complex))();
+     //cout << " --- Shave reduced the size to " << complex.cardinality() << " in " << swRed <<  endl;
 
 	 CRef<ReducibleFreeChainComplexType> RFCComplexCR=
 		(ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SComplex, ReducibleFreeChainComplexType>(complex))();
@@ -152,19 +152,28 @@ void showObj(const string &s, const string &method = "KMS", int subdivs = 0)
 {
 	Stopwatch swTot;
 	ifstream ifs(s.c_str());
-	CRef<SimplexSComplex> SComplexCR(new SimplexSComplex());
+	SimplexSComplex complex;
 
 	if (s.find(".obj") != string::npos)
 	{
 		cerr << "parsing obj simplex file" << endl;
-		parseObj(ifs, SComplexCR(), subdivs);
+		parseObj(ifs, complex, subdivs);
 	}
 	else {
 		cout << "parsing dat or plain txt simplex file" << endl;
-		parseDat(ifs, SComplexCR(), subdivs);
+		parseDat(ifs, complex, subdivs);
 	}
 
-	cout << "parsed file, cardinality: " << SComplexCR().cardinality() << endl;
+	/*
+	vector<set<int> > v = makeSpaceFromWelds(makeKleinWelds());
+
+	BOOST_FOREACH(set<int> e, v)
+	{
+		complex.addSimplex(e);
+	}
+	*/
+
+	cout << "parsed file, cardinality: " << complex.cardinality() << endl;
 	cout << "it took: " << swTot << endl;
 
 	Stopwatch swComp;
@@ -172,35 +181,39 @@ void showObj(const string &s, const string &method = "KMS", int subdivs = 0)
 	if (method == "KMS")
 	{
 		cout << "RUNNING KMS: \n";
-		testReduce(SComplexCR());
+		testReduce(complex);
 
 		cout << "calculations completed in: " << swComp << endl;
 		return;
 	} else if (method == "CORED") {
-		cout << "RUNNING STANDARD REDUCTIONS THEN KMS";
+		cout << "RUNNING STANDARD REDUCTIONS THEN KMS\n";
 		boost::shared_ptr<CoreductionAlgorithm<DefaultReduceStrategy<SimplexSComplex> > >
-		old = CoreductionAlgorithmFactory::createDefault(SComplexCR());
+		old = CoreductionAlgorithmFactory::createDefault(complex);
 		(*old)();
 
-		testReduce(SComplexCR());
+		testReduce(complex);
 
 		cout << "calculations completed in: " << swComp << endl;
 		return;
 	}
 
+	// boost::shared_ptr<CoreductionAlgorithm<DefaultReduceStrategy<SimplexSComplex> > >
+	//	old = CoreductionAlgorithmFactory::createDefault(complex);
+	//	(*old)();
+
     boost::shared_ptr<CoreductionAlgorithm<AKQReduceStrategy<SimplexSComplex> > >
-    cored = CoreductionAlgorithmFactory::createAKQ(SComplexCR());
+    cored = CoreductionAlgorithmFactory::createAKQ(complex);
 
     (*cored)();
 
     cout << "AKQ completed in: " << swComp << endl;
 
 	cout << "HOMOLOGIE PO MORSIE: \n";
-    testReduce(*cored->getStrategy()->outputComplex);
+    testReduce(*cored->getStrategy()->getOutputComplex());
 
     cout << "calculations completed in: " << swComp << endl;
 
-    delete cored->getStrategy()->outputComplex;
+    delete cored->getStrategy()->getOutputComplex();
 }
 
 int main(int n, char **v)

@@ -63,7 +63,7 @@ class AKQReduceStrategyBase
 {
 
 public:
-	enum AKQType {ACE, KING, QUEEN};
+	enum AKQType {UNSET, KING, QUEEN, ACE};
     typedef SComplexT SComplex;
     typedef AKQReduceStrategyTraits<SComplex> Traits;
     typedef typename SComplex::Cell Cell;
@@ -71,15 +71,16 @@ public:
     AKQReduceStrategyBase(SComplex& _complex): complex(_complex), dummyCell2(_complex),  dummyCell3(_complex)
     {
     	cout << "CHECKING MAX DIM BRUTALLY! ADD getMaxDim to SCOMPLEX!!!!" << endl;
-    	max_d = 0;
-    	typename SComplex::Iterators::AllCells::iterator it = complex.iterators().allCells().begin();
-    	typename SComplex::Iterators::AllCells::iterator end = complex.iterators().allCells().end();
 
 		max_d = getMaxDim();
 
 		morse.resize(_complex.cardinality());
 		akq.resize(_complex.cardinality());
 		her_king.resize(_complex.cardinality());
+
+		morse.resize(3000000);
+		akq.resize(3000000);
+		her_king.resize(3000000);
 	}
 
     SComplex& getComplex() const
@@ -114,7 +115,6 @@ public:
         morse[king.getId()] = v;
         morse[queen.getId()] = v;
         her_king[queen.getId()] = king;
-        // her_king.insert(make_pair(queen, king));
     }
 
     template<typename ImplT1, typename ImplT2>
@@ -159,9 +159,6 @@ public:
     void follow_path(Cell c)
     {
     	stack<pair<Cell, int> > S; // no cycles!
-    	stack<set<Cell> > Spath;
-    	set<Cell> _s;
-    	_s.insert(c);
 
     	S.push(make_pair(c, 1));
 
@@ -175,6 +172,7 @@ public:
 
     		if (curr.getId() != c.getId() && akq[curr.getId()] == ACE)
     		{
+    			// these are aces - small
     			++num_paths_between[make_pair(c.getId(), curr.getId())];
     			if (verbose)
     			{
@@ -203,7 +201,6 @@ public:
     			if (akq[bd.getId()] != QUEEN)
 					continue;
 
-    			// Cell to = her_king[bd];
     			Cell to = her_king[bd.getId()];
     			BOOST_ASSERT(akq[to.getId()] == KING);
 
@@ -215,54 +212,23 @@ public:
     	}
     }
 
-    typedef ::SComplex<SComplexDefaultTraits> OutputComplexType;
-    OutputComplexType *outputComplex;
-
-    void gender_reassignment(Cell &king, Cell &queen)
-    {
-
-    }
-
     void get_path(Cell &c, vector<Cell> &ordered_path_ret)
     {
-    	stack<pair<Cell, int> > S; // no cycles!
-    	stack<set<Cell> > Spath;
-    	stack<vector<Cell> > Sordered;
+    	stack<pair<Cell, vector<Cell> > > S; // no cycles!
+    	S.push(make_pair(c, vector<Cell>(1, c)));
 
-    	vector<Cell> ordered_path;
-
-    	set<Cell> _s;
-    	_s.insert(c);
-    	ordered_path.push_back(c);
-
-    	Spath.push(_s);
-    	Sordered.push(ordered_path);
-
-    	S.push(make_pair(c, 1));
 
     	while(S.size())
     	{
     		Cell curr = S.top().first;
-    		int accumulated_weight = S.top().second;
+    		vector<Cell> path = S.top().second;
     		S.pop();
 
-    		set<Cell> path = Spath.top();
-    		vector<Cell> ordered_path = Sordered.top();
-    		Spath.pop();
-    		Sordered.pop();
+    		BOOST_ASSERT(akq[curr.getId()] != QUEEN);
 
-    		BOOST_ASSERT(akq[curr] != QUEEN);
-
-    		if (curr.getId() != c.getId() && akq[curr] == ACE)
+    		if (curr.getId() != c.getId() && akq[curr.getId()] == ACE)
     		{
-    			if (verbose)
-    			{
-					cout << "found path from: " << c.getId() << " to " << curr.getId() << endl;
-					cout << "between values: " << morse[c.getId()] << "and " << morse[curr.getId()] << " with coef product" << accumulated_weight << endl;
-    			}
-
-    			ordered_path_ret = ordered_path;
-
+    			ordered_path_ret = path;
 				break;
     		}
 
@@ -271,42 +237,31 @@ public:
 			// case 1: to ace
     		BOOST_FOREACH(Cell to, complex.iterators().bdCells(curr))
     		{
-    			if (akq[to] == ACE)
+    			if (akq[to.getId()] == ACE && morse[to.getId()] < our_value)
     			{
-    				BOOST_ASSERT(morse[to.getId()] < our_value);
-
-    				if (path.count(to) == 0)
-    				{
-    					ordered_path.push_back(to);
-    					path.insert(to);
-						Spath.push(path);
-						Sordered.push(ordered_path);
-						S.push(make_pair(to, accumulated_weight * toAceCoeff(curr, to)));
-    				}
+    				path.push_back(to);
+					S.push(make_pair(to, path));
+					path.pop_back();
     			}
     		}
 
 			// case 2: to king
     		BOOST_FOREACH(Cell bd, complex.iterators().bdCells(curr))
     		{
-    			if (akq[bd] != QUEEN)
+    			if (akq[bd.getId()] != QUEEN)
 					continue;
 
-    			// Cell to = her_king[bd];
-    			Cell to = her_king.find(bd)->second;
-    			BOOST_ASSERT(akq[to] == KING);
+    			Cell to = her_king[bd.getId()];
+    			BOOST_ASSERT(akq[to.getId()] == KING);
 
-				if (path.count(to) == 0)
+				if (morse[to.getId()] < our_value)
 				{
-					BOOST_ASSERT(morse[to.getId()] < our_value);
-					path.insert(to);
-					ordered_path.push_back(bd);
-					ordered_path.push_back(to);
-					Spath.push(path);
-					Sordered.push(ordered_path);
-					S.push(make_pair(to, accumulated_weight * toKingCoeff(curr, to, bd)));
+					path.push_back(bd);
+					path.push_back(to);
+					S.push(make_pair(to, path));
+					path.pop_back();
+					path.pop_back();
 				}
-
     		}
     	}
     }
@@ -328,16 +283,16 @@ public:
     		follow_path(ace);
     	}
 
-    	typedef pair<pair<int,int>,int> Pair;
+    	typedef pair<pair<int,int>,int> Triple;
 
     	cout << "\n\n\n";
 
+
 		/*
-    	BOOST_FOREACH(Pair p, num_paths_between)
+    	BOOST_FOREACH(Triple p, num_paths_between)
 		{
 			cout << "mamy jedyna sciezke pomiedzy : ";
 			cout << p.first.first << " " << p.first.second << " = " << p.second << endl;
-
 
 			vector<Cell> path;
 
@@ -353,32 +308,39 @@ public:
 			cout << "sciezka: " << endl;
 			for (int i = 0; i < path.size(); i++)
 			{
-				cout << path[i].getId() << " " << akq[path[i]] << " " << "[wart: " << morse[path[i].getId()] << "] ";
+				cout << path[i].getId() << " " << akq[path[i].getId()] << " " << "[wart: " << morse[path[i].getId()] << "] ";
 			}
 
-			akq[path.back()] = QUEEN;
-			akq[path[0]] = KING;
+			akq[path.back().getId()] = QUEEN;
+			akq[path[0].getId()] = KING;
+
+			for (int i = 0; i + 1 < path.size(); i+=2)
+			{
+				// morse[path[i].getId()] = morse[]
+			}
 
 			for (int i = (int)path.size() - 1; i >= 1; i-=2)
-				her_king[path[i]] = path[i-1];
+			{
+				her_king[path[i].getId()] = path[i-1];
+			}
 		}
+
+		*/
 
 		if (verbose)
 		{
 			cout << "num paths between: \n";
-			BOOST_FOREACH(Pair p, num_paths_between)
+			BOOST_FOREACH(Triple p, num_paths_between)
 			{
 				cout << p.first.first << " " << p.first.second << " = " << p.second << endl;
 			}
 
 			cout << "coefficients: \n";
-			BOOST_FOREACH(Pair p, coeffs)
+			BOOST_FOREACH(Triple p, coeffs)
 			{
 				cout << p.first.first << " " << p.first.second << " => " << p.second << endl;
 			}
 		}
-
-		*/
 
 	    vector<size_t> dims(aces.size());
 
@@ -391,17 +353,13 @@ public:
 	    	from0[ace.getId()] = next;
 	    }
 
+	    cout << "constructing general SComplex" << endl;
+
 		OutputComplexType::KappaMap kap;
 
-		time_t t = time(0);
-		srand(t);
-
-		cout << "constructing general SComplex" << endl;
-
-		BOOST_FOREACH(Pair p, coeffs)
+		BOOST_FOREACH(Triple p, coeffs)
     	{
     		int coef = p.second;
-    		// coef = rand()%2 == 0 ? 1 : -1;
 
     		kap.push_back(boost::make_tuple(from0[p.first.first], from0[p.first.second], coef));
 
@@ -450,7 +408,7 @@ public:
                 return typename Traits::Extract::result_type::value_type(*it);
             }
         }
-        cout << "no i tyle bylo asow..." << endl;
+
         report_paths();
         return typename Traits::Extract::result_type();
     }
@@ -526,6 +484,13 @@ public:
         return maxDim;
     }
 
+    typedef ::SComplex<SComplexDefaultTraits> OutputComplexType;
+
+	OutputComplexType* getOutputComplex()
+    {
+    	return outputComplex;
+    }
+
 protected:
 
 	vector<int> morse;
@@ -538,6 +503,8 @@ protected:
 	int max_d;
     map<pair<int,int>, int> coeffs;
     map<pair<int,int>, int> num_paths_between; // only between aces - small
+
+    OutputComplexType *outputComplex;
 
     SComplex& complex;
     Cell dummyCell2, dummyCell3;

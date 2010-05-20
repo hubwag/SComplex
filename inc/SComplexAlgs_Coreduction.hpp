@@ -132,9 +132,9 @@ inline int CoreductionAlgorithm<StrategyT>::operator()(){
 
   // cout << "@" << this << " resizing to: " << strategy->getComplex().size() << " !!!" << endl;
 
-  // cout << "RESIZING BRUTALLY TO 3MLN!!!!";
+  cout << "RESIZING BRUTALLY TO 3MLN!!!!";
   cellIdsToProcess.resize(strategy->getComplex().size());
-  // cellIdsToProcess.resize(3000000);
+  cellIdsToProcess.resize(3000000);
 
   int cnt=0;
 
