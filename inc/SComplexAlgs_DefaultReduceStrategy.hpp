@@ -78,9 +78,11 @@ public:
 		akq.resize(_complex.cardinality());
 		her_king.resize(_complex.cardinality());
 
+		/*
 		morse.resize(3000000);
 		akq.resize(3000000);
 		her_king.resize(3000000);
+		*/
 	}
 
     SComplex& getComplex() const
@@ -283,16 +285,18 @@ public:
     		follow_path(ace);
     	}
 
-    	typedef pair<pair<int,int>,int> Triple;
-
     	cout << "\n\n\n";
 
+    	typedef pair<pair<int,int>,int> Triple;
 
 		/*
     	BOOST_FOREACH(Triple p, num_paths_between)
 		{
 			cout << "mamy jedyna sciezke pomiedzy : ";
 			cout << p.first.first << " " << p.first.second << " = " << p.second << endl;
+
+
+
 
 			vector<Cell> path;
 
