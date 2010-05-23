@@ -2,7 +2,7 @@
 #define _SCOMPLEX_ALGS_COREDUCTION_HPP
 
 #include "SComplexAlgs_DefaultReduceStrategy.hpp"
-#include "OldCored.hpp"
+#include "AKQStrategy.hpp"
 
 #include <deque>
 #include <set>
