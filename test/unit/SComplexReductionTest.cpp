@@ -130,7 +130,6 @@ std::string reduction(const T& simplices) {
 
   boost::shared_ptr<Complex> complex = builder(simplices, 3, 1);
   
- std:cerr << "Complex size: " << complex->size() << std::endl;
   return reduction(*complex);
 }
 
@@ -180,6 +179,8 @@ BOOST_AUTO_TEST_CASE(cubicalSets) {
   BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/qtorus.cub", 3, 1)), "  H^0 = 0#  H^1 = Z^2#  H^2 = Z^1#");
   BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/qklein.cub", 3, 1)), "  H^0 = 0#  H^1 = Z^1 + Z/2#");
   BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/qprojpln.cub", 3, 1)), "  H^0 = 0#  H^1 = Z/2#");
+  BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/kleinbot.cub", 3, 1)), "  H^0 = 0#  H^1 = Z^1 + Z/2#");
+  BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/torus.cub", 3, 1)), "  H^0 = 0#  H^1 = Z^2#  H^2 = Z^1#");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
