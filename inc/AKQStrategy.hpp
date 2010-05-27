@@ -8,11 +8,8 @@
 #include "SComplex.hpp"
 #include "SComplexDefaultTraits.hpp"
 #include "SComplexAlgs.hpp"
-//#include "CrHomS.hpp"
 
-//#include <boost/tuples/tuple.hpp>
-
-const bool verbose = false;
+static const bool verboseAKQ = true;
 
 template<typename SComplexT>
 class AKQReduceStrategyTraits
@@ -176,7 +173,7 @@ public:
     		{
     			// these are aces - small
     			++num_paths_between[make_pair(c.getId(), curr.getId())];
-    			if (verbose)
+    			if (verboseAKQ)
     			{
 					cout << "found path from: " << c.getId() << " to " << curr.getId() << endl;
 					cout << "between values: " << morse[c.getId()] << "and " << morse[curr.getId()] << " with coef product" << accumulated_weight << endl;
@@ -273,7 +270,7 @@ public:
     	cout << " asow bylo: " << aces.size() << endl;
     	cout << " all reductions done in: " << sw << endl;
 
-    	if (verbose)
+    	if (verboseAKQ)
     	for (size_t i = 0; i < aces.size(); i++)
     	{
 			cout << aces[i].getId() << " ";
@@ -288,6 +285,15 @@ public:
     	cout << "\n\n\n";
 
     	typedef pair<pair<int,int>,int> Triple;
+
+    	BOOST_FOREACH(Triple p, num_paths_between)
+    	{
+    		if (p.second == 1)
+    		{
+    			cout << "There was a single path!" << endl;
+    			break;
+    		}
+    	}
 
 		/*
     	BOOST_FOREACH(Triple p, num_paths_between)
@@ -331,7 +337,7 @@ public:
 
 		*/
 
-		if (verbose)
+		if (verboseAKQ)
 		{
 			cout << "num paths between: \n";
 			BOOST_FOREACH(Triple p, num_paths_between)
@@ -367,7 +373,7 @@ public:
 
     		kap.push_back(boost::make_tuple(from0[p.first.first], from0[p.first.second], coef));
 
-    		if (verbose)
+    		if (verboseAKQ)
 				cout << from0[p.first.first] << "[d=" <<dims[from0[p.first.first]] << "]" << " : " <<  from0[p.first.second] << "[d="<<dims[from0[p.first.second]] << "]"  << " => " << coef << endl;
     	}
 
@@ -517,11 +523,9 @@ protected:
 template<typename SComplexT>
 class AKQReduceStrategy: public AKQReduceStrategyBase<SComplexT>
 {
-
 public:
     AKQReduceStrategy(SComplexT& _complex): AKQReduceStrategyBase<SComplexT>(_complex) {}
 };
-
 
 #endif
 

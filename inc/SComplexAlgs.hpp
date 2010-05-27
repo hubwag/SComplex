@@ -91,7 +91,7 @@ inline CRef<ReducibleFreeChainComplexT> ReducibleFreeChainComplexOverZFromSCompl
 
 
 
-#include "SComplexAlgs_DefaultReduceStrategy.hpp"
+#include "AKQStrategy.hpp"
 
 #include <capd/auxil/Stopwatch.h>
 #include <capd/auxil/CRef.h>

@@ -1,8 +1,9 @@
 #ifndef _SCOMPLEX_ALGS_COREDUCTION_HPP
 #define _SCOMPLEX_ALGS_COREDUCTION_HPP
 
-#include "SComplexAlgs_DefaultReduceStrategy.hpp"
 #include "AKQStrategy.hpp"
+#include "CancellationStrategy.hpp"
+#include "SComplexAlgs_DefaultReduceStrategy.hpp"
 
 #include <deque>
 #include <set>
@@ -82,6 +83,13 @@ public:
   static boost::shared_ptr< CoreductionAlgorithm<DefaultReduceStrategy<SComplex> > > createDefault(SComplex& s) {
 	 return boost::shared_ptr< CoreductionAlgorithm<DefaultReduceStrategy<SComplex> > >(new CoreductionAlgorithm<DefaultReduceStrategy<SComplex> >(new DefaultReduceStrategy<SComplex>(s)));
   }
+
+
+  template<typename SComplex>
+  static boost::shared_ptr< CoreductionAlgorithm<AKQCancellationReduceStrategy<SComplex> > > createAKQCancellation(SComplex& s) {
+	 return boost::shared_ptr< CoreductionAlgorithm<AKQCancellationReduceStrategy<SComplex> > >(new CoreductionAlgorithm<AKQCancellationReduceStrategy<SComplex> >(new AKQCancellationReduceStrategy<SComplex>(s)));
+  }
+
 
   template<typename SComplex>
   static boost::shared_ptr< CoreductionAlgorithm<AKQReduceStrategy<SComplex> > > createAKQ(SComplex& s) {

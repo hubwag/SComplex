@@ -1,7 +1,7 @@
 #ifndef _SCOMPLEX_ALGS_SHAVE_HPP
 #define _SCOMPLEX_ALGS_SHAVE_HPP
 
-#include "SComplexAlgs_DefaultReduceStrategy.hpp"
+#include "AKQStrategy.hpp"
 #include "SComplexAlgs_DefaultReduceStrategy_CubSComplex.hpp"
 
 template<typename StrategyT>
