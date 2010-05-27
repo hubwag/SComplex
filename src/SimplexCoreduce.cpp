@@ -68,7 +68,7 @@ void testReduce(SComplex& complex) {
 
 #include "simplexIO.hpp"
 
-#include "OldCored.hpp"
+#include "SComplexAlgs_DefaultReduceStrategy.hpp"
 
 void showObj(const string &s, const string &method = "KMS", int subdivs = 0)
 {
