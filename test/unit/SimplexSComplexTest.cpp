@@ -1,6 +1,7 @@
 #include <iostream>
 using namespace std;
 
+#define BOOST_TEST_MAIN
 #include <boost/test/included/unit_test.hpp> // ?
 // #include <boost/test/unit_test.hpp>
 #include <boost/bind.hpp>
@@ -9,19 +10,8 @@ using namespace std;
 #include <set>
 #include <queue>
 
-#include <capd/auxil/Stopwatch.h>
-#include <capd/auxil/CRef.h>
-#include <capd/homologicalAlgebra/embeddingDim.h>
-
-#include <capd/vectalg/MatrixSlice.h>
-#include <capd/matrixAlgorithms/intMatrixAlgorithms.hpp>
-
-#include <capd/homologicalAlgebra/homologicalAlgebra.hpp>
-#include <capd/homologicalAlgebra/homAlgFunctors.hpp>
-#include <capd/homologicalAlgebra/cubSetFunctors.hpp>
-#include <capd/homologicalAlgebra/ReducibleFreeChainComplex.hpp>
-
-#include "redHom/algorithm/Algorithms.hpp"
+#include <redHom/RedHomCAPD.h>
+#include <redHom/algorithm/Algorithms.hpp>
 
 typedef ElementaryCell ElementaryCellType;
 typedef int ScalarType;
@@ -108,6 +98,7 @@ BOOST_AUTO_TEST_CASE(coincidence_index1) {
     Simplex *b = comp.addSimplex(make_int_set(0,2));
 
 	BOOST_CHECK_EQUAL(-1, comp.coincidenceIndex(SimplexCell(a), SimplexCell(b)));
+	BOOST_CHECK_EQUAL(0, comp.coincidenceIndex(SimplexCell(b), SimplexCell(a)));
 }
 
 BOOST_AUTO_TEST_CASE(coincidence_index2) {
@@ -117,6 +108,7 @@ BOOST_AUTO_TEST_CASE(coincidence_index2) {
     Simplex *b = comp.addSimplex(make_int_set(1,2));
 
     BOOST_CHECK_EQUAL(1, comp.coincidenceIndex(SimplexCell(a), SimplexCell(b)));
+    BOOST_CHECK_EQUAL(0, comp.coincidenceIndex(SimplexCell(b), SimplexCell(a)));
 }
 
 BOOST_AUTO_TEST_CASE(coincidence_index3) {
@@ -126,6 +118,7 @@ BOOST_AUTO_TEST_CASE(coincidence_index3) {
     Simplex *b = comp.addSimplex(make_int_set(1,3));
 
 	BOOST_CHECK_EQUAL(-1, comp.coincidenceIndex(SimplexCell(a), SimplexCell(b)));
+	BOOST_CHECK_EQUAL(0, comp.coincidenceIndex(SimplexCell(b), SimplexCell(a)));
 }
 
 BOOST_AUTO_TEST_CASE(coincidence_index4) {
@@ -135,6 +128,7 @@ BOOST_AUTO_TEST_CASE(coincidence_index4) {
     Simplex *b = comp.addSimplex(make_int_set(2,3));
 
     BOOST_CHECK_EQUAL(1, comp.coincidenceIndex(SimplexCell(a), SimplexCell(b)));
+    BOOST_CHECK_EQUAL(0, comp.coincidenceIndex(SimplexCell(b), SimplexCell(a)));
 }
 
 BOOST_AUTO_TEST_CASE(border_iterator) {

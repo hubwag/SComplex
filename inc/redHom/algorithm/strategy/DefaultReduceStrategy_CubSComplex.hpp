@@ -13,18 +13,18 @@ class DefaultReduceStrategy<CubSComplex<DIM> >: public DefaultReduceStrategyBase
 
   typename CubSComplex<DIM>::DynamicCell dynamicCell;
   //using typename DefaultReduceStrategyBase<CubSComplex<DIM> >::Traits;
-  
+
   using DefaultReduceStrategyBase<CubSComplex<DIM> >::complex;
-  
+
 public:
   typedef typename DefaultReduceStrategyBase<CubSComplex<DIM> >::Traits Traits;
-  
+
   DefaultReduceStrategy(CubSComplex<DIM>& complex): DefaultReduceStrategyBase<CubSComplex<DIM> >(complex), dynamicCell(complex) {}
-  
+
   template<typename ArgT>
   typename Traits::template GetCoreductionPair<ArgT>::result_type
   getCoreductionPair(const ArgT& cell)
-  {  
+  {
   	 if (complex.getUniqueFace(cell, dynamicCell)) {
 		return typename Traits::template GetCoreductionPair<ArgT>::result_type(dynamicCell.getImpl());
   	 } else {
@@ -46,7 +46,7 @@ public:
   size_t getMaxDim() {
 	 return complex.getDim();
   }
-  
+
 };
 
 #endif

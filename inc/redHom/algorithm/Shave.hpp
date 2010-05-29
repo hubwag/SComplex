@@ -2,6 +2,7 @@
 #define _SCOMPLEX_ALGS_SHAVE_HPP
 
 #include "strategy/DefaultReduceStrategy.hpp"
+#include "AKQStrategy.hpp"
 #include "strategy/DefaultReduceStrategy_CubSComplex.hpp"
 
 template<typename StrategyT>

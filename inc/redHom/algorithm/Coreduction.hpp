@@ -2,6 +2,9 @@
 #define _SCOMPLEX_ALGS_COREDUCTION_HPP
 
 #include "strategy/DefaultReduceStrategy.hpp"
+#include "AKQStrategy.hpp"
+//#include "CancellationStrategy.hpp"
+
 #include <deque>
 #include <set>
 #include <boost/pool/object_pool.hpp>
@@ -17,16 +20,18 @@ public:
   typedef StrategyT Strategy;
 
   typedef typename Strategy::SComplex SComplex;
-  typedef typename Strategy::Cell Cell;  
-  
+  typedef typename Strategy::Cell Cell;
+
   CoreductionAlgorithm(Strategy* _strategy): strategy(_strategy) {}
 
   ~CoreductionAlgorithm() {
 	 if (strategy)
 		delete strategy;
   }
-  
+
   int operator()();
+
+  Strategy* getStrategy() { return strategy; }
 
 private:
 
@@ -37,8 +42,8 @@ private:
 
   template<typename ImplT1, typename ImplT2>
   void storeCoreductionPair(const typename Strategy::SComplex::template CellProxy<ImplT1>& a, const typename Strategy::SComplex::template CellProxy<ImplT2>& b) {}
-  
-  bool coreduceNextPair();  
+
+  bool coreduceNextPair();
 
   template<typename ImplT>
   void addCellsToProcess(const typename Strategy::SComplex::template CellProxy<ImplT>& sourceFace) {
@@ -48,6 +53,7 @@ private:
 	 for (typename SComplex::ColoredIterators::Iterators::CbdCells::iterator cbdn = cbdCells.begin(),
 			  end = cbdCells.end(); cbdn != end; ++cbdn) {
 		typename SComplex::ColoredIterators::Iterators::CbdCells::iterator::value_type v = *cbdn;
+
 		if (!cellIdsToProcess[v.getId()]) {
 		  cellsToProcess.push_back(v);
 		  cellIdsToProcess[v.getId()] = true;
@@ -60,11 +66,11 @@ private:
   void doCoreduction(const typename Strategy::SComplex::template CellProxy<ImplT1>& a, const typename Strategy::SComplex::template CellProxy<ImplT2>& b) {
 	 storeCoreductionPair(a, b);
 	 strategy->coreduce(a, b);
-	 addCellsToProcess(a);		
+	 addCellsToProcess(a);
   }
-  
+
   Strategy* strategy;
-  
+
   std::vector<Cell> collectedHomGenerators;
   std::deque<Cell> cellsToProcess;
   std::vector<bool> cellIdsToProcess;
@@ -78,18 +84,30 @@ public:
 	 return boost::shared_ptr< CoreductionAlgorithm<DefaultReduceStrategy<SComplex> > >(new CoreductionAlgorithm<DefaultReduceStrategy<SComplex> >(new DefaultReduceStrategy<SComplex>(s)));
   }
 
+
+//   template<typename SComplex>
+//   static boost::shared_ptr< CoreductionAlgorithm<AKQCancellationReduceStrategy<SComplex> > > createAKQCancellation(SComplex& s) {
+// 	 return boost::shared_ptr< CoreductionAlgorithm<AKQCancellationReduceStrategy<SComplex> > >(new CoreductionAlgorithm<AKQCancellationReduceStrategy<SComplex> >(new AKQCancellationReduceStrategy<SComplex>(s)));
+//   }
+
+
+  template<typename SComplex>
+  static boost::shared_ptr< CoreductionAlgorithm<AKQReduceStrategy<SComplex> > > createAKQ(SComplex& s) {
+	 return boost::shared_ptr< CoreductionAlgorithm<AKQReduceStrategy<SComplex> > >(new CoreductionAlgorithm<AKQReduceStrategy<SComplex> >(new AKQReduceStrategy<SComplex>(s)));
+  }
+
 };
 
 template<typename StrategyT>
 inline bool CoreductionAlgorithm<StrategyT>::coreduceNextPair() {
-  
+
   while (! cellsToProcess.empty() ) {
 	 Cell* cell = &cellsToProcess.front();
-	 
+
 	 if (! strategy->reduced(*cell)) {
 		typename StrategyT::Traits::template GetCoreductionPair<Cell>::result_type coreductionPair = strategy->getCoreductionPair(*cell);
-		
-		if (coreductionPair) {		
+
+		if (coreductionPair) {
 		  doCoreduction(*coreductionPair, *cell);
 		  cellIdsToProcess[cell->getId()] = false;
 		  cellsToProcess.pop_front();
@@ -99,7 +117,7 @@ inline bool CoreductionAlgorithm<StrategyT>::coreduceNextPair() {
 		}
 	 }
 	 cellIdsToProcess[cell->getId()] = false;
-	 cellsToProcess.pop_front();	 
+	 cellsToProcess.pop_front();
   }
 
   // Originally there are no candidates in the queue
@@ -118,7 +136,9 @@ inline bool CoreductionAlgorithm<StrategyT>::coreduceNextPair() {
 
 template<typename StrategyT>
 inline int CoreductionAlgorithm<StrategyT>::operator()(){
-  //cellIdsToProcess.resize(strategy->getComplex().cardinality()); // 
+  //cellIdsToProcess.resize(strategy->getComplex().cardinality()); //
+
+
   cellIdsToProcess.resize(strategy->getComplex().size());
 
   int cnt=0;
@@ -135,17 +155,17 @@ inline int CoreductionAlgorithm<StrategyT>::operator()(){
 		typename StrategyT::Traits::Extract::result_type sourceFace = strategy->extract();
 
 		if(sourceFace){
-		  storeGenerator(*sourceFace);		  
+		  storeGenerator(*sourceFace);
 		  addCellsToProcess(*sourceFace);
-		  
+
 		  strategy->reduce(*sourceFace);
 		  ++cnt;
 		}else{
 		  break; // no base face left: quit any further processing
 		}
-	 } 
+	 }
   }
-  
+
   return cnt; // the number of cells removed
 }
 

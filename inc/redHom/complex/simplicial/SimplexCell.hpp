@@ -3,57 +3,58 @@
 
 #include <cstdlib>
 
-struct Simplex;
+// struct Simplex;
 
+/*
 class SimplexCell
 {
-	Simplex *simp;
+    Simplex *simp;
 public:
 
   typedef int Dim;
   typedef int Color;
-  
+
 	explicit SimplexCell(Simplex *simplex = 0) : simp(simplex)
 	{
 	}
 
-	template<typename dummy>
-	explicit SimplexCell(dummy &) : simp(0)
-	{
-	}
+    template<typename dummy>
+    explicit SimplexCell(dummy &) : simp(0)
+    {
+    }
 
-	operator Simplex&()
-	{
-		return *simp;
-	}
+    operator Simplex&()
+    {
+        return *simp;
+    }
 
-	operator const Simplex&() const
-	{
-		return *simp;
-	}
+    operator const Simplex&() const
+    {
+        return *simp;
+    }
 
-	const Simplex& getImpl() const
-	{
-		return *simp;
-	}
+    const Simplex& getImpl() const
+    {
+        return *simp;
+    }
 
-	Simplex& getImpl()
-	{
-		return *simp;
-	}
+    Simplex& getImpl()
+    {
+        return *simp;
+    }
 
-  bool operator<(const SimplexCell& b) const;
-  
-  SimplexCell& operator=(Simplex &s);
+    bool operator<(const SimplexCell& b) const;
 
-	int getColor() const;
+    SimplexCell& operator=(Simplex &s);
+
+    int getColor() const;
 
     void setColor(int col);
 
     template<int color>
     void setColor();
 
-	size_t getDim() const;
-};
+    int getDim() const;
+};*/
 
 #endif

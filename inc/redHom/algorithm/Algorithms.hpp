@@ -18,7 +18,6 @@
 #include "Coreduction.hpp"
 #include "Shave.hpp"
 #include "strategy/DefaultReduceStrategy.hpp"
-
 #include "../RedHomCAPD.h"
 
 
@@ -30,15 +29,15 @@ public:
   typedef typename DefaultReduceStrategy<SComplexT>::Cell Cell;
 
   typedef ReducibleFreeChainComplexT ReducibleFreeChainComplex;
-  
+
   class SComplexChainCell {
 	 SComplex& complex;
 	 const Cell cell;
 	 const int embededDim;
-	 
+
   public:
 	 SComplexChainCell(SComplex& _complex, const Cell& _cell, int _embededDim): complex(_complex), cell(_cell), embededDim(_embededDim) {
-		
+
 	 }
 
 	 int embDim() const {
@@ -63,20 +62,20 @@ public:
 		return this->cell < b.cell;
 	 }
   };
-  
+
 public:
-  
+
 
   ReducibleFreeChainComplexOverZFromSComplexAlgorithm(SComplex& _s): s(_s) {}
   CRef<ReducibleFreeChainComplex> operator()();
-  
+
 private:
   SComplex& s;
 };
 
 template<typename SComplexT, typename ReducibleFreeChainComplexT>
 inline CRef<ReducibleFreeChainComplexT> ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SComplexT, ReducibleFreeChainComplexT>::operator()(){
-  
+
   std::set<SComplexChainCell> cells;
 
   size_t maxDim = (DefaultReduceStrategy<SComplexT>(s)).getMaxDim(); // TODO add strategy as a member
