@@ -16,7 +16,7 @@ class SimplexSComplex
 public:
 
     template<typename ImplT>
-	class CellProxy: public BasicCellProxy<ImplT>
+class CellProxy: public BasicCellProxy<ImplT>
     {
     public:
         CellProxy(const ImplT& impl): BasicCellProxy<ImplT>(impl) {}
@@ -33,7 +33,7 @@ public:
 
     const Dim& getMaxDim() const
     {
-    	return perDimension.rbegin()->first;
+        return perDimension.rbegin()->first;
     }
 
     struct Simplex
@@ -59,11 +59,20 @@ public:
         // which would be useful if codorders are big
 
         template<typename iter_t>
-        Simplex(iter_t b, iter_t e, Id nextId) : color(1), nrs(b, e) { id = nextId; }
+        Simplex(iter_t b, iter_t e, Id nextId) : color(1), nrs(b, e)
+        {
+            id = nextId;
+        }
 
-        Simplex(Id nextId = -1) : color(1) { id = nextId; }
+        Simplex(Id nextId = -1) : color(1)
+        {
+            id = nextId;
+        }
 
-        Simplex(SimplexSComplex &, Id nextId) : color(1) { id = nextId; }
+        Simplex(SimplexSComplex &, Id nextId) : color(1)
+        {
+            id = nextId;
+        }
 
         // border, coborder operations
 
@@ -205,7 +214,7 @@ public:
 #include "SimplexInternalColoredIterators.hpp"
 // to be changed later!!
 
-	Iterators iterators()
+    Iterators iterators()
     {
         return Iterators(*this);
     }
@@ -245,8 +254,8 @@ private:
 
     void resizeBase(int v)
     {
-    	while(v >= base.size())
-			base.push_back(0);
+        while (v >= base.size())
+            base.push_back(0);
     }
 
     Simplex* makeBaseSimplex(vertex_set &s)
@@ -257,7 +266,7 @@ private:
 
         if (v >= base.size())
         {
-        	resizeBase(v);
+            resizeBase(v);
         }
 
         if (base[v] == 0)
@@ -278,7 +287,7 @@ public:
 
     SimplexSComplex() : base(MAX_VERTICES, static_cast<Simplex*>(0))
     {
-    	nextId = 0;
+        nextId = 0;
     }
 
     ~SimplexSComplex()
@@ -442,7 +451,7 @@ SimplexSComplex::Simplex* SimplexSComplex::getSimplex(const iterable_t &s)
     int vert = *it++;
 
     if (vert >= base.size())
-		resizeBase(vert);
+        resizeBase(vert);
 
     Simplex *simplex = base[vert];
 

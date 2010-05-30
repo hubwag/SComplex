@@ -12,74 +12,74 @@ class SimplexSComplex;
 
 vector<set<int> > parseDat(istream &stream)
 {
-   vector<set<int> > simplices;
+    vector<set<int> > simplices;
 
-   for (string s; std::getline(stream, s); )
-   {
-      if (s.size() == 0 || s[0] == '#')
-	     continue;
+    for (string s; std::getline(stream, s); )
+    {
+        if (s.size() == 0 || s[0] == '#')
+            continue;
 
-      stringstream ss(s);
+        stringstream ss(s);
 
-      set<int> simp;
+        set<int> simp;
 
-      for (int v; ss >> v;)
-	     simp.insert(v);
+        for (int v; ss >> v;)
+            simp.insert(v);
 
-      simplices.push_back(simp);
-   }
+        simplices.push_back(simp);
+    }
 
-   return simplices;
+    return simplices;
 }
 
 void parseDat(istream &stream, SimplexSComplex &comp, int subdivs = 0)
 {
-	vector<set<int> > simplices = parseDat(stream);
+    vector<set<int> > simplices = parseDat(stream);
 
-	for (int i = 0; i < subdivs; i++)
-		simplices = subdivide3(simplices);
+    for (int i = 0; i < subdivs; i++)
+        simplices = subdivide3(simplices);
 
-	for (int i = 0; i < simplices.size(); i++)
-		comp.addSimplex(simplices[i]);
+    for (int i = 0; i < simplices.size(); i++)
+        comp.addSimplex(simplices[i]);
 }
 
 vector<set<int> > parseObj(istream &stream)
 {
-	using std::string;
-	using std::stringstream;
+    using std::string;
+    using std::stringstream;
 
-	vector<set<int> > simplices;
+    vector<set<int> > simplices;
 
-	for (string s; getline(stream, s); )
-	{
-		stringstream ss(s);
+    for (string s; getline(stream, s); )
+    {
+        stringstream ss(s);
 
-		string what;
-		ss >> what;
+        string what;
+        ss >> what;
 
-		if (what != "f")
-			continue;
+        if (what != "f")
+            continue;
 
-		set<int> simp;
+        set<int> simp;
 
-		for (int v; ss >> v;)
-			simp.insert(v);
+        for (int v; ss >> v;)
+            simp.insert(v);
 
-		simplices.push_back(simp);
-	}
+        simplices.push_back(simp);
+    }
 
-	return simplices;
+    return simplices;
 }
 
 void parseObj(istream &stream, SimplexSComplex &comp, int subdivs = 0)
 {
-	vector<set<int> > simplices = parseObj(stream);
+    vector<set<int> > simplices = parseObj(stream);
 
-	for (int i = 0; i < subdivs; i++)
-		simplices = subdivide3(simplices);
+    for (int i = 0; i < subdivs; i++)
+        simplices = subdivide3(simplices);
 
-	for (int i = 0; i < simplices.size(); i++)
-		comp.addSimplex(simplices[i]);
+    for (int i = 0; i < simplices.size(); i++)
+        comp.addSimplex(simplices[i]);
 }
 
 #endif
