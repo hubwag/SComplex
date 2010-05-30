@@ -4,10 +4,11 @@
 #include <boost/optional.hpp>
 #include <boost/foreach.hpp>
 #include <utility>
+#include <stack>
 
 #include "redHom/complex/scomplex/SComplex.hpp"
 #include "redHom/complex/scomplex/SComplexDefaultTraits.hpp"
-//#include "SComplexAlgs.hpp"
+
 
 static const bool verboseAKQ = true;
 
@@ -68,12 +69,13 @@ public:
     AKQReduceStrategyBase(SComplex& _complex): complex(_complex), dummyCell2(_complex),  dummyCell3(_complex)
     {
       std::cout << "CHECKING MAX DIM BRUTALLY! ADD getMaxDim to SCOMPLEX!!!!" << std::endl;
-
+	  std::cout << "SIZE, CARDINALITY OR MAX_ID?" << std::endl;
 		max_d = getMaxDim();
 
-		morse.resize(_complex.cardinality());
-		akq.resize(_complex.cardinality());
-		her_king.resize(_complex.cardinality());
+// ???
+		morse.resize(_complex.size());
+		akq.resize(_complex.size());
+		her_king.resize(_complex.size());
 
 		/*
 		morse.resize(3000000);

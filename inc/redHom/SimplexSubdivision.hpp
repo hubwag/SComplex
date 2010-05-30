@@ -1,3 +1,6 @@
+#ifndef SIMPLEX_SUBDIVISION_HPP
+#define SIMPLEX_SUBDIVISION_HPP
+
 #include <iterator>
 #include <iostream>
 #include <vector>
@@ -208,17 +211,4 @@ vector<set<int> > subdivide3(const vector<set<int> > &v)
 	return ret;
 }
 
-int ___main()
-{
-	vector<set<int> > comp = makeSpaceFromWelds(makeKleinWelds());
-
-	cout << comp.size() << endl;
-
-	for (int i = 0; i < 3; i++)
-	{
-		comp = subdivide3(comp);
-		cout << (dec) << comp.size() << endl;
-	}
-
-	return 0;
-}
+#endif

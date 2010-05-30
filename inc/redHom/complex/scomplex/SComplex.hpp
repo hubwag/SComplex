@@ -69,6 +69,7 @@ private:
 	 typedef typename SComplex::Color Color;
 	 typedef typename SComplex::Id Id;
 
+	 explicit ConstCellImpl(): complex(NULL), cell(NULL) {} // TODO remove with dummyCells in algorithms
 	 explicit ConstCellImpl(const SComplex& _complex): complex(NULL), cell(NULL) {} // TODO remove with dummyCells in algorithms
 
 	 explicit ConstCellImpl(const SComplex* _complex, CellImpl* _cell): complex(_complex), cell(_cell) {}
@@ -86,6 +87,7 @@ private:
 
   class NonConstCellImpl: public ConstCellImpl {
   public:
+  	 explicit NonConstCellImpl(): ConstCellImpl(), complex(NULL) {} // Needed by AKQ
 	 explicit NonConstCellImpl(const SComplex& _complex): ConstCellImpl(_complex), complex(NULL) {} // TODO remove with dummyCells in algorithms
 
 	 explicit NonConstCellImpl(SComplex* _complex, CellImpl* _cell): ConstCellImpl(_complex, _cell), complex(_complex) {}
@@ -119,7 +121,7 @@ public:
   template<typename ImplT>
   class CellProxy: public BasicCellProxy<ImplT> {
   public:
-	 // CellProxy() {}
+	 CellProxy() {}
   	 CellProxy(const ImplT& impl): BasicCellProxy<ImplT>(impl) {}
 	 CellProxy(const SComplex& s): BasicCellProxy<ImplT>(ImplT(s)) {}
   	 Id getId() const { return BasicCellProxy<ImplT>::getImpl()->getId(); }
@@ -314,7 +316,7 @@ public:
 	 BOOST_FOREACH(typename KappaMap::value_type kappa, kappaMap) {
 		Id coface = get<0>(kappa);
 		Id face = get<1>(kappa);
-// 		std::cout << "Kappa " << coface << "[" << dims[coface] << "]" 
+// 		std::cout << "Kappa " << coface << "[" << dims[coface] << "]"
 // 			  << face << "[" << dims[face] << "]" << get<2>(kappa) << std::endl;
 		BOOST_ASSERT(coface != face);
 		typename NeighbourLink::IteratorInNeighbour bdIteratorInNeighbour = boundaries[coface].add(NeighbourLink(cells.allObjects()[face]), cells.allObjects()[face]->getColor());

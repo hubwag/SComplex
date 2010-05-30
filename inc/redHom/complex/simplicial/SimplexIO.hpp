@@ -5,31 +5,36 @@
 #include <sstream>
 #include <set>
 
+#include "redHom/complex/simplicial/SimplexSComplex.hpp"
+#include "redHom/SimplexSubdivision.hpp"
+
 class SimplexSComplex;
+
+vector<set<int> > parseDat(istream &stream)
+{
+   vector<set<int> > simplices;
+
+   for (string s; std::getline(stream, s); )
+   {
+      if (s.size() == 0 || s[0] == '#')
+	     continue;
+
+      stringstream ss(s);
+
+      set<int> simp;
+
+      for (int v; ss >> v;)
+	     simp.insert(v);
+
+      simplices.push_back(simp);
+   }
+
+   return simplices;
+}
 
 void parseDat(istream &stream, SimplexSComplex &comp, int subdivs = 0)
 {
-	using std::string;
-	using std::stringstream;
-
-	vector<set<int> > simplices;
-
-	for (string s; getline(stream, s); )
-	{
-		if (s.size() == 0 || s[0] == '#')
-			continue;
-
-		stringstream ss(s);
-
-		set<int> simp;
-
-		for (int v; ss >> v;)
-			simp.insert(v);
-
-		simplices.push_back(simp);
-
-		// comp.addSimplex(simp);
-	}
+	vector<set<int> > simplices = parseDat(stream);
 
 	for (int i = 0; i < subdivs; i++)
 		simplices = subdivide3(simplices);
@@ -38,7 +43,7 @@ void parseDat(istream &stream, SimplexSComplex &comp, int subdivs = 0)
 		comp.addSimplex(simplices[i]);
 }
 
-void parseObj(istream &stream, SimplexSComplex &comp, int subdivs = 0)
+vector<set<int> > parseObj(istream &stream)
 {
 	using std::string;
 	using std::stringstream;
@@ -61,9 +66,14 @@ void parseObj(istream &stream, SimplexSComplex &comp, int subdivs = 0)
 			simp.insert(v);
 
 		simplices.push_back(simp);
-
-		// comp.addSimplex(simp);
 	}
+
+	return simplices;
+}
+
+void parseObj(istream &stream, SimplexSComplex &comp, int subdivs = 0)
+{
+	vector<set<int> > simplices = parseObj(stream);
 
 	for (int i = 0; i < subdivs; i++)
 		simplices = subdivide3(simplices);

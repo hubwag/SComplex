@@ -10,10 +10,10 @@
 #include <list>
 using namespace std;
 
-#include "simple_set.h"
+#include "redHom/complex/simplicial/simple_set.h"
 
-#include "Simplex.hpp"
-#include "SimplexSComplex.hpp"
+#include "redHom/complex/simplicial/Simplex.hpp"
+#include "redHom/complex/simplicial/SimplexSComplex.hpp"
 
 #include <iostream>
 #include <queue>
@@ -36,7 +36,7 @@ using namespace std;
 
 ofstreamcout fcout; // ?
 
-#include "SComplexAlgs.hpp"
+// #include "SComplexAlgs.hpp"
 
 typedef int ScalarType;
 typedef FreeModule<int,capd::vectalg::Matrix<int,0,0> > FreeModuleType;

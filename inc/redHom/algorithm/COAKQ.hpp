@@ -13,27 +13,25 @@
 template<typename StrategyT>
 class COAKQAlgorithm {
 
-
-
 public:
 
   typedef StrategyT Strategy;
 
   typedef typename Strategy::SComplex SComplex;
-  typedef typename Strategy::Cell Cell;  
-  
+  typedef typename Strategy::Cell Cell;
+
   COAKQAlgorithm(Strategy* _strategy): strategy(_strategy) {}
 
 
   inline bool reduceNextPair() {
-  
+
     while (! cellsToProcess.empty() ) {
       Cell* cell = &cellsToProcess.front();
-	 
+
       if (! strategy->reduced(*cell)) {
 	typename StrategyT::Traits::template GetReductionPair<Cell>::result_type reductionPair = strategy->getReductionPair(*cell);
-		
-	if (reductionPair) {		
+
+	if (reductionPair) {
 	  doReduction(*cell, *reductionPair);
 	  cellIdsToProcess[cell->getId()] = false;
 	  cellsToProcess.pop_front();
@@ -43,7 +41,7 @@ public:
 	}
       }
       cellIdsToProcess[cell->getId()] = false;
-      cellsToProcess.pop_front();	 
+      cellsToProcess.pop_front();
     }
 
     typename StrategyT::Traits::ForceReduction::result_type force = strategy->forceReductionPair();
@@ -68,15 +66,15 @@ public:
 
 	if(sourceFace){
 	  addCellsToProcess(*sourceFace);
-		  
+
 	  strategy->reduce(*sourceFace);
 	  ++cnt;
 	}else{
 	  break; // no base face left: quit any further processing
 	}
-      } 
+      }
     }
-  
+
     return cnt; // the number of cells removed
   }
 
@@ -92,7 +90,7 @@ private:
   void doReduction(const typename Strategy::SComplex::template CellProxy<ImplT1>& a, const typename Strategy::SComplex::template CellProxy<ImplT2>& b) {
     //storeReductionPair(a, b);
 	 strategy->reduce(a, b);
-	 addCellsToProcess(b);		
+	 addCellsToProcess(b);
   }
 
   template<typename ImplT>
@@ -107,8 +105,6 @@ private:
       }
     }
   }
-
-
 
   Strategy* strategy;
   std::deque<Cell> cellsToProcess;

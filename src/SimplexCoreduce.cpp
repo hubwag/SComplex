@@ -13,10 +13,10 @@
 
 using namespace std;
 
-#include "simple_set.h"
+#include "redHom/complex/simplicial/simple_set.h"
 
-#include "Simplex.hpp"
-#include "SimplexSComplex.hpp"
+#include "redHom/complex/simplicial/Simplex.hpp"
+#include "redHom/complex/simplicial/SimplexSComplex.hpp"
 
 
 
@@ -41,10 +41,9 @@ typedef FreeModule<int,capd::vectalg::Matrix<int,0,0> > FreeModuleType;
 typedef FreeChainComplex<FreeModuleType> FreeChainComplexType;
 typedef ReducibleFreeChainComplex<FreeModuleType,int> ReducibleFreeChainComplexType;
 
-#include "SComplexAlgs.hpp"
+#include "redHom/algorithm/algorithms.hpp"
 
-
-#include "SimplexSubdivision.hpp"
+#include "redHom/SimplexSubdivision.hpp"
 // #include "CrHomS.hpp"
 
 template<typename SComplex>
@@ -63,12 +62,12 @@ void testReduce(SComplex& complex) {
 	 cout << " --- Computed homology is: \n\n" << homSignCR()  << std::endl;
 }
 
-#include "SComplex.hpp"
-#include "SComplexDefaultTraits.hpp"
+#include "redHom/complex/scomplex/SComplex.hpp"
+#include "redHom/complex/scomplex/SComplexDefaultTraits.hpp"
 
-#include "simplexIO.hpp"
+#include "redHom/complex/simplicial/simplexIO.hpp"
 
-#include "SComplexAlgs_DefaultReduceStrategy.hpp"
+#include "redHom/algorithm/strategy/DefaultReduceStrategy.hpp"
 
 void showObj(const string &s, const string &method = "KMS", int subdivs = 0)
 {

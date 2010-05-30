@@ -27,25 +27,12 @@ typedef ReducibleFreeChainComplex<FreeModuleType,int> ReducibleFreeChainComplexT
 
 #include "redHom/complex/simplicial/Simplex.hpp"
 #include "redHom/complex/simplicial/SimplexSComplex.hpp"
+#include "redHom/simplexSubdivision.hpp" // make_int_set
 
+typedef SimplexSComplex::Simplex Simplex;
+typedef SimplexSComplex::CellProxy<Simplex*> SimplexCell;
 
 BOOST_AUTO_TEST_SUITE(SimplexSComplex_basic)
-
-std::set<int> make_int_set(int a, int b = -1, int c = -1, int d = -1)
-{
-	std::set<int> s;
-
-	if (a >= 0)
-		s.insert(a);
-	if (b >= 0)
-		s.insert(b);
-	if (c >= 0)
-		s.insert(c);
-	if (d >= 0)
-		s.insert(d);
-
-	return s;
-}
 
 BOOST_AUTO_TEST_CASE(add_get_simple_test_2d) {
 	SimplexSComplex comp;
@@ -157,7 +144,6 @@ BOOST_AUTO_TEST_CASE(border_iterator2) {
 
     BOOST_CHECK_EQUAL(2, distance(begin, end));
 }
-
 
 BOOST_AUTO_TEST_SUITE_END()
 

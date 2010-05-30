@@ -9,7 +9,7 @@ protected:
   //  boost::reference_wrapper<CellImplT> nonConstImpl;
 
   mutable CellImplT impl;
-  
+
 public:
 
 
@@ -18,6 +18,8 @@ public:
   typedef typename CellImplT::Id Id;
 
   typedef CellImplT Impl;
+
+  BasicCellProxy(): impl() {} //, nonConstImpl(impl) {}
 
   BasicCellProxy(const CellImplT& _impl): impl(_impl) {} //, nonConstImpl(impl) {}
 

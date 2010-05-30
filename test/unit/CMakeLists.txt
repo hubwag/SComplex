@@ -25,9 +25,9 @@ add_library(${TestLibraryName} SComplexUnitTestMain.cpp)
 AddSingleTest(SComplexInitTest.cpp)
 AddSingleTest(SComplexColorTest.cpp)
 AddSingleTest(SComplexReductionTest.cpp)
-#AddSingleTest(SimplexSComplexTest.cpp)
 AddSingleTest(CubSComplexIteratorsTest.cpp)
 AddSingleTest(CubSComplexReductionTest.cpp)
+AddSingleTest(SimplexSComplexTest.cpp)
 
 AddSingleTest(COAKQTest.cpp)
-
+AddSingleTest(AKQTest.cpp)
