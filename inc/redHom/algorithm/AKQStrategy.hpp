@@ -16,25 +16,6 @@ class AKQReduceStrategyTraits
 {
 public:
 
-    // template<typename ImplT>
-    // struct Proxy: pu	blic CellProxy<ImplT> {
-    // 	 template<typename ImplT2>
-    // 	 Proxy(const ImplT2& impl): CellProxy<ImplT>(impl) {}
-
-    // 	 Proxy(const SComplexT& c): CellProxy<ImplT>(ImplT(c)) {}
-    // };
-
-    // template<typename ImplT>
-    // struct Proxy<CellProxy<ImplT> >: public CellProxy<ImplT> {
-    // 	 template<typename ImplT2>
-    // 	 Proxy(const ImplT2& impl): CellProxy<ImplT>(impl) {}
-    // };
-
-    // template<typename ImplT>
-    // static Proxy<ImplT*> makeProxy(const CellProxy<ImplT>& impl) {
-    // 	 return Proxy<ImplT*>(impl.getImpl());
-    // }
-
     template<typename ArgT>
 struct GetReductionPair : public std::unary_function<const ArgT&,
                 boost::optional<typename SComplexT::Cell> > {};
@@ -71,7 +52,6 @@ public:
         std::cout << "SIZE, CARDINALITY OR MAX_ID?" << std::endl;
         max_d = getMaxDim();
 
-// ???
         morse.resize(_complex.size());
         akq.resize(_complex.size());
         kerKing.resize(_complex.size());
