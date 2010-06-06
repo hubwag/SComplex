@@ -61,7 +61,8 @@ class CubSComplexReader
                 data.reserve(embDim);
                 for (int i=0;i<embDim;++i)
                 {
-                    data.push_back(2*coords[i]+1);
+		  //data.push_back(2*coords[i]+1);
+		  data.push_back(coords[i]);
                 }
                 cubicalSet->insert(ElementaryCube(data));
             }

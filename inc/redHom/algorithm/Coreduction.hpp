@@ -49,7 +49,7 @@ private:
   void addCellsToProcess(const typename Strategy::SComplex::template CellProxy<ImplT>& sourceFace) {
 	 // Finally, put all present cofaces of the source face
 	 // into the queue
-	 typename SComplex::ColoredIterators::Iterators::CbdCells cbdCells = strategy->getComplex().template iterators<1>().cbdCells(sourceFace);
+	 typename SComplex::ColoredIterators::Iterators::CbdCells cbdCells = strategy->getComplex().iterators(1).cbdCells(sourceFace);
 	 for (typename SComplex::ColoredIterators::Iterators::CbdCells::iterator cbdn = cbdCells.begin(),
 			  end = cbdCells.end(); cbdn != end; ++cbdn) {
 		typename SComplex::ColoredIterators::Iterators::CbdCells::iterator::value_type v = *cbdn;
