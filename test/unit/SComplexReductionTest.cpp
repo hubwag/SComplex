@@ -34,10 +34,10 @@ BOOST_AUTO_TEST_SUITE(SComplexSuite)
 
 BOOST_AUTO_TEST_CASE(coreduction_line) {
   typedef SComplex<SComplexDefaultTraits> Complex;
-
+  
   Complex::Dims dims = list_of(0)(1)(0)(1)(0);
   Complex::KappaMap kappaMap = tuple_list_of(1, 0, 1)(1, 2, 1)(3, 2, 1)(3, 4, 1); // .-.-.
-
+  
   Complex complex(3, dims, kappaMap, 1);
 
   (*CoreductionAlgorithmFactory::createDefault(complex))();
@@ -47,15 +47,15 @@ BOOST_AUTO_TEST_CASE(coreduction_line) {
 	 BOOST_CHECK_EQUAL(v.getColor(), (Complex::Color)2);
   }
 
-  BOOST_CHECK(complex.iterators(1).allCells().begin() == complex.iterators(1).allCells().end());
+  BOOST_CHECK(complex.iterators(1).allCells().begin() == complex.iterators(1).allCells().end());  
 }
 
 BOOST_AUTO_TEST_CASE(coreduction_emptyTriangle) {
   typedef SComplex<SComplexDefaultTraits> Complex;
-
+  
   Complex::Dims dims = list_of(0)(1)(0)(1)(0)(1);
   Complex::KappaMap kappaMap = tuple_list_of(1, 0, 1)(1, 2, 1)(3, 2, 1)(3, 4, 1)(5, 4, 1)(5, 0, 1);
-
+  
   Complex complex(3, dims, kappaMap, 1);
 
   (*CoreductionAlgorithmFactory::createDefault(complex))();
@@ -66,11 +66,11 @@ BOOST_AUTO_TEST_CASE(coreduction_emptyTriangle) {
 
 BOOST_AUTO_TEST_CASE(coreduction_fullTriangle) {
   typedef SComplex<SComplexDefaultTraits> Complex;
-
+  
   Complex::Dims dims = list_of(0)(1)(0)(1)(0)(1)(2);
   Complex::KappaMap kappaMap = tuple_list_of(1, 0, 1)(1, 2, 1)(3, 2, 1)(3, 4, 1)(5, 4, 1)(5, 0, 1)
-	 (6, 1, 1)(6, 3, 1)(6, 5, 1);
-
+	 (6, 1, 1)(6, 3, 1)(6, 5, 1); 
+  
   Complex complex(3, dims, kappaMap, 1);
 
   (*CoreductionAlgorithmFactory::createDefault(complex))();
@@ -80,18 +80,18 @@ BOOST_AUTO_TEST_CASE(coreduction_fullTriangle) {
 	 BOOST_CHECK_EQUAL(v.getColor(), (Complex::Color)2);
   }
 
-  BOOST_CHECK(complex.iterators(1).allCells().begin() == complex.iterators(1).allCells().end());
+  BOOST_CHECK(complex.iterators(1).allCells().begin() == complex.iterators(1).allCells().end());  
 }
 
 BOOST_AUTO_TEST_CASE(coreduction_simplicialFullTriangle) {
   typedef SComplex<SComplexDefaultTraits> Complex;
-
+  
   SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(3);
   std::set<std::vector<int> > simplices;
 
   insert(simplices)( list_of(0)(1)(2) );
 
-
+	 
   boost::shared_ptr<Complex> complex = builder(simplices, 3, 1);
 
   BOOST_CHECK_EQUAL(complex->size(), (size_t)7);
@@ -103,16 +103,13 @@ BOOST_AUTO_TEST_CASE(coreduction_simplicialFullTriangle) {
   	 BOOST_CHECK_EQUAL(v.getColor(), (Complex::Color)2);
   }
 
-  BOOST_CHECK(complex->iterators(1).allCells().begin() == complex->iterators(1).allCells().end());
+  BOOST_CHECK(complex->iterators(1).allCells().begin() == complex->iterators(1).allCells().end());  
 }
 
 template<typename TraitsT>
 std::string reduction(SComplex<TraitsT>& complex) {
   (*CoreductionAlgorithmFactory::createDefault(complex))();
-
-  CoreductionAlgorithm<AKQReduceStrategy<SComplex<TraitsT> > > algorithm(new AKQReduceStrategy<SComplex<TraitsT> >(complex));
-  algorithm();
-
+  
   CRef<ReducibleFreeChainComplexType> RFCComplexCR=
   	 (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SComplex<TraitsT>, ReducibleFreeChainComplexType>(complex))();
   CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
@@ -128,24 +125,24 @@ std::string reduction(SComplex<TraitsT>& complex) {
 
 template<typename T>
 std::string reduction(const T& simplices) {
-  typedef SComplex<SComplexDefaultTraits> Complex;
+  typedef SComplex<SComplexDefaultTraits> Complex;  
   SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(300);
 
   boost::shared_ptr<Complex> complex = builder(simplices, 3, 1);
-
+  
   return reduction(*complex);
 }
 
 BOOST_AUTO_TEST_CASE(coreduction_simplicialEmptyTetrahedron) {
-  typedef SComplex<SComplexDefaultTraits> Complex;
+  typedef SComplex<SComplexDefaultTraits> Complex;  
   SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(3);
   std::set<std::vector<int> > simplices;
 
   insert(simplices)( list_of(0)(1)(2)(3) );
-
+	 
   boost::shared_ptr<Complex> complex = builder(simplices, 3, 1);
   complex->iterators().dimCells(3).begin()->setColor(0);
-
+  
   BOOST_CHECK_EQUAL(complex->size(), (size_t) 15);
   BOOST_CHECK(complex->iterators(1).dimCells(3).begin() == complex->iterators(1).dimCells(3).end());
   BOOST_CHECK_EQUAL(reduction(*complex), "  H^0 = 0#  H^1 = 0#  H^2 = Z^1#");
@@ -153,7 +150,7 @@ BOOST_AUTO_TEST_CASE(coreduction_simplicialEmptyTetrahedron) {
 
 BOOST_AUTO_TEST_CASE(coreduction_simplicialTorus) {
   typedef SComplex<SComplexDefaultTraits> Complex;
-
+  
   SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(3);
   std::vector<std::set<int> > simplices = makeSpaceFromWelds(makeTorusWelds());
 
@@ -166,7 +163,7 @@ BOOST_AUTO_TEST_CASE(coreduction_simplicialTorus) {
 
 BOOST_AUTO_TEST_CASE(coreduction_simplicialKlein) {
   typedef SComplex<SComplexDefaultTraits> Complex;
-
+  
   std::vector<std::set<int> > simplices = makeSpaceFromWelds(makeKleinWelds());
 
   BOOST_CHECK_EQUAL(reduction(simplices), "  H^0 = 0#  H^1 = Z^1 + Z/2#");

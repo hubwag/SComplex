@@ -43,90 +43,87 @@ BOOST_AUTO_TEST_SUITE(COAKQSuite)
 template<typename Complex>
 void performTest(Complex &complex, const string &correctBettiVector, int correctSize)
 {
-    CoreductionAlgorithm<AKQReduceStrategy<Complex> > algorithm(new AKQReduceStrategy<Complex>(complex));
+  CoreductionAlgorithm<AKQReduceStrategy<Complex> > algorithm(new AKQReduceStrategy<Complex>(complex));
 
-    algorithm();
+  algorithm();
 
-    BOOST_FOREACH(typename Complex::Iterators::AllCells::iterator::value_type v,
-                  complex.iterators().allCells())
-    {
-        BOOST_CHECK_EQUAL(v.getColor(), (typename Complex::Color)2);
-    }
+  BOOST_FOREACH(typename Complex::Iterators::AllCells::iterator::value_type v,
+					 complex.iterators().allCells()) {
+	 BOOST_CHECK_EQUAL(v.getColor(), (typename Complex::Color)2);
+  }
 
-    BOOST_CHECK(complex.iterators(1).allCells().begin() == complex.iterators(1).allCells().end());
+  BOOST_CHECK(complex.iterators(1).allCells().begin() == complex.iterators(1).allCells().end());
 
-    Complex* coAKQ = algorithm.getStrategy()->getOutputComplex();
+  Complex* coAKQ = algorithm.getStrategy()->getOutputComplex();
 
-    BOOST_CHECK_EQUAL(coAKQ->size(), correctSize);
+  BOOST_CHECK_EQUAL(coAKQ->size(), correctSize);
 
-    CRef<ReducibleFreeChainComplexType> RFCComplexCR =
-        (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<Complex, ReducibleFreeChainComplexType>(*coAKQ))();
-    CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
+  CRef<ReducibleFreeChainComplexType> RFCComplexCR =
+  	 (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<Complex, ReducibleFreeChainComplexType>(*coAKQ))();
+  CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
 
-    std::string betti = homSignCR().bettiVector();
+  std::string betti = homSignCR().bettiVector();
 
-    BOOST_CHECK_EQUAL(betti, correctBettiVector);
+  BOOST_CHECK_EQUAL(betti, correctBettiVector);
 }
 
-BOOST_AUTO_TEST_CASE(line)
-{
-    typedef SComplex<SComplexDefaultTraits> Complex;
+BOOST_AUTO_TEST_CASE(line) {
+  typedef SComplex<SComplexDefaultTraits> Complex;
 
-    Complex::Dims dims = list_of(0)(1)(0)(1)(0);
-    Complex::KappaMap kappaMap = tuple_list_of(1, 0, 1)(1, 2, 1)(3, 2, 1)(3, 4, 1); // .-.-.
+  Complex::Dims dims = list_of(0)(1)(0)(1)(0);
+  Complex::KappaMap kappaMap = tuple_list_of(1, 0, 1)(1, 2, 1)(3, 2, 1)(3, 4, 1); // .-.-.
 
-    Complex complex(3, dims, kappaMap, 1);
+  Complex complex(3, dims, kappaMap, 1);
 
-    performTest(complex, "1", 1);
-}
-
-BOOST_AUTO_TEST_CASE(emptyTriangle)
-{
-    typedef SComplex<SComplexDefaultTraits> Complex;
-
-    Complex::Dims dims = list_of(0)(1)(0)(1)(0)(1);
-    Complex::KappaMap kappaMap = tuple_list_of(1, 0, 1)(1, 2, -1)(3, 2, 1)(3, 4, -1)(5, 4, 1)(5, 0, -1);
-
-    Complex complex(3, dims, kappaMap, 1);
-    performTest(complex, "1,1", 2);
+  performTest(complex, "1", 1);
 }
 
 
-BOOST_AUTO_TEST_CASE(fullTriangle)
-{
-    typedef SComplex<SComplexDefaultTraits> Complex;
 
-    Complex::Dims dims = list_of(0)(1)(0)(1)(0)(1)(2);
-    Complex::KappaMap kappaMap = tuple_list_of(1, 0, -1)(1, 2, 1)(3, 2, -1)(3, 4, 1)(5, 4, -1)(5, 0, 1)
-                                 (6, 1, -1)(6, 3, 1)(6, 5, -1);
 
-    Complex complex(3, dims, kappaMap, 1);
+BOOST_AUTO_TEST_CASE(emptyTriangle) {
+  typedef SComplex<SComplexDefaultTraits> Complex;
 
-    performTest(complex, "1", 1);
+  Complex::Dims dims = list_of(0)(1)(0)(1)(0)(1);
+  Complex::KappaMap kappaMap = tuple_list_of(1, 0, 1)(1, 2, -1)(3, 2, 1)(3, 4, -1)(5, 4, 1)(5, 0, -1);
+
+  Complex complex(3, dims, kappaMap, 1);
+  performTest(complex, "1,1", 2);
 }
 
 
-BOOST_AUTO_TEST_CASE(torus)
-{
-    typedef SComplex<SComplexDefaultTraits> Complex;
+BOOST_AUTO_TEST_CASE(fullTriangle) {
+  typedef SComplex<SComplexDefaultTraits> Complex;
 
-    SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(3);
-    std::vector<std::set<int> > simplices = makeSpaceFromWelds(makeTorusWelds());
+  Complex::Dims dims = list_of(0)(1)(0)(1)(0)(1)(2);
+  Complex::KappaMap kappaMap = tuple_list_of(1, 0, -1)(1, 2, 1)(3, 2, -1)(3, 4, 1)(5, 4, -1)(5, 0, 1)
+	 (6, 1, -1)(6, 3, 1)(6, 5, -1);
 
-    for (int i = 0; i < 3; i++)
-    {
-        simplices = subdivide3(simplices);
-    }
+  Complex complex(3, dims, kappaMap, 1);
 
-    boost::shared_ptr<Complex> complex = builder(simplices, 3, 1);
+  performTest(complex, "1", 1);
+}
 
-    CRef<ReducibleFreeChainComplexType> RFCComplexCR_orginal=
-        (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<Complex, ReducibleFreeChainComplexType>(*complex))();
-    CRef<HomologySignature> homSignCR_orginal=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR_orginal);
 
-    CoreductionAlgorithm<AKQReduceStrategy<Complex> > algorithm(new AKQReduceStrategy<Complex>(*complex));
+BOOST_AUTO_TEST_CASE(torus) {
+  typedef SComplex<SComplexDefaultTraits> Complex;
 
-    algorithm();
+  SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(3);
+  std::vector<std::set<int> > simplices = makeSpaceFromWelds(makeTorusWelds());
+
+  for (int i = 0; i < 3; i++) {
+  	 simplices = subdivide3(simplices);
+  }
+
+  boost::shared_ptr<Complex> complex = builder(simplices, 3, 1);
+
+  CRef<ReducibleFreeChainComplexType> RFCComplexCR_orginal=
+  	 (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<Complex, ReducibleFreeChainComplexType>(*complex))();
+  CRef<HomologySignature> homSignCR_orginal=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR_orginal);
+
+  CoreductionAlgorithm<AKQReduceStrategy<Complex> > algorithm(new AKQReduceStrategy<Complex>(*complex));
+
+  algorithm();
 
 
   Complex* AKQ = algorithm.getStrategy()->getOutputComplex();

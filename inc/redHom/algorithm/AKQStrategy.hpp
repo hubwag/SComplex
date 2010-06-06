@@ -16,6 +16,25 @@ class AKQReduceStrategyTraits
 {
 public:
 
+    // template<typename ImplT>
+    // struct Proxy: pu	blic CellProxy<ImplT> {
+    // 	 template<typename ImplT2>
+    // 	 Proxy(const ImplT2& impl): CellProxy<ImplT>(impl) {}
+
+    // 	 Proxy(const SComplexT& c): CellProxy<ImplT>(ImplT(c)) {}
+    // };
+
+    // template<typename ImplT>
+    // struct Proxy<CellProxy<ImplT> >: public CellProxy<ImplT> {
+    // 	 template<typename ImplT2>
+    // 	 Proxy(const ImplT2& impl): CellProxy<ImplT>(impl) {}
+    // };
+
+    // template<typename ImplT>
+    // static Proxy<ImplT*> makeProxy(const CellProxy<ImplT>& impl) {
+    // 	 return Proxy<ImplT*>(impl.getImpl());
+    // }
+
     template<typename ArgT>
 struct GetReductionPair : public std::unary_function<const ArgT&,
                 boost::optional<typename SComplexT::Cell> > {};
@@ -52,6 +71,7 @@ public:
         std::cout << "SIZE, CARDINALITY OR MAX_ID?" << std::endl;
         max_d = getMaxDim();
 
+// ???
 	size_t complexSize = _complex.size();
         morse.resize(complexSize);
         akq.resize(complexSize);
@@ -79,15 +99,9 @@ public:
     int calcMorseValue(const cellT1 &c)
     {
         int val = 0;
-        //BOOST_FOREACH(Cell el, complex.iterators().bdCells(c))
-        //{
-        //    val = max(val, morse[el.getId()]);
-        //}
-
-        for (typename SComplexT::Iterators::BdCells::iterator it = complex.iterators().bdCells(c).begin();
-			it != complex.iterators().bdCells(c).end(); ++it)
+        BOOST_FOREACH(Cell el, complex.iterators().bdCells(c))
         {
-            val = max(val, morse[(*it).getId()]);
+            val = max(val, morse[el.getId()]);
         }
 
         return val + 1;
@@ -171,30 +185,17 @@ public:
             int ourMorseValue = morse[curr.getId()];
 
             // case 1: to ace
-            /*BOOST_FOREACH(Cell to, complex.iterators().bdCells(curr))
+            BOOST_FOREACH(Cell to, complex.iterators().bdCells(curr))
             {
                 if (akq[to.getId()] == ACE && morse[to.getId()] < ourMorseValue)
                 {
                     S.push(std::make_pair(to, accumulatedWeight * toAceCoeff(curr, to)));
                 }
-            }*/
-            for (typename SComplexT::Iterators::BdCells::iterator it = complex.iterators().bdCells(c).begin();
-				 it != complex.iterators().bdCells(c).end(); ++it)
-			{
-				Cell to = *it;
-				if (akq[to.getId()] == ACE && morse[to.getId()] < ourMorseValue)
-                {
-                    S.push(std::make_pair(to, accumulatedWeight * toAceCoeff(curr, to)));
-                }
-			}
+            }
 
             // case 2: to king
-            //BOOST_FOREACH(Cell bd, complex.iterators().bdCells(curr))
-            for (typename SComplexT::Iterators::BdCells::iterator it = complex.iterators().bdCells(c).begin();
-				 it != complex.iterators().bdCells(c).end(); ++it)
-			{
-				Cell bd = *it;
-
+            BOOST_FOREACH(Cell bd, complex.iterators().bdCells(curr))
+            {
                 if (akq[bd.getId()] != QUEEN)
                     continue;
 
@@ -334,13 +335,9 @@ public:
     getCoreductionPair(const ArgT& cell)
     {
         int times = 0;
-        //for (typename SComplexT::ColoredIterators::Iterators::BdCells::iterator it = complex.iterators(1).bdCells(cell).begin();
-		//		 it != complex.iterators(1).bdCells(cell).end(); ++it)
-
-    	BOOST_FOREACH(typename SComplex::ColoredIterators::Iterators::BdCells::iterator::value_type v,
+        BOOST_FOREACH(typename SComplex::ColoredIterators::Iterators::BdCells::iterator::value_type v,
                       complex.iterators(1).bdCells(cell))
-		{
-
+        {
             if (times == 0)
             {
                 dummyCell3 = v;
@@ -356,7 +353,6 @@ public:
         {
             return typename Traits::template GetCoreductionPair<ArgT>::result_type(dummyCell3);
         }
-
         return typename Traits::template GetCoreductionPair<ArgT>::result_type();
     }
 
@@ -365,14 +361,9 @@ public:
     getReductionPair(const ArgT &cell)
     {
         int times = 0;
-
-        //BOOST_FOREACH(typename SComplex::ColoredIterators::Iterators::CbdCells::iterator::value_type v,
-        //              complex.iterators(1).cbdCells(cell))
-		for (typename SComplexT::Iterators::CbdCells::iterator it = complex.iterators(1).cbdCells(cell).begin();
-				 it != complex.iterators(1).cbdCells(cell).end(); ++it)
+        BOOST_FOREACH(typename SComplex::ColoredIterators::Iterators::CbdCells::iterator::value_type v,
+                      complex.iterators(1).cbdCells(cell))
         {
-        	Cell v = *it;
-
             if (times == 0)
             {
                 dummyCell2 = v;
