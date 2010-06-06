@@ -112,7 +112,7 @@ std::string reduction(SComplex<TraitsT>& complex) {
   
   CRef<ReducibleFreeChainComplexType> RFCComplexCR=
   	 (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SComplex<TraitsT>, ReducibleFreeChainComplexType>(complex))();
-  CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
+  CRef<HomologySignature<int> > homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
 
   std::ostringstream signature;
   signature << homSignCR();
@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE(coreduction_simplicialEmptyTetrahedron) {
   
   BOOST_CHECK_EQUAL(complex->size(), (size_t) 15);
   BOOST_CHECK(complex->iterators(1).dimCells(3).begin() == complex->iterators(1).dimCells(3).end());
-  BOOST_CHECK_EQUAL(reduction(*complex), "  H^0 = 0#  H^1 = 0#  H^2 = Z^1#");
+  BOOST_CHECK_EQUAL(reduction(*complex), "  H_0 = 0#  H_1 = 0#  H_2 = Z#");
 }
 
 BOOST_AUTO_TEST_CASE(coreduction_simplicialTorus) {
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE(coreduction_simplicialTorus) {
   	 simplices = subdivide3(simplices);
   }
 
-  BOOST_CHECK_EQUAL(reduction(simplices), "  H^0 = 0#  H^1 = Z^2#  H^2 = Z^1#");
+  BOOST_CHECK_EQUAL(reduction(simplices), "  H_0 = 0#  H_1 = Z^2#  H_2 = Z#");
 }
 
 BOOST_AUTO_TEST_CASE(coreduction_simplicialKlein) {
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(coreduction_simplicialKlein) {
   
   std::vector<std::set<int> > simplices = makeSpaceFromWelds(makeKleinWelds());
 
-  BOOST_CHECK_EQUAL(reduction(simplices), "  H^0 = 0#  H^1 = Z^1 + Z/2#");
+  BOOST_CHECK_EQUAL(reduction(simplices), "  H_0 = 0#  H_1 = Z + Z/2#");
 }
 
 
@@ -175,12 +175,12 @@ BOOST_AUTO_TEST_CASE(cubicalSets) {
   typedef Reader::Complex Complex;
   Reader reader;
 
-  BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/rectangle.cub", 3, 1)), "  H^0 = 0#  H^1 = Z^1#");
-  BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/qtorus.cub", 3, 1)), "  H^0 = 0#  H^1 = Z^2#  H^2 = Z^1#");
-  BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/qklein.cub", 3, 1)), "  H^0 = 0#  H^1 = Z^1 + Z/2#");
-  BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/qprojpln.cub", 3, 1)), "  H^0 = 0#  H^1 = Z/2#");
-  BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/kleinbot.cub", 3, 1)), "  H^0 = 0#  H^1 = Z^1 + Z/2#");
-  BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/torus.cub", 3, 1)), "  H^0 = 0#  H^1 = Z^2#  H^2 = Z^1#");
+  BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/rectangle.cub", 3, 1)), "  H_0 = 0#  H_1 = Z#");
+  BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/qtorus.cub", 3, 1)), "  H_0 = 0#  H_1 = Z^2#  H_2 = Z#");
+  BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/qklein.cub", 3, 1)), "  H_0 = 0#  H_1 = Z + Z/2#");
+  BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/qprojpln.cub", 3, 1)), "  H_0 = 0#  H_1 = Z/2#");
+  BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/kleinbot.cub", 3, 1)), "  H_0 = 0#  H_1 = Z + Z/2#");
+   BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/torus.cub", 3, 1)), "  H_0 = 0#  H_1 = Z^2#  H_2 = Z#");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -50,7 +50,7 @@ boost::tuple<int, int, int, std::string>  CrHomS() {
 	 (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SComplex, ReducibleFreeChainComplexType>(*complex))();
   BOOST_TEST_MESSAGE(" --- RFCC constructed  ");
 
-  CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
+  CRef<HomologySignature<int> > homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
   BOOST_TEST_MESSAGE(" --- Computation completed in " << swComp);
   BOOST_TEST_MESSAGE(" --- Computed homology is: \n\n" << homSignCR());
   get<3>(result) = homSignCR().bettiVector();

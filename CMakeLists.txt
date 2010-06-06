@@ -12,8 +12,8 @@ set(CODE ${PROJECT_SOURCE_DIR}/)
 set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/install)
 
 
-set(CMAKE_USE_RELATIVE_PATHS TRUE)
-set(CMAKE_SUPPRESS_REGENERATION TRUE)
+#set(CMAKE_USE_RELATIVE_PATHS TRUE)
+#set(CMAKE_SUPPRESS_REGENERATION TRUE)
 
 enable_testing()
 
@@ -30,7 +30,7 @@ link_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 #add_library(/home/mj/workspace/capd/lib/capd STATIC IMPORTED)
 
 
-add_subdirectory(${CODE}/src apps)
+add_subdirectory(${CODE}/src src)
 add_subdirectory(${CODE}/test test)
 add_subdirectory(${CODE}/lib lib)
 add_subdirectory(${CODE}/inc inc)

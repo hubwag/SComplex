@@ -27,7 +27,7 @@ typedef ReducibleFreeChainComplex<FreeModuleType,int> ReducibleFreeChainComplexT
 
 #include "redHom/complex/simplicial/Simplex.hpp"
 #include "redHom/complex/simplicial/SimplexSComplex.hpp"
-#include "redHom/simplexSubdivision.hpp" // make_int_set
+#include "redHom/SimplexSubdivision.hpp" // make_int_set
 
 typedef SimplexSComplex::Simplex Simplex;
 typedef SimplexSComplex::CellProxy<Simplex*> SimplexCell;
@@ -144,6 +144,7 @@ BOOST_AUTO_TEST_CASE(border_iterator2) {
 
     BOOST_CHECK_EQUAL(2, distance(begin, end));
 }
+
 
 BOOST_AUTO_TEST_SUITE_END()
 
