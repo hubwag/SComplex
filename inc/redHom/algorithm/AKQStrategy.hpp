@@ -334,17 +334,16 @@ public:
     getCoreductionPair(const ArgT& cell)
     {
         int times = 0;
-        for (typename SComplexT::ColoredIterators::Iterators::BdCells::iterator it = complex.iterators(1).bdCells(cell).begin();
-				 it != complex.iterators(1).bdCells(cell).end(); ++it)
+        //for (typename SComplexT::ColoredIterators::Iterators::BdCells::iterator it = complex.iterators(1).bdCells(cell).begin();
+		//		 it != complex.iterators(1).bdCells(cell).end(); ++it)
 
-    	//BOOST_FOREACH(typename SComplex::ColoredIterators::Iterators::BdCells::iterator::value_type v,
-        //              complex.iterators(1).bdCells(cell))
+    	BOOST_FOREACH(typename SComplex::ColoredIterators::Iterators::BdCells::iterator::value_type v,
+                      complex.iterators(1).bdCells(cell))
 		{
-			// Cell v = *it;
 
             if (times == 0)
             {
-                dummyCell3 = *it;
+                dummyCell3 = v;
             }
             ++times;
             if (times == 2)
