@@ -76,9 +76,6 @@ BOOST_AUTO_TEST_CASE(line)
     performTest(complex, "1", 1);
 }
 
-
-
-
 BOOST_AUTO_TEST_CASE(emptyTriangle)
 {
     typedef SComplex<SComplexDefaultTraits> Complex;
