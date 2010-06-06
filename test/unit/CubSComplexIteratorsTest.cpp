@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(iterators_AllCells_forEach_test) {
   boost::shared_ptr<SComplex> s = createComplex();
 	 const int initSize = s->cardinality();
 	 
-	 BOOST_CHECK_EQUAL(s->cardinality(), 3456);
+	 BOOST_CHECK_EQUAL(s->cardinality(), 1536);
 
 	 int cnt = 0;
 	 BOOST_FOREACH(SComplex::Iterators::AllCells::iterator::value_type v, s->iterators(1).allCells()) {
