@@ -72,9 +72,10 @@ public:
         max_d = getMaxDim();
 
 // ???
-        morse.resize(_complex.size());
-        akq.resize(_complex.size());
-        kerKing.resize(_complex.size());
+	size_t complexSize = _complex.size();
+        morse.resize(complexSize);
+        akq.resize(complexSize);
+        kerKing.resize(complexSize, Cell(complex));
 
         /*
         morse.resize(3000000);
@@ -385,11 +386,10 @@ public:
     size_t getMaxDim()
     {
         typename SComplex::Dim maxDim = 0;
-        for (typename SComplex::ColoredIterators::Iterators::AllCells::iterator it = complex.template iterators<1>().allCells().begin(),
-                end = complex.template iterators<1>().allCells().end();
-                it != end; ++it)
+        BOOST_FOREACH(typename SComplex::ColoredIterators::Iterators::AllCells::iterator::value_type v,
+		      complex.iterators(1).allCells())
         {
-            maxDim = std::max(maxDim, (*it).getDim());
+            maxDim = std::max(maxDim, v.getDim());
         }
 
         return maxDim;

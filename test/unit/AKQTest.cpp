@@ -11,6 +11,10 @@ ofstreamcout fcout;
 #include <redHom/complex/scomplex/SComplexDefaultTraits.hpp>
 #include <redHom/complex/scomplex/SComplexBuilderFromSimplices.hpp>
 
+#include <redHom/complex/cubical/CubSComplex.hpp>
+#include <redHom/complex/cubical/CubSComplexReader.hpp>
+
+
 #include <redHom/complex/simplicial/SimplexIO.hpp>
 #include <redHom/SimplexSubdivision.hpp>
 
@@ -122,19 +126,52 @@ BOOST_AUTO_TEST_CASE(torus) {
   algorithm();
 
 
-  Complex* coAKQ = algorithm.getStrategy()->getOutputComplex();
-  BOOST_CHECK_EQUAL(coAKQ->size(), 4);
+  Complex* AKQ = algorithm.getStrategy()->getOutputComplex();
+  BOOST_CHECK_EQUAL(AKQ->size(), 4);
 
   CRef<ReducibleFreeChainComplexType> RFCComplexCR=
-  	 (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<Complex, ReducibleFreeChainComplexType>(*coAKQ))();
+  	 (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<Complex, ReducibleFreeChainComplexType>(*AKQ))();
   CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
 
   std::ostringstream signature;
-  signature << "coAKQ: " << homSignCR()<< " | org: " << homSignCR_orginal();
+  signature << "AKQ: " << homSignCR()<< " | org: " << homSignCR_orginal();
   std::string sig = signature.str();
   std::replace(sig.begin(), sig.end(), '\n', '#');
-  BOOST_CHECK_EQUAL(sig, "coAKQ:   H^0 = Z^1#  H^1 = Z^2#  H^2 = Z^1# | org:   H^0 = Z^1#  H^1 = Z^2#  H^2 = Z^1#");
+  BOOST_CHECK_EQUAL(sig, "AKQ:   H^0 = Z^1#  H^1 = Z^2#  H^2 = Z^1# | org:   H^0 = Z^1#  H^1 = Z^2#  H^2 = Z^1#");
 }
+
+
+BOOST_AUTO_TEST_CASE(cubical_projpln) {
+  typedef CubSComplex<5> Complex;
+
+  CubSComplexReader<5> reader;
+  boost::shared_ptr<Complex> complex = reader(PROJECT_SOURCE_DIR"data/cubical/qprojpln.cub"); 
+  
+  CRef<ReducibleFreeChainComplexType> RFCComplexCR_orginal=
+  	 (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<Complex, ReducibleFreeChainComplexType>(*complex))();
+  CRef<HomologySignature> homSignCR_orginal=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR_orginal);
+
+  CoreductionAlgorithm<AKQReduceStrategy<Complex> > algorithm(new AKQReduceStrategy<Complex>(*complex));
+
+  algorithm();
+
+
+  SComplex<SComplexDefaultTraits>* AKQ = algorithm.getStrategy()->getOutputComplex();
+  BOOST_CHECK(AKQ != NULL);
+  BOOST_CHECK_EQUAL(AKQ->size(), 3);
+
+  CRef<ReducibleFreeChainComplexType> RFCComplexCR=
+  	 (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SComplex<SComplexDefaultTraits>,
+	  ReducibleFreeChainComplexType>(*AKQ))();
+  CRef<HomologySignature> homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
+
+  std::ostringstream signature;
+  signature << "AKQ: " << homSignCR()<< " | org: " << homSignCR_orginal();
+  std::string sig = signature.str();
+  std::replace(sig.begin(), sig.end(), '\n', '#');
+  BOOST_CHECK_EQUAL(sig, "AKQ:   H^0 = Z^1#  H^1 = Z/2# | org:   H^0 = Z^1#  H^1 = Z/2#");
+}
+
 
 /*
 BOOST_AUTO_TEST_CASE(klein) {
