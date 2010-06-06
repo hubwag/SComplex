@@ -50,26 +50,53 @@ private:
   class CbdNumerator;
   class BdNumerator;
 
-  template<bool isConst>
+  template<Color color>
+  struct FixedColorChecker {
+    bool operator()(bool b) const {
+      return (color == 1 && b) || (color == 2 && !b);
+    }
+  };
+
+  struct ColorChecker {
+    Color color;
+
+    ColorChecker(Color _color): color(_color) {}
+
+    bool operator()(bool b) const {
+      return (color == 1 && b) || (color == 2 && !b);
+    }
+  };
+
+  struct NoBitChecker {
+    bool operator()(bool b) const {
+      return true;
+    }
+  };
+
+  template<bool isConst, typename BitChecker>
   class IteratorsImpl;
+
+  template<bool isConst, typename BitChecker>
+  friend class IteratorsImpl;
 
   template<bool isConst>
   class ColoredIteratorsImpl {
 
   public:
-	 typedef IteratorsImpl<isConst> Iterators;
+    typedef IteratorsImpl<isConst, ColorChecker> Iterators;
 
-	 template<typename CubSComplex::Color color>
-	 class Color {
-	 public:
-		typedef IteratorsImpl<isConst> Iterators;
-	 };
+    template<typename CubSComplex::Color color>
+    class Color {
+
+    public:
+      typedef IteratorsImpl<isConst, FixedColorChecker<color> > Iterators;
+    };
   };
 
 public:
   
-  typedef IteratorsImpl<false> Iterators;
-  typedef IteratorsImpl<true> ConstIterators;
+  typedef IteratorsImpl<false, NoBitChecker> Iterators;
+  typedef IteratorsImpl<true, NoBitChecker> ConstIterators;
 
 
   typedef ColoredIteratorsImpl<false> ColoredIterators;
@@ -107,9 +134,6 @@ protected:
   //  boost::shared_ptr<RepSet<ElementaryCube> > repSet;
   BCubCellSet bCubCellSet;
   
-  template<bool isConst>
-  friend class IteratorsImpl;
-  
 };
 
 #include "CubSComplex_Cell.hpp"
@@ -128,28 +152,24 @@ inline CubSComplex<DIM>::CubSComplex(RepSet<ElementaryCube>& _repSet):
 
 template<int DIM>
 inline typename CubSComplex<DIM>::Iterators CubSComplex<DIM>::iterators() {
-  throw std::logic_error("Not implemented yet."); // How cn I iterate over removed elements ?
-
   return Iterators(*this);
 }
 
 template<int DIM>
 inline typename CubSComplex<DIM>::ConstIterators CubSComplex<DIM>::iterators() const {
-  throw std::logic_error("Not implemented yet."); // How cn I iterate over removed elements ?
-
   return ConstIterators(*this);
 }
 
 template<int DIM>
 inline typename CubSComplex<DIM>::ColoredConstIterators::Iterators CubSComplex<DIM>::iterators(const Color& color) const {
   BOOST_ASSERT(color == 1);
-  return typename ColoredConstIterators::Iterators(*this);
+  return typename ColoredConstIterators::Iterators(*this, ColorChecker(color));
 }
 
 template<int DIM>
 inline typename CubSComplex<DIM>::ColoredIterators::Iterators CubSComplex<DIM>::iterators(const Color& color) {
   BOOST_ASSERT(color == 1);
-  return typename ColoredIterators::Iterators(*this);
+  return typename ColoredIterators::Iterators(*this, ColorChecker(color));
 }
 
 template<int DIM>

@@ -40,7 +40,7 @@ inline void ShaveAlgorithm<StrategyT>::operator()(){
   for(typename SComplex::Dim d = strategy->getMaxDim() - 1; d >= 0; --d){
 	 typedef typename SComplex::ColoredIterators::Iterators::DimCells::iterator DimIt;
 
-	 typename SComplex::ColoredIterators::Iterators::DimCells dimCells = strategy->getComplex().template iterators<1>().dimCells(d);
+	 typename SComplex::ColoredIterators::Iterators::DimCells dimCells = strategy->getComplex().iterators(1).dimCells(d);
 	 for (DimIt it = dimCells.begin(),
 	 		  end = dimCells.end();
 	 		it != end; ++it) {

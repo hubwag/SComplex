@@ -49,8 +49,8 @@ public:
 	 }
 
 	 void boundary(std::map<SComplexChainCell,int>& A_boundary) const {
-	   for (typename SComplex::ColoredIterators::Iterators::BdCells::iterator it = complex.template iterators<1>().bdCells(this->cell).begin(),
-		  end = complex.template iterators<1>().bdCells(this->cell).end();
+	   for (typename SComplex::ColoredIterators::Iterators::BdCells::iterator it = complex.iterators(1).bdCells(this->cell).begin(),
+		  end = complex.iterators(1).bdCells(this->cell).end();
 		it != end; ++it) {
 	     A_boundary.insert(std::make_pair(SComplexChainCell(complex, *it, embededDim),
 					      complex.coincidenceIndex(this->cell, *it)
@@ -80,8 +80,8 @@ inline CRef<ReducibleFreeChainComplexT> ReducibleFreeChainComplexOverZFromSCompl
 
   size_t maxDim = (DefaultReduceStrategy<SComplexT>(s)).getMaxDim(); // TODO add strategy as a member
 
-  for (typename SComplex::ColoredIterators::Iterators::AllCells::iterator it = s.template iterators<1>().allCells().begin(),
-			end = s.template iterators<1>().allCells().end();
+  for (typename SComplex::ColoredIterators::Iterators::AllCells::iterator it = s.iterators(1).allCells().begin(),
+			end = s.iterators(1).allCells().end();
 		 it != end; ++it) {
 	 cells.insert(SComplexChainCell(s, *it, maxDim));
   }
