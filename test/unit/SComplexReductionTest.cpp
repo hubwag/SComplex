@@ -115,6 +115,8 @@ std::string reduction(SComplex<TraitsT>& complex) {
   CRef<ReducibleFreeChainComplexType> RFCComplexCR=
   	 (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SComplex<TraitsT>, ReducibleFreeChainComplexType>(complex))();
 
+  //std::cerr << RFCComplexCR() << std::endl;
+
   BOOST_MESSAGE("Computing homology signature");
   CRef<HomologySignature<int> > homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
 
@@ -183,9 +185,9 @@ BOOST_AUTO_TEST_CASE(cubicalSets) {
   BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/qtorus.cub", 3, 1)), "  H_0 = 0#  H_1 = Z^2#  H_2 = Z#");
   BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/qklein.cub", 3, 1)), "  H_0 = 0#  H_1 = Z + Z/2#");
   BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/qprojpln.cub", 3, 1)), "  H_0 = 0#  H_1 = Z/2#");
-  BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/kleinbot.cub", 3, 1)), "  H_0 = 0#  H_1 = Z + Z/2#");
-   BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/torus.cub", 3, 1)), "  H_0 = 0#  H_1 = Z^2#  H_2 = Z#");
-   //BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/sparseSet.txt", 3, 1)), "");
+   BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/kleinbot.cub", 3, 1)), "  H_0 = 0#  H_1 = Z + Z/2#");
+  BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/torus.cub", 3, 1)), "  H_0 = 0#  H_1 = Z^2#  H_2 = Z#");
+  //BOOST_CHECK_EQUAL(reduction(*reader(PROJECT_SOURCE_DIR"data/cubical/sparseSet.txt", 3, 1)), "");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -45,17 +45,19 @@ public:
 	 }
 
 	 int ownDim() const {
-		return cell.getDim();
+	   return cell.getDim();
 	 }
 
 	 void boundary(std::map<SComplexChainCell,int>& A_boundary) const {
-	   for (typename SComplex::ColoredIterators::Iterators::BdCells::iterator it = complex.iterators(1).bdCells(this->cell).begin(),
-		  end = complex.iterators(1).bdCells(this->cell).end();
-		it != end; ++it) {
+	   typename SComplex::ColoredIterators::Iterators::BdCells bdCells = complex.iterators(1).bdCells(this->cell);
+	   int times = 0;
+	   for (typename SComplex::ColoredIterators::Iterators::BdCells::iterator it = bdCells.begin(),
+		  end = bdCells.end(); it != end; ++it) {
 	     A_boundary.insert(std::make_pair(SComplexChainCell(complex, *it, embededDim),
-					      complex.coincidenceIndex(this->cell, *it)
-					      ));
+					      complex.coincidenceIndex(this->cell, *it) ));
+	     ++times;
 	   }
+	   BOOST_ASSERT(times <= 2*ownDim());
 	 }
 
 	 bool operator<(const SComplexChainCell& b) const {
