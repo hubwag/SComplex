@@ -20,16 +20,16 @@ typedef ReducibleFreeChainComplex<FreeModuleType,int> ReducibleFreeChainComplexT
 BOOST_AUTO_TEST_SUITE(CubSComplex_reductions)
 
 
-template<typename SComplex>
-boost::tuple<int, int, int, std::string>  CrHomS() {
+template<int DIM>
+boost::tuple<int, int, int, std::string>  CrHomS(std::string fileName) {
 	 boost::tuple<int, int, int, std::string> result;
 	 using boost::tuples::get;
 	 
   Stopwatch swTot;
   BOOST_TEST_MESSAGE(" --- Reading cubical cellular set ");
 
-  CubSComplexReader<8> reader;
-  boost::shared_ptr<SComplex> complex = reader(PROJECT_SOURCE_DIR"data/cubical/qtorus.cub"); 
+  CubSComplexReader<DIM> reader;
+  boost::shared_ptr<CubSComplex<DIM> > complex = reader(fileName); 
 
   get<0>(result) = complex->cardinality();
 
@@ -47,7 +47,7 @@ boost::tuple<int, int, int, std::string>  CrHomS() {
   get<2>(result) = complex->cardinality();
   
   CRef<ReducibleFreeChainComplexType> RFCComplexCR=
-	 (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SComplex, ReducibleFreeChainComplexType>(*complex))();
+    (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<CubSComplex<DIM>, ReducibleFreeChainComplexType>(*complex))();
   BOOST_TEST_MESSAGE(" --- RFCC constructed  ");
 
   CRef<HomologySignature<int> > homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
@@ -62,7 +62,8 @@ boost::tuple<int, int, int, std::string>  CrHomS() {
 
 
 BOOST_AUTO_TEST_CASE(reduction_test) {
-  BOOST_CHECK_EQUAL(CrHomS<CubSComplex<8> >(), boost::make_tuple(168, 168, 33, "0,2,1"));
+  BOOST_CHECK_EQUAL(CrHomS<8>(PROJECT_SOURCE_DIR"data/cubical/qtorus.cub"), boost::make_tuple(168, 168, 33, "0,2,1"));
+  BOOST_CHECK_EQUAL(CrHomS<4>(PROJECT_SOURCE_DIR"data/cubical/kleinbot.cub"), boost::make_tuple(8378, 8378, 839, "0,1"));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

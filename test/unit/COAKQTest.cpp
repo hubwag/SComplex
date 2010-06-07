@@ -187,8 +187,8 @@ BOOST_AUTO_TEST_CASE(klein) {
   SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(3);
   std::vector<std::set<int> > simplices = makeSpaceFromWelds(makeKleinWelds());
 
-  for (int i = 0; i < 3; i++) {
-    //simplices = subdivide3(simplices);
+  for (int i = 0; i < 0; i++) {
+    simplices = subdivide3(simplices);
   }
 
   boost::shared_ptr<Complex> complex = builder(simplices, 3, 1);
