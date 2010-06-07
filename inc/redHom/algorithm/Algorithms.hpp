@@ -50,14 +50,12 @@ public:
 
 	 void boundary(std::map<SComplexChainCell,int>& A_boundary) const {
 	   typename SComplex::ColoredIterators::Iterators::BdCells bdCells = complex.iterators(1).bdCells(this->cell);
-	   int times = 0;
+
 	   for (typename SComplex::ColoredIterators::Iterators::BdCells::iterator it = bdCells.begin(),
 		  end = bdCells.end(); it != end; ++it) {
 	     A_boundary.insert(std::make_pair(SComplexChainCell(complex, *it, embededDim),
 					      complex.coincidenceIndex(this->cell, *it) ));
-	     ++times;
 	   }
-	   BOOST_ASSERT(times <= 2*ownDim());
 	 }
 
 	 bool operator<(const SComplexChainCell& b) const {
