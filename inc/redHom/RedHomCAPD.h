@@ -18,6 +18,8 @@
 #include <capd/vectalg/MatrixSlice.h>
 #include <capd/homologicalAlgebra/readCubicalSet.hpp>
 #include <capd/homologicalAlgebra/CubSetBuilder.h>
+#include <capd/homologicalAlgebra/RepCubSetBuilder.hpp>
+
 #include <capd/repSet/RepSet.h>
 #include <capd/repSet/ElementaryCube.h>
 

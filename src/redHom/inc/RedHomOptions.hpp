@@ -11,7 +11,7 @@
 
 class RedHomOptions {
 public:
-  enum FileType { cubical=0, simplicial };
+  enum FileType { unknown = -1, cubical=0, simplicial };
 
 
 public:
@@ -35,7 +35,7 @@ public:
     positional_options_description positionalFileDesc;
 
     for (int i = 0; i < inputFilesCount; ++i) {
-      std::string key = "input-file" + boost::lexical_cast<std::string>(i);
+      std::string key = getInputFileKey(i);
       positionalFileDesc.add(key.c_str(), 1);
       fileDesc.add_options()(key.c_str(), value<std::string>(&inputFiles[i]), "input file");
     }
@@ -72,6 +72,14 @@ public:
     return inputFiles[i];
   }
 
+  size_t getInputFilesCount() const {
+    size_t size = 0;
+    for (int i = 0; i < inputFiles.size(); ++i) {
+      size += vm.count(getInputFileKey(i));
+    }
+    return size;
+  }
+
   const std::vector<std::string> getInputFiles() const {
     return inputFiles;
   }
@@ -81,6 +89,10 @@ public:
   }
 
 private:
+
+  std::string getInputFileKey(int i) const {
+    return "input-file" + boost::lexical_cast<std::string>(i);
+  }
 
   boost::program_options::variables_map vm;
   boost::program_options::options_description desc;
