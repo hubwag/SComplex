@@ -46,8 +46,14 @@ public:
     complexDesc.add_options()
       ("general-scomplex,g", bool_switch(&generalSComplex), "use general SComplex");
 
+    options_description algorithmDesc;
+    algorithmDesc.add_options()
+      ("RFC-at-start", bool_switch(&rfcAtStart), "execute RFC at start")
+      ("coreduction,c", bool_switch(&coreduction), "execute coreduction")
+      ("RFC-at-end", bool_switch(&rfcAtEnd)->default_value(true), "execute RFC at end");
+    
     desc.add(complexDesc);
-
+    desc.add(algorithmDesc);
     store(command_line_parser(ac, av).options(desc).positional(positionalFileDesc).run(), vm);
     notify(vm);    
 
@@ -88,6 +94,18 @@ public:
     return generalSComplex;
   }
 
+  bool isRfcAtStart() const {
+    return rfcAtStart;
+  }
+
+  bool isRfcAtEnd() const {
+    return rfcAtEnd;
+  }
+
+  bool isCoreduction() const {
+    return coreduction;
+  }
+
 private:
 
   std::string getInputFileKey(int i) const {
@@ -98,6 +116,9 @@ private:
   boost::program_options::options_description desc;
   std::vector<std::string> inputFiles;
   bool generalSComplex;
+  bool rfcAtStart;
+  bool rfcAtEnd;
+  bool coreduction;
 
   FileType fileType;
 };

@@ -18,7 +18,7 @@
 #include <redHom/algorithm/strategy/DefaultReduceStrategy_CubSComplex.hpp>
 
 
-enum ComplexMajorId {SComplexMajorId = 0, CubicalMajorId = 1};
+enum ComplexMajorId {SComplexCubesMajorId = 0, CubicalMajorId = 1};
 
 typedef boost::tuple<ComplexMajorId, int, boost::any> ComplexTuple;
 
@@ -37,7 +37,7 @@ typedef boost::mpl::vector<ComplexDescriptor<CubSComplex<2>, CubicalMajorId, 2>,
 			   > CubComplexDescriptors;
 typedef boost::mpl::joint_view<CubComplexDescriptors,
 			       boost::mpl::vector<
-				 ComplexDescriptor<SComplex<SComplexDefaultTraits>, SComplexMajorId, 0>
+				 ComplexDescriptor<SComplex<SComplexDefaultTraits>, SComplexCubesMajorId, 0>
 				 > > ComplexDescriptors;
 
 
@@ -89,11 +89,33 @@ public:
 
 };
 
+class SComplexReaderFromCubes {
+
+public:
+  static ComplexTuple read(const std::string& fileName) {
+    ifstream file;
+    file.open(fileName.c_str());
+    if (!file) {
+      throw std::logic_error("File not found: " + fileName);
+    }
+
+    SComplexReader<SComplexDefaultTraits> reader;
+    
+    return boost::make_tuple(SComplexCubesMajorId, 0, reader(fileName, 3, 1));
+  }
+
+};
+
 template<typename ComplexReader, int MAJOR_ID>
 struct ComplexReaderDescriptor {
   typedef ComplexReader type;
   static const int majorId = MAJOR_ID;
 };
+
+typedef boost::mpl::vector<ComplexReaderDescriptor<GenericCubSComplexReader, CubicalMajorId>,
+			   ComplexReaderDescriptor<SComplexReaderFromCubes, SComplexCubesMajorId>
+			   > ComplexReaderDescriptors;
+
 
 struct ComplexReader {
   ComplexTuple& complex;
@@ -115,10 +137,6 @@ struct ComplexReader {
 
 };
 
-typedef boost::mpl::vector<ComplexReaderDescriptor<GenericCubSComplexReader, CubicalMajorId>
-			   > ComplexReaderDescriptors;
-
-
 struct CoreductionExecutor {
   ComplexTuple& complex;
 
@@ -134,22 +152,6 @@ struct CoreductionExecutor {
       std::cout << "Starting correduction" << std::endl;
       (*CoreductionAlgorithmFactory::createDefault(*complexPtr))();
       std::cout << "Correduction algorithm finished" << std::endl;
-
-//       BOOST_MESSAGE("Building RFC complex");
-//       CRef<ReducibleFreeChainComplexType> RFCComplexCR=
-// 	(ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SComplex<TraitsT>, ReducibleFreeChainComplexType>(complex))();
-
-//       //std::cerr << RFCComplexCR() << std::endl;
-
-//       BOOST_MESSAGE("Computing homology signature");
-//       CRef<HomologySignature<int> > homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
-
-//       std::ostringstream signature;
-//       signature << homSignCR();
-
-//       std::string sig = signature.str();
-//       std::replace(sig.begin(), sig.end(), '\n', '#');
-
     }
   }
 
@@ -201,9 +203,13 @@ namespace {
   }
 
   ComplexMajorId determineComplexMajorId(const RedHomOptions& options) throw(std::logic_error) {    
-    if (options.getFileType() == RedHomOptions::cubical) {
+    if (options.getFileType() == RedHomOptions::cubical && ! options.isGeneralSComplex()) {
+      std::cout << "Using CubSComplex" << std::endl;
       return CubicalMajorId;
-    } 
+    } else if (options.getFileType() == RedHomOptions::cubical && options.isGeneralSComplex()) {
+      std::cout << "Using SComplex for cubes" << std::endl;
+      return SComplexCubesMajorId;
+    }
 
     throw logic_error("Unsupported file reader type");
   }
@@ -228,8 +234,17 @@ int main(int argc, char** argv) {
     ComplexReader complexReader(complexMajorId, complex, options.getInputFile(0));
     boost::mpl::for_each<ComplexReaderDescriptors>(complexReader);
 
-    boost::mpl::for_each<ComplexDescriptors>(CoreductionExecutor(complex));
-    boost::mpl::for_each<ComplexDescriptors>(RFCExecutor(complex));
+    if (options.isRfcAtStart()) {
+      boost::mpl::for_each<ComplexDescriptors>(RFCExecutor(complex));
+    }
+
+    if (options.isCoreduction()) {
+      boost::mpl::for_each<ComplexDescriptors>(CoreductionExecutor(complex));
+    }
+
+    if (options.isRfcAtEnd()) {
+      boost::mpl::for_each<ComplexDescriptors>(RFCExecutor(complex));
+    }
     
   } catch (std::exception& ex) {
     std::cerr << "Error: " << ex.what() << std::endl;
