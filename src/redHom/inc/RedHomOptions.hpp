@@ -49,7 +49,8 @@ public:
     options_description algorithmDesc;
     algorithmDesc.add_options()
       ("RFC-at-start", bool_switch(&rfcAtStart), "execute RFC at start")
-      ("coreduction,c", bool_switch(&coreduction), "execute coreduction")
+      ("coreduction", bool_switch(&coreduction), "execute coreduction")
+      ("shave", bool_switch(&shave), "execute shave")
       ("RFC-at-end", bool_switch(&rfcAtEnd)->default_value(true), "execute RFC at end");
     
     desc.add(complexDesc);
@@ -106,6 +107,10 @@ public:
     return coreduction;
   }
 
+  bool isShave() const {
+    return shave;
+  }
+
 private:
 
   std::string getInputFileKey(int i) const {
@@ -119,6 +124,7 @@ private:
   bool rfcAtStart;
   bool rfcAtEnd;
   bool coreduction;
+  bool shave;
 
   FileType fileType;
 };

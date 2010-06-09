@@ -137,6 +137,27 @@ struct ComplexReader {
 
 };
 
+
+struct ShaveExecutor {
+  ComplexTuple& complex;
+
+  ShaveExecutor(ComplexTuple& _complex):
+    complex(_complex) {  
+  }
+
+  template<typename Complex, ComplexMajorId MajorId, int MinorId>
+  void operator()(ComplexDescriptor<Complex, MajorId, MinorId>) {
+    if (boost::get<0>(complex) == MajorId && boost::get<1>(complex) == MinorId) {
+      boost::shared_ptr<Complex>& complexPtr = boost::any_cast<boost::shared_ptr<Complex>&>(boost::get<2>(complex));
+      
+      std::cout << "Starting shave" << std::endl;
+      (ShaveAlgorithmFactory::createDefault(*complexPtr))();
+      std::cout << "Shave algorithm finished" << std::endl;
+    }
+  }
+
+};
+
 struct CoreductionExecutor {
   ComplexTuple& complex;
 
@@ -236,6 +257,10 @@ int main(int argc, char** argv) {
 
     if (options.isRfcAtStart()) {
       boost::mpl::for_each<ComplexDescriptors>(RFCExecutor(complex));
+    }
+
+    if (options.isShave()) {
+      boost::mpl::for_each<ComplexDescriptors>(ShaveExecutor(complex));
     }
 
     if (options.isCoreduction()) {
