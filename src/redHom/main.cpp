@@ -198,6 +198,7 @@ struct RFCExecutor: AlgorithmExecutor<RFCExecutor> {
       (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<Complex, ReducibleFreeChainComplexType>(complex))();
 
     CRef<HomologySignature<int> > homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
+    std::cout << homSignCR() << std::endl;
   }
 
 };

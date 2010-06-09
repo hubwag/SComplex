@@ -81,7 +81,8 @@ public:
   typedef typename SComplex::Cell Cell;
 
 
-  DefaultReduceStrategyBase(SComplex& _complex): complex(_complex), dummyCell2(_complex),  dummyCell3(_complex) {}
+  DefaultReduceStrategyBase(SComplex& _complex): complex(_complex), dummyCell2(_complex),  dummyCell3(_complex),
+						 extracted(false) {}
 
   SComplex& getComplex() const {
 	 return complex;
@@ -110,14 +111,17 @@ public:
   }
 
   typename Traits::Extract::result_type extract() {
-	 typename SComplex::ColoredIterators::Iterators::DimCells dimCells = complex.iterators(1).dimCells(0);
-  	 typename SComplex::ColoredIterators::Iterators::DimCells::iterator end = dimCells.end(),
-  		it = dimCells.begin();
-
-  	 if (it != end) {
-  		return typename Traits::Extract::result_type::value_type(*it);
-  	 }
-  	 return typename Traits::Extract::result_type();
+    if (!extracted) {
+      extracted = true;
+      typename SComplex::ColoredIterators::Iterators::DimCells dimCells = complex.iterators(1).dimCells(0);
+      typename SComplex::ColoredIterators::Iterators::DimCells::iterator end = dimCells.end(),
+	it = dimCells.begin();
+      
+      if (it != end) {
+	return typename Traits::Extract::result_type::value_type(*it);
+      }
+    }
+    return typename Traits::Extract::result_type();
   }
 
   static typename Traits::ForceCoreduction::result_type forceCoreductionPair() {
@@ -183,6 +187,7 @@ public:
 protected:
   SComplex& complex;
   Cell dummyCell2, dummyCell3;
+  bool extracted;
 };
 
 template<typename SComplexT>
