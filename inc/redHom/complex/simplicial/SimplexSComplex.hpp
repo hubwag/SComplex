@@ -120,7 +120,7 @@ class CellProxy: public BasicCellProxy<ImplT>
 
         int getDim() const
         {
-            return -1 + static_cast<int>(nrs.size());
+            return static_cast<int>(nrs.size());
         }
 
         bool operator<(const Simplex& b) const
