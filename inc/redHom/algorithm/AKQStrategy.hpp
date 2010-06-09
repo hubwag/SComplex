@@ -349,14 +349,7 @@ public:
 
     size_t getMaxDim()
     {
-        typename SComplex::Dim maxDim = 0;
-        BOOST_FOREACH(typename SComplex::ColoredIterators::Iterators::AllCells::iterator::value_type v,
-		      complex.iterators(1).allCells())
-        {
-            maxDim = std::max(maxDim, v.getDim());
-        }
-
-        return maxDim;
+      return complex.getDim();
     }
 
     typedef ::SComplex<SComplexDefaultTraits> OutputComplexType;

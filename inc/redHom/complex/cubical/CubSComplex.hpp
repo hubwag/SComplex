@@ -107,7 +107,7 @@ public:
   size_t cardinality() {  return bCubCellSet.cardinality(); }
   size_t size() const { return const_cast<BCubCellSet&>(bCubCellSet).getBmpSizeInBits(); }
 
-  Dim getDim() { return bCubCellSet.embDim(); }
+  Dim getDim() { return DIM; }
   
    ConstIterators iterators() const;
    Iterators iterators();

@@ -274,17 +274,17 @@ public:
 	 size_t _size = dims.size();
 
 	 // init dimension related structures
-	 Dim maxDim = _size > 0 ? *std::max_element(dims.begin(), dims.end()) : 0;
-	 std::vector<Size> cellsInDim(maxDim + 1);
+	 dim = _size > 0 ? *std::max_element(dims.begin(), dims.end()) : 0;
+	 std::vector<Size> cellsInDim(dim + 1);
 
-	 cellsByDim.resize(maxDim + 1);
+	 cellsByDim.resize(dim + 1);
 
 	 for (Id id = 0; id < _size; ++id) {
 		++cellsInDim[dims[id]];
 	 }
 
-	 for (Dim dim = 0; dim <= maxDim; ++dim) {
-		cellsByDim[dim].init(colors, cellsInDim[dim]);
+	 for (Dim d = 0; d <= dim; ++d) {
+		cellsByDim[d].init(colors, cellsInDim[d]);
 	 }
 
 	 //init cells
@@ -332,6 +332,8 @@ public:
 
   Size size() const { return nonConstThis.get().cells.allObjects().size(); }
 
+  Dim getDim() const { return dim; }
+
   Cell operator[](const Id id) {
 	 return NonConstCellImpl(this, cells.allObjects()[id]);
   }
@@ -362,6 +364,7 @@ public:
   typename ColoredConstIterators::template Color<color>::Iterators iterators() const { return iterators(color); }
 
 private:
+  Dim dim;
   Cells cells;
   CellsByDim cellsByDim;
   std::vector<NeighboursModel> boundaries, coboundaries; // (co)boundaries by cell id

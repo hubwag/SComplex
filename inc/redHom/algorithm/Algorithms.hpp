@@ -31,17 +31,18 @@ public:
   typedef ReducibleFreeChainComplexT ReducibleFreeChainComplex;
 
   class SComplexChainCell {
-	 SComplex& complex;
-	 const Cell cell;
-	 const int embededDim;
+    SComplex& complex;
+    const Cell cell;
+    const typename SComplex::Dim embededDim;
 
   public:
-	 SComplexChainCell(SComplex& _complex, const Cell& _cell, int _embededDim): complex(_complex), cell(_cell), embededDim(_embededDim) {
+	 SComplexChainCell(SComplex& _complex, const Cell& _cell, typename SComplex::Dim _embededDim): 
+	   complex(_complex), cell(_cell), embededDim(_embededDim) {
 
 	 }
 
 	 int embDim() const {
-		return this->embededDim;
+	   return embededDim;
 	 }
 
 	 int ownDim() const {
@@ -78,7 +79,7 @@ inline CRef<ReducibleFreeChainComplexT> ReducibleFreeChainComplexOverZFromSCompl
 
   std::set<SComplexChainCell> cells;
 
-  size_t maxDim = (DefaultReduceStrategy<SComplexT>(s)).getMaxDim(); // TODO add strategy as a member
+  typename SComplex::Dim maxDim = s.getDim();
 
   for (typename SComplex::ColoredIterators::Iterators::AllCells::iterator it = s.iterators(1).allCells().begin(),
 			end = s.iterators(1).allCells().end();

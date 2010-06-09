@@ -43,10 +43,6 @@ public:
   	 }
   }
 
-  size_t getMaxDim() {
-	 return complex.getDim();
-  }
-
 };
 
 #endif

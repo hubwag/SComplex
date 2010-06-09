@@ -31,7 +31,7 @@ class CellProxy: public BasicCellProxy<ImplT>
     struct Simplex;
     typedef CellProxy<Simplex*> Cell;
 
-    const Dim& getMaxDim() const
+    const Dim& getDim() const
     {
         return perDimension.rbegin()->first;
     }
