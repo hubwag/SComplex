@@ -137,74 +137,67 @@ struct ComplexReader {
 
 };
 
-
-struct ShaveExecutor {
+template<typename Derive>
+class AlgorithmExecutor {
   ComplexTuple& complex;
+  std::string name;
 
-  ShaveExecutor(ComplexTuple& _complex):
-    complex(_complex) {  
+protected:
+  AlgorithmExecutor(ComplexTuple& _complex, const std::string _name):
+    complex(_complex), name(_name) {  
   }
+
+public:
 
   template<typename Complex, ComplexMajorId MajorId, int MinorId>
   void operator()(ComplexDescriptor<Complex, MajorId, MinorId>) {
     if (boost::get<0>(complex) == MajorId && boost::get<1>(complex) == MinorId) {
+      Stopwatch stopwatch;
       boost::shared_ptr<Complex>& complexPtr = boost::any_cast<boost::shared_ptr<Complex>&>(boost::get<2>(complex));
       
-      std::cout << "Starting shave" << std::endl;
-      (ShaveAlgorithmFactory::createDefault(*complexPtr))();
-      std::cout << "Shave algorithm finished" << std::endl;
+      std::cout << "Starting: " << name << std::endl;
+      ((Derive*)this)->run(*complexPtr);
+      std::cout << "Finished: " << name << " in: " << stopwatch << std::endl;
     }
   }
 
 };
 
-struct CoreductionExecutor {
-  ComplexTuple& complex;
+struct ShaveExecutor: AlgorithmExecutor<ShaveExecutor> {
 
-  CoreductionExecutor(ComplexTuple& _complex):
-    complex(_complex) {  
-  }
+  ShaveExecutor(ComplexTuple& _complex): AlgorithmExecutor<ShaveExecutor>(_complex, "Shave") {}
 
-  template<typename Complex, ComplexMajorId MajorId, int MinorId>
-  void operator()(ComplexDescriptor<Complex, MajorId, MinorId>) {
-    if (boost::get<0>(complex) == MajorId && boost::get<1>(complex) == MinorId) {
-      boost::shared_ptr<Complex>& complexPtr = boost::any_cast<boost::shared_ptr<Complex>&>(boost::get<2>(complex));
-      
-      std::cout << "Starting correduction" << std::endl;
-      (*CoreductionAlgorithmFactory::createDefault(*complexPtr))();
-      std::cout << "Correduction algorithm finished" << std::endl;
-    }
+  template<typename Complex>
+  void run(Complex& complex) {
+    (ShaveAlgorithmFactory::createDefault(complex))();
   }
 
 };
 
-struct RFCExecutor {
-  ComplexTuple& complex;
+struct CoreductionExecutor: AlgorithmExecutor<CoreductionExecutor> {
 
-  RFCExecutor(ComplexTuple& _complex):
-    complex(_complex) {  
+  CoreductionExecutor(ComplexTuple& _complex): AlgorithmExecutor<CoreductionExecutor>(_complex, "Coreduction") {}
+
+  template<typename Complex>
+  void run(Complex& complex) {
+    (*CoreductionAlgorithmFactory::createDefault(complex))();
   }
 
-  template<typename Complex, ComplexMajorId MajorId, int MinorId>
-  void operator()(ComplexDescriptor<Complex, MajorId, MinorId>) {
-    typedef ElementaryCell ElementaryCellType;
-    typedef int ScalarType;
+};
+
+struct RFCExecutor: AlgorithmExecutor<RFCExecutor> {
+
+  RFCExecutor(ComplexTuple& _complex): AlgorithmExecutor<RFCExecutor>(_complex, "RFC") {}
+
+  template<typename Complex>
+  void run(Complex& complex) {
     typedef FreeModule<int,capd::vectalg::Matrix<int,0,0> > FreeModuleType;
-    typedef FreeChainComplex<FreeModuleType> FreeChainComplexType;
     typedef ReducibleFreeChainComplex<FreeModuleType,int> ReducibleFreeChainComplexType;
 
-    if (boost::get<0>(complex) == MajorId && boost::get<1>(complex) == MinorId) {
-      boost::shared_ptr<Complex>& complexPtr = boost::any_cast<boost::shared_ptr<Complex>&>(boost::get<2>(complex));
-      
-      std::cout << ("Building RFC complex") << std::endl;
-      CRef<ReducibleFreeChainComplexType> RFCComplexCR = 
-	(ReducibleFreeChainComplexOverZFromSComplexAlgorithm<Complex, ReducibleFreeChainComplexType>(*complexPtr))();
+    CRef<ReducibleFreeChainComplexType> RFCComplexCR = 
+      (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<Complex, ReducibleFreeChainComplexType>(complex))();
 
-      std::cout << ("Computing homology signature") << std::endl;;
-      CRef<HomologySignature<int> > homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
-
-      std::cout << homSignCR() << std::endl;
-    }
+    CRef<HomologySignature<int> > homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
   }
 
 };
@@ -241,6 +234,8 @@ int main(int argc, char** argv) {
 
   try {
 
+    Stopwatch totalStopwatch;
+
     RedHomOptions options(argc, argv);
 
     if (options.isHelp()) {
@@ -253,7 +248,11 @@ int main(int argc, char** argv) {
     ComplexTuple complex;
     ComplexMajorId complexMajorId = determineComplexMajorId(options);
     ComplexReader complexReader(complexMajorId, complex, options.getInputFile(0));
+
+    Stopwatch readStopwatch;
     boost::mpl::for_each<ComplexReaderDescriptors>(complexReader);
+    std::cout << "Complex read in: " << readStopwatch << std::endl;
+
 
     if (options.isRfcAtStart()) {
       boost::mpl::for_each<ComplexDescriptors>(RFCExecutor(complex));
@@ -271,6 +270,7 @@ int main(int argc, char** argv) {
       boost::mpl::for_each<ComplexDescriptors>(RFCExecutor(complex));
     }
     
+    std::cout << "Total execution: " << totalStopwatch << std::endl;
   } catch (std::exception& ex) {
     std::cerr << "Error: " << ex.what() << std::endl;
     return 1;
