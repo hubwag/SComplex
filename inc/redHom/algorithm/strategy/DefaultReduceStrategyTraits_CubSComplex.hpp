@@ -1,7 +1,11 @@
+#ifndef SCOMPLEX_ALGS_CUBSCOMPLEX_REDUCE_STRATEGY_TRAITS_HPP_
+#define SCOMPLEX_ALGS_CUBSCOMPLEX_REDUCE_STRATEGY_TRAITS_HPP_
+
 #include "redHom/complex/cubical/CubSComplex.hpp"
 #include <functional>
 #include <boost/utility/enable_if.hpp>
 
+#if 0
 
 template<int DIM>
 class DefaultReduceStrategyTraits<CubSComplex<DIM> > {
@@ -24,7 +28,7 @@ public:
   // 	 return Proxy<ImplT*>(impl.getImpl());
   // }
   typedef CubSComplex<DIM> SComplex;
-  
+
   template<typename ArgT>
   struct GetReductionPair:  std::unary_function<const ArgT&,
 																boost::optional<typename SComplex::template CellProxy<typename SComplex::DynamicCell::Impl*> > > {};
@@ -41,3 +45,7 @@ public:
   };
 
 };
+
+#endif
+
+#endif

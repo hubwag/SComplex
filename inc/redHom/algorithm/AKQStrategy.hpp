@@ -5,14 +5,24 @@
 #include <boost/foreach.hpp>
 #include <utility>
 #include <stack>
+#include <set>
+using std::set;
 
 #include "redHom/complex/scomplex/SComplex.hpp"
 #include "redHom/complex/scomplex/SComplexDefaultTraits.hpp"
 
-static const bool verboseAKQ = true;
+#include "redHom/algorithm/strategy/DefaultReduceStrategy.hpp"
+#include "redHom/algorithm/strategy/DefaultReduceStrategy_CubSComplex.hpp"
+#include "redHom/algorithm/strategy/DefaultReduceStrategyTraits_CubSComplex.hpp"
 
+static const bool verboseAKQ = false;
+
+// #define INLINE_CRITICAL_CODE __attribute__ ((noinline))
+#define INLINE_CRITICAL_CODE
+
+/*
 template<typename SComplexT>
-class AKQReduceStrategyTraits
+class AKQReduceStrategyTraits : public DefaultReduceStrategyTraits<SComplexT>
 {
 public:
 
@@ -35,7 +45,7 @@ public:
     // 	 return Proxy<ImplT*>(impl.getImpl());
     // }
 
-    template<typename ArgT>
+/ *    template<typename ArgT>
 struct GetReductionPair : public std::unary_function<const ArgT&,
                 boost::optional<typename SComplexT::Cell> > {};
 
@@ -53,40 +63,104 @@ struct GetCoreductionPair : public std::unary_function<const ArgT&,
     {
         typedef boost::optional<typename SComplexT::Cell >  result_type;
     };
+
+    * /
+
 };
 
-template<typename SComplexT>
-class AKQReduceStrategyBase
-{
+*/
 
+int visitedVertices = 0;
+
+template<typename SComplexT>
+class AKQReduceStrategyBase : public DefaultReduceStrategyBase<SComplexT>
+{
 public:
     enum AKQType {UNSET, KING, QUEEN, ACE};
     typedef SComplexT SComplex;
-    typedef AKQReduceStrategyTraits<SComplex> Traits;
+    typedef DefaultReduceStrategyTraits<SComplexT> Traits;
     typedef typename SComplex::Cell Cell;
 
-    AKQReduceStrategyBase(SComplex& _complex): complex(_complex), dummyCell2(_complex),  dummyCell3(_complex)
+    typedef ::SComplex<SComplexDefaultTraits> OutputComplexType;
+
+    bool isOK(Cell curr, Cell from) // c = origin
+    {
+    	if (akq[curr.getId()] == ACE && curr.getId() != from.getId())
+			return true;
+
+    	if (akq[curr.getId()] == UNSET)
+    		return false;
+
+        int ourMorseValue = morse[curr.getId()];
+
+		bool ok = false;
+
+        // case 1: to ace
+		BOOST_FOREACH(Cell to, this->complex.iterators().bdCells(curr))
+		{
+			if (akq[to.getId()] == ACE && morse[to.getId()] < ourMorseValue)
+			{
+				ok = true;
+			}
+		}
+		// case 2: to king
+		BOOST_FOREACH(Cell bd, this->complex.iterators().bdCells(curr))
+		{
+			if (akq[bd.getId()] != QUEEN)
+				continue;
+
+			Cell to = kerKing[bd.getId()];
+
+			if (akq[to.getId()] != KING)
+			{
+				continue;
+			}
+
+			BOOST_ASSERT(akq[to.getId()] == KING);
+
+			if (morse[to.getId()] < ourMorseValue)
+			{
+				// S.push(std::make_pair(to, accumulatedWeight * toKingCoeff(curr, to, bd)));
+				if (isOK(to, from))
+				{
+					ok = true;
+				}
+			}
+		}
+
+		if (!ok && akq[curr.getId()] != ACE)
+		{
+			akq[curr.getId()] = UNSET;
+		}
+
+		return ok;
+    }
+
+    AKQReduceStrategyBase(SComplex& _complex) :
+		DefaultReduceStrategyBase<SComplex>(_complex),
+		extractIt(_complex.iterators(1).dimCells(0).begin()),
+		extractEnd(_complex.iterators(1).dimCells(0).end())
     {
         std::cout << "CHECKING MAX DIM BRUTALLY! ADD getMaxDim to SCOMPLEX!!!!" << std::endl;
         std::cout << "SIZE, CARDINALITY OR MAX_ID?" << std::endl;
-        max_d = getMaxDim();
 
-// ???
-	size_t complexSize = _complex.size();
+        max_d = this->getMaxDim();
+
+        std::cout << "max_d IS: " << max_d << endl;
+
+		size_t complexSize = _complex.size();
+
+		std::cout << "SIZE IS: " << complexSize << endl;
         morse.resize(complexSize);
         akq.resize(complexSize);
-        kerKing.resize(complexSize, Cell(complex));
+        kerKing.resize(complexSize, Cell(_complex));
 
-        /*
-        morse.resize(3000000);
-        akq.resize(3000000);
-        kerKing.resize(3000000);
-        */
+        extractDim = 0; // bottom up
     }
 
     SComplex& getComplex() const
     {
-        return complex;
+        return this->complex;
     }
 
     template<typename ImplT>
@@ -96,10 +170,10 @@ public:
     }
 
     template<typename cellT1>
-    int calcMorseValue(const cellT1 &c)
+	int calcMorseValue(const cellT1 &c)
     {
         int val = 0;
-        BOOST_FOREACH(Cell el, complex.iterators().bdCells(c))
+        BOOST_FOREACH(Cell el, this->complex.iterators().bdCells(c))
         {
             val = max(val, morse[el.getId()]);
         }
@@ -108,14 +182,17 @@ public:
     }
 
     template<typename T1, typename T2>
-    void kingGetsMarried(const T1 &king, const T2 &queen)
+	void kingGetsMarried(const T1 &king, const T2 &queen)
     {
-        akq[king.getId()] = KING;
-        akq[queen.getId()] = QUEEN;
+    	int kId = king.getId();
+    	int qId = queen.getId();
+
+        akq[kId] = KING;
+        akq[qId] = QUEEN;
         int v = calcMorseValue(king);
-        morse[king.getId()] = v;
-        morse[queen.getId()] = v;
-        kerKing[queen.getId()] = king;
+        morse[kId] = v;
+        morse[qId] = v;
+        kerKing[kId] = king;
     }
 
     template<typename ImplT1, typename ImplT2>
@@ -136,25 +213,27 @@ public:
         b.template setColor<2>();
     }
 
-    int toAceCoeff(Cell x, Cell y)
+	INLINE_CRITICAL_CODE int toAceCoeff(Cell x, Cell y)
     {
         BOOST_ASSERT(akq[y.getId()] == ACE);
         BOOST_ASSERT(akq[x.getId()] != QUEEN);
 
-        return complex.coincidenceIndex(x, y);
+		// return 0;
+        return this->complex.coincidenceIndex(x, y);
     }
 
-    //
-    int toKingCoeff(Cell x, Cell y, Cell y_star)
+
+	int INLINE_CRITICAL_CODE toKingCoeff(Cell x, Cell y, Cell y_star)
     {
         BOOST_ASSERT(akq[x.getId()] != QUEEN);
         BOOST_ASSERT(akq[y_star.getId()] == QUEEN);
         BOOST_ASSERT(akq[y.getId()] == KING);
 
-        return -1 * complex.coincidenceIndex(x, y_star) / complex.coincidenceIndex(y, y_star);
+		// return 0;
+        return -1 * this->complex.coincidenceIndex(x, y_star) / this->complex.coincidenceIndex(y, y_star);
     }
 
-    void followPath(Cell c)
+	void INLINE_CRITICAL_CODE followPath(Cell c)
     {
         std::stack<std::pair<Cell, int> > S; // no cycles!
 
@@ -162,6 +241,7 @@ public:
 
         while (S.size())
         {
+        	++visitedVertices;
             Cell curr = S.top().first;
             int accumulatedWeight = S.top().second;
             S.pop();
@@ -185,7 +265,7 @@ public:
             int ourMorseValue = morse[curr.getId()];
 
             // case 1: to ace
-            BOOST_FOREACH(Cell to, complex.iterators().bdCells(curr))
+            BOOST_FOREACH(Cell to, this->complex.iterators().bdCells(curr))
             {
                 if (akq[to.getId()] == ACE && morse[to.getId()] < ourMorseValue)
                 {
@@ -194,12 +274,18 @@ public:
             }
 
             // case 2: to king
-            BOOST_FOREACH(Cell bd, complex.iterators().bdCells(curr))
+            BOOST_FOREACH(Cell bd, this->complex.iterators().bdCells(curr))
             {
                 if (akq[bd.getId()] != QUEEN)
                     continue;
 
                 Cell to = kerKing[bd.getId()];
+
+                if (akq[to.getId()] != KING)
+                {
+                	continue;
+                }
+
                 BOOST_ASSERT(akq[to.getId()] == KING);
 
                 if (morse[to.getId()] < ourMorseValue)
@@ -223,6 +309,11 @@ public:
 
         BOOST_FOREACH(Cell ace, aces)
         {
+            isOK(ace, ace);
+        }
+
+        BOOST_FOREACH(Cell ace, aces)
+        {
             followPath(ace);
         }
 
@@ -239,18 +330,23 @@ public:
             }
         }
 
+        int totalNumPaths = 0;
+        int totalCoeffs = 0;
+
         if (verboseAKQ)
         {
             std::cout << "num paths between: \n";
             BOOST_FOREACH(Triple p, numPathsBetween)
             {
                 std::cout << p.first.first << " " << p.first.second << " = " << p.second << std::endl;
+                totalNumPaths += p.second;
             }
 
             std::cout << "coefficients: \n";
             BOOST_FOREACH(Triple p, coeffs)
             {
                 std::cout << p.first.first << " " << p.first.second << " => " << p.second << std::endl;
+                totalCoeffs += p.second;
             }
         }
 
@@ -278,6 +374,11 @@ public:
             if (verboseAKQ)
                 std::cout << from0[p.first.first] << "[d=" <<dims[from0[p.first.first]] << "]" << " : " <<  from0[p.first.second] << "[d="<<dims[from0[p.first.second]] << "]"  << " => " << coef << std::endl;
         }
+        /*
+        std::cout << NumPaths << std::endl;
+        std::cout << totalCoeffs << std::endl;
+        std::cout << visitedVertices << std::endl;
+        */
 
         outputComplex = new OutputComplexType(3, dims, kap, 1);
     }
@@ -297,29 +398,37 @@ public:
 
     typename Traits::Extract::result_type extract()
     {
-        // for (int d = 0; d <= complex.getMaxDim(); d++)
-        for (int d = 0; d <= max_d; d++)
-        {
-            typename SComplex::ColoredIterators::Iterators::DimCells dimCells = complex.iterators(1).dimCells(d);
-            typename SComplex::ColoredIterators::Iterators::DimCells::iterator end = dimCells.end(),
-                    it = dimCells.begin();
+		for (; extractDim <= max_d; )
+		{
+			extractIt = this->complex.iterators(1).dimCells(extractDim).begin();
+			extractEnd = this->complex.iterators(1).dimCells(extractDim).end();
 
-            if (it != end)
-            {
-                int v = 0;
+			while(extractIt != extractEnd && extractIt->getColor() != 1)
+			{
+				++extractIt;
+			}
 
-                if (d != 0)
-                    v = calcMorseValue(*it);
+			if (extractIt != extractEnd)
+			{
+				int v = 0;
 
-                morse[it->getId()] = v;
-                aces.push_back(*it);
-                akq[it->getId()] = ACE;
+				if (extractDim != 0)
+					v = calcMorseValue(*extractIt);
 
-                // cout << "AS!" << it->getId() << ' ' << it->getDim() << "with M = " << v << endl;
+				morse[extractIt->getId()] = v;
+				aces.push_back(*extractIt);
+				akq[extractIt->getId()] = ACE;
 
-                return typename Traits::Extract::result_type::value_type(*it);
-            }
-        }
+				// we increment the iterator here!
+				return typename Traits::Extract::result_type::value_type(*extractIt++);
+			}
+
+			if (++extractDim > max_d)
+				break;
+
+			extractIt = this->complex.iterators(1).dimCells(extractDim).begin();
+			extractEnd = this->complex.iterators(1).dimCells(extractDim).end();
+		}
 
         reportPaths();
         return typename Traits::Extract::result_type();
@@ -330,79 +439,16 @@ public:
         return typename Traits::ForceCoreduction::result_type();
     }
 
-    template<typename ArgT>
-    typename Traits::template GetCoreductionPair<ArgT>::result_type
-    getCoreductionPair(const ArgT& cell)
-    {
-        int times = 0;
-        BOOST_FOREACH(typename SComplex::ColoredIterators::Iterators::BdCells::iterator::value_type v,
-                      complex.iterators(1).bdCells(cell))
-        {
-            if (times == 0)
-            {
-                dummyCell3 = v;
-            }
-            ++times;
-            if (times == 2)
-            {
-                break;
-            }
-        }
-
-        if (times == 1)
-        {
-            return typename Traits::template GetCoreductionPair<ArgT>::result_type(dummyCell3);
-        }
-        return typename Traits::template GetCoreductionPair<ArgT>::result_type();
-    }
-
-    template<typename ArgT>
-    typename Traits::template GetReductionPair<ArgT>::result_type
-    getReductionPair(const ArgT &cell)
-    {
-        int times = 0;
-        BOOST_FOREACH(typename SComplex::ColoredIterators::Iterators::CbdCells::iterator::value_type v,
-                      complex.iterators(1).cbdCells(cell))
-        {
-            if (times == 0)
-            {
-                dummyCell2 = v;
-            }
-            ++times;
-            if (times == 2)
-            {
-                break;
-            }
-        }
-
-        if (times == 1)
-        {
-            return typename Traits::template GetReductionPair<ArgT>::result_type(dummyCell2);
-        }
-        return typename Traits::template GetReductionPair<ArgT>::result_type();
-    }
-
-
-    size_t getMaxDim()
-    {
-        typename SComplex::Dim maxDim = 0;
-        BOOST_FOREACH(typename SComplex::ColoredIterators::Iterators::AllCells::iterator::value_type v,
-		      complex.iterators(1).allCells())
-        {
-            maxDim = std::max(maxDim, v.getDim());
-        }
-
-        return maxDim;
-    }
-
-    typedef ::SComplex<SComplexDefaultTraits> OutputComplexType;
-
     OutputComplexType* getOutputComplex()
     {
         return outputComplex;
     }
 
 protected:
+
+	int extractDim;
+	typename SComplex::ColoredIterators::Iterators::DimCells::iterator extractIt;
+	typename SComplex::ColoredIterators::Iterators::DimCells::iterator extractEnd;
 
     std::vector<int> morse;
     std::vector<AKQType> akq;
@@ -414,9 +460,6 @@ protected:
     std::map<std::pair<int,int>, int> numPathsBetween; // only between aces - small
 
     OutputComplexType *outputComplex;
-
-    SComplex& complex;
-    Cell dummyCell2, dummyCell3;
 };
 
 template<typename SComplexT>

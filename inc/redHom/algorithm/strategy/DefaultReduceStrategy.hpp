@@ -81,7 +81,9 @@ public:
   typedef typename SComplex::Cell Cell;
 
 
-  DefaultReduceStrategyBase(SComplex& _complex): complex(_complex), dummyCell2(_complex),  dummyCell3(_complex) {}
+  DefaultReduceStrategyBase(SComplex& _complex): complex(_complex), dummyCell2(_complex),  dummyCell3(_complex)
+  {
+  }
 
   SComplex& getComplex() const {
 	 return complex;
@@ -170,11 +172,11 @@ public:
 
   size_t getMaxDim() {
 	 typename SComplex::Dim maxDim = 0;
-	 for (typename SComplex::ColoredIterators::Iterators::AllCells::iterator it = complex.template iterators<1>().allCells().begin(),
-			  end = complex.template iterators<1>().allCells().end();
-			it != end; ++it) {
 
-		maxDim = std::max(maxDim, (*it).getDim());
+	 for (typename SComplex::ColoredIterators::Iterators::AllCells::iterator it = this->complex.iterators(1).allCells().begin(),
+			  end = this->complex.iterators(1).allCells().end();
+			it != end; ++it) {
+		maxDim = std::max(maxDim, it->getDim());
 	 }
 
 	 return maxDim;
