@@ -31,13 +31,13 @@ public:
   typedef ReducibleFreeChainComplexT ReducibleFreeChainComplex;
 
   class SComplexChainCell {
-    SComplex& complex;
-    const Cell cell;
-    const typename SComplex::Dim embededDim;
+    SComplex* complex;
+    Cell cell;
+    typename SComplex::Dim embededDim;
 
   public:
 	 SComplexChainCell(SComplex& _complex, const Cell& _cell, typename SComplex::Dim _embededDim): 
-	   complex(_complex), cell(_cell), embededDim(_embededDim) {
+	   complex(&_complex), cell(_cell), embededDim(_embededDim) {
 
 	 }
 
@@ -45,17 +45,27 @@ public:
 	   return embededDim;
 	 }
 
+
+	 int embeddingDimension() const {
+	   return embededDim;
+	 }
+
 	 int ownDim() const {
 	   return cell.getDim();
 	 }
 
+	 int dimension() const {
+	   return cell.getDim();
+	 }
+
+
 	 void boundary(std::map<SComplexChainCell,int>& A_boundary) const {
-	   typename SComplex::ColoredIterators::Iterators::BdCells bdCells = complex.iterators(1).bdCells(this->cell);
+	   typename SComplex::ColoredIterators::Iterators::BdCells bdCells = complex->iterators(1).bdCells(this->cell);
 
 	   for (typename SComplex::ColoredIterators::Iterators::BdCells::iterator it = bdCells.begin(),
 		  end = bdCells.end(); it != end; ++it) {
-	     A_boundary.insert(std::make_pair(SComplexChainCell(complex, *it, embededDim),
-					      complex.coincidenceIndex(this->cell, *it) ));
+	     A_boundary.insert(std::make_pair(SComplexChainCell(*complex, *it, embededDim),
+					      complex->coincidenceIndex(this->cell, *it) ));
 	   }
 	 }
 
@@ -77,14 +87,15 @@ private:
 template<typename SComplexT, typename ReducibleFreeChainComplexT>
 inline CRef<ReducibleFreeChainComplexT> ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SComplexT, ReducibleFreeChainComplexT>::operator()(){
 
-  std::set<SComplexChainCell> cells;
+  std::vector<SComplexChainCell> cells;
 
   typename SComplex::Dim maxDim = s.getDim();
 
   for (typename SComplex::ColoredIterators::Iterators::AllCells::iterator it = s.iterators(1).allCells().begin(),
 			end = s.iterators(1).allCells().end();
 		 it != end; ++it) {
-	 cells.insert(SComplexChainCell(s, *it, maxDim));
+    //cells.insert(SComplexChainCell(s, *it, maxDim));
+    cells.push_back(SComplexChainCell(s, *it, maxDim));
   }
 
   CRef<ReducibleFreeChainComplex> rfccCR( new ReducibleFreeChainComplex(cells));

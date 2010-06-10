@@ -169,7 +169,8 @@ struct ShaveExecutor: AlgorithmExecutor<ShaveExecutor> {
 
   template<typename Complex>
   void run(Complex& complex) {
-    (ShaveAlgorithmFactory::createDefault(complex))();
+    size_t reduced = (ShaveAlgorithmFactory::createDefault(complex))();
+    std::cout << "Algorithm reduced: " << reduced << std::endl;
   }
 
 };
@@ -180,7 +181,8 @@ struct CoreductionExecutor: AlgorithmExecutor<CoreductionExecutor> {
 
   template<typename Complex>
   void run(Complex& complex) {
-    (*CoreductionAlgorithmFactory::createDefault(complex))();
+    size_t reduced = (*CoreductionAlgorithmFactory::createDefault(complex))();
+    std::cout << "Algorithm reduced: " << reduced << std::endl;
   }
 
 };
@@ -193,11 +195,16 @@ struct RFCExecutor: AlgorithmExecutor<RFCExecutor> {
   void run(Complex& complex) {
     typedef FreeModule<int,capd::vectalg::Matrix<int,0,0> > FreeModuleType;
     typedef ReducibleFreeChainComplex<FreeModuleType,int> ReducibleFreeChainComplexType;
-
+    
+    Stopwatch stopwatchConstruct;
     CRef<ReducibleFreeChainComplexType> RFCComplexCR = 
       (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<Complex, ReducibleFreeChainComplexType>(complex))();
+    std::cout << "Constructed Free Chain Compklex in: " << stopwatchConstruct << std::endl;
 
+    Stopwatch stopwatchSignature;
     CRef<HomologySignature<int> > homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
+    std::cout << "Signature calculated in: " << stopwatchSignature << std::endl;
+
     std::cout << homSignCR() << std::endl;
   }
 

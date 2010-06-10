@@ -19,7 +19,7 @@ public:
 	 delete strategy;
   }
 
-  void operator()();
+  size_t operator()();
 
 private:
   Strategy* strategy;
@@ -35,7 +35,9 @@ public:
 };
 
 template<typename StrategyT>
-inline void ShaveAlgorithm<StrategyT>::operator()(){
+inline size_t ShaveAlgorithm<StrategyT>::operator()(){
+
+  size_t reduced = 0;
 
   for(typename SComplex::Dim d = strategy->getComplex().getDim(); d >= 0; --d){
 	 typedef typename SComplex::ColoredIterators::Iterators::DimCells::iterator DimIt;
@@ -53,9 +55,12 @@ inline void ShaveAlgorithm<StrategyT>::operator()(){
 		if (reductionPair) {
 		  strategy->reduce(*reductionPair);
 		  strategy->reduce(v);
+		  reduced += 2;
 		}
 	 }
   }
+
+  return reduced;
 }
 
 #endif

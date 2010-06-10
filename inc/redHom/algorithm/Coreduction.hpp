@@ -29,7 +29,7 @@ public:
 		delete strategy;
   }
 
-  int operator()();
+  size_t operator()();
 
   Strategy* getStrategy() { return strategy; }
 
@@ -135,17 +135,14 @@ inline bool CoreductionAlgorithm<StrategyT>::coreduceNextPair() {
 
 
 template<typename StrategyT>
-inline int CoreductionAlgorithm<StrategyT>::operator()(){
-  //cellIdsToProcess.resize(strategy->getComplex().cardinality()); //
-
-
+inline size_t CoreductionAlgorithm<StrategyT>::operator()(){
   cellIdsToProcess.resize(strategy->getComplex().size());
 
-  int cnt=0;
+  size_t reduced=0;
 
   for(;;){
 	 if (coreduceNextPair()) {
-		++cnt;++cnt;
+	   reduced += 2;
 	 } else {
 		// If the search failed or when we even did not try to search
 		// and we know that a cell of lowest dimension is always
@@ -159,14 +156,14 @@ inline int CoreductionAlgorithm<StrategyT>::operator()(){
 		  addCellsToProcess(*sourceFace);
 
 		  strategy->reduce(*sourceFace);
-		  ++cnt;
+		  ++reduced;
 		}else{
 		  break; // no base face left: quit any further processing
 		}
 	 }
   }
 
-  return cnt; // the number of cells removed
+  return reduced; // the number of cells removed
 }
 
 #endif
