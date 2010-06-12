@@ -51,20 +51,21 @@ boost::tuple<std::string, int> performTest(Complex &complex)
   CRef<ReducibleFreeChainComplexType> RFCComplexCR_orginal=
   	 (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<Complex, ReducibleFreeChainComplexType>(complex))();
   CRef<HomologySignature<int> > homSignCR_orginal=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR_orginal);
-  CoreductionAlgorithm<AKQReduceStrategy<Complex> > algorithm(new AKQReduceStrategy<Complex>(complex));
+    CoreductionAlgorithm<AKQReduceStrategy<Complex> > algorithm(new AKQReduceStrategy<Complex>(complex));
 
-  algorithm();
+    algorithm();
 
-  BOOST_FOREACH(typename Complex::Iterators::AllCells::iterator::value_type v,
-					 complex.iterators().allCells()) {
-	 BOOST_CHECK_EQUAL(v.getColor(), (typename Complex::Color)2);
-  }
+    BOOST_FOREACH(typename Complex::Iterators::AllCells::iterator::value_type v,
+                  complex.iterators().allCells())
+    {
+        BOOST_CHECK_EQUAL(v.getColor(), (typename Complex::Color)2);
+    }
 
-  BOOST_CHECK(complex.iterators(1).allCells().begin() == complex.iterators(1).allCells().end());
+    BOOST_CHECK(complex.iterators(1).allCells().begin() == complex.iterators(1).allCells().end());
 
  SComplex<SComplexDefaultTraits>* AKQ = algorithm.getStrategy()->getOutputComplex();
 
-  CRef<ReducibleFreeChainComplexType> RFCComplexCR =
+    CRef<ReducibleFreeChainComplexType> RFCComplexCR =
   	 (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<SComplex<SComplexDefaultTraits>, ReducibleFreeChainComplexType>(*AKQ))();
   CRef<HomologySignature<int> > homSignCR=HomAlgFunctors<FreeModuleType>::homSignViaAR_Random(RFCComplexCR);
 
@@ -76,55 +77,57 @@ boost::tuple<std::string, int> performTest(Complex &complex)
   return boost::make_tuple(sig, AKQ->size());
 }
 
-BOOST_AUTO_TEST_CASE(line) {
-  typedef SComplex<SComplexDefaultTraits> Complex;
+BOOST_AUTO_TEST_CASE(line)
+{
+    typedef SComplex<SComplexDefaultTraits> Complex;
 
-  Complex::Dims dims = list_of(0)(1)(0)(1)(0);
-  Complex::KappaMap kappaMap = tuple_list_of(1, 0, 1)(1, 2, 1)(3, 2, 1)(3, 4, 1); // .-.-.
+    Complex::Dims dims = list_of(0)(1)(0)(1)(0);
+    Complex::KappaMap kappaMap = tuple_list_of(1, 0, 1)(1, 2, 1)(3, 2, 1)(3, 4, 1); // .-.-.
 
-  Complex complex(3, dims, kappaMap, 1);
+    Complex complex(3, dims, kappaMap, 1);
 
     BOOST_CHECK_EQUAL(performTest(complex), boost::make_tuple(std::string("AKQ:   H_0 = Z# | org:   H_0 = Z#"), 1));
 }
 
+BOOST_AUTO_TEST_CASE(emptyTriangle)
+{
+    typedef SComplex<SComplexDefaultTraits> Complex;
 
+    Complex::Dims dims = list_of(0)(1)(0)(1)(0)(1);
+    Complex::KappaMap kappaMap = tuple_list_of(1, 0, 1)(1, 2, -1)(3, 2, 1)(3, 4, -1)(5, 4, 1)(5, 0, -1);
 
-
-BOOST_AUTO_TEST_CASE(emptyTriangle) {
-  typedef SComplex<SComplexDefaultTraits> Complex;
-
-  Complex::Dims dims = list_of(0)(1)(0)(1)(0)(1);
-  Complex::KappaMap kappaMap = tuple_list_of(1, 0, 1)(1, 2, -1)(3, 2, 1)(3, 4, -1)(5, 4, 1)(5, 0, -1);
-
-  Complex complex(3, dims, kappaMap, 1);
+    Complex complex(3, dims, kappaMap, 1);
     BOOST_CHECK_EQUAL(performTest(complex), boost::make_tuple(std::string("AKQ:   H_0 = Z#  H_1 = Z# | org:   H_0 = Z#  H_1 = Z#"), 2));
 }
 
 
-BOOST_AUTO_TEST_CASE(fullTriangle) {
-  typedef SComplex<SComplexDefaultTraits> Complex;
+BOOST_AUTO_TEST_CASE(fullTriangle)
+{
+    typedef SComplex<SComplexDefaultTraits> Complex;
 
-  Complex::Dims dims = list_of(0)(1)(0)(1)(0)(1)(2);
-  Complex::KappaMap kappaMap = tuple_list_of(1, 0, -1)(1, 2, 1)(3, 2, -1)(3, 4, 1)(5, 4, -1)(5, 0, 1)
-	 (6, 1, -1)(6, 3, 1)(6, 5, -1);
+    Complex::Dims dims = list_of(0)(1)(0)(1)(0)(1)(2);
+    Complex::KappaMap kappaMap = tuple_list_of(1, 0, -1)(1, 2, 1)(3, 2, -1)(3, 4, 1)(5, 4, -1)(5, 0, 1)
+                                 (6, 1, -1)(6, 3, 1)(6, 5, -1);
 
-  Complex complex(3, dims, kappaMap, 1);
+    Complex complex(3, dims, kappaMap, 1);
 
   BOOST_CHECK_EQUAL(performTest(complex), boost::make_tuple(std::string("AKQ:   H_0 = Z# | org:   H_0 = Z#"), 1));
 }
 
 
-BOOST_AUTO_TEST_CASE(torus) {
-  typedef SComplex<SComplexDefaultTraits> Complex;
+BOOST_AUTO_TEST_CASE(torus)
+{
+    typedef SComplex<SComplexDefaultTraits> Complex;
 
-  SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(3);
-  std::vector<std::set<int> > simplices = makeSpaceFromWelds(makeTorusWelds());
+    SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(3);
+    std::vector<std::set<int> > simplices = makeSpaceFromWelds(makeTorusWelds());
 
-  for (int i = 0; i < 3; i++) {
-  	 simplices = subdivide3(simplices);
-  }
+    for (int i = 0; i < 3; i++)
+    {
+        simplices = subdivide3(simplices);
+    }
 
-  boost::shared_ptr<Complex> complex = builder(simplices, 3, 1);
+    boost::shared_ptr<Complex> complex = builder(simplices, 3, 1);
 
   BOOST_CHECK_EQUAL(performTest(*complex), boost::make_tuple(std::string("AKQ:   H_0 = Z#  H_1 = Z^2#  H_2 = Z# | org:   H_0 = Z#  H_1 = Z^2#  H_2 = Z#"), 4));
 }

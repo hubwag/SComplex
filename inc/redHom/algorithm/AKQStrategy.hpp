@@ -16,25 +16,6 @@ class AKQReduceStrategyTraits
 {
 public:
 
-    // template<typename ImplT>
-    // struct Proxy: pu	blic CellProxy<ImplT> {
-    // 	 template<typename ImplT2>
-    // 	 Proxy(const ImplT2& impl): CellProxy<ImplT>(impl) {}
-
-    // 	 Proxy(const SComplexT& c): CellProxy<ImplT>(ImplT(c)) {}
-    // };
-
-    // template<typename ImplT>
-    // struct Proxy<CellProxy<ImplT> >: public CellProxy<ImplT> {
-    // 	 template<typename ImplT2>
-    // 	 Proxy(const ImplT2& impl): CellProxy<ImplT>(impl) {}
-    // };
-
-    // template<typename ImplT>
-    // static Proxy<ImplT*> makeProxy(const CellProxy<ImplT>& impl) {
-    // 	 return Proxy<ImplT*>(impl.getImpl());
-    // }
-
     template<typename ArgT>
 struct GetReductionPair : public std::unary_function<const ArgT&,
                 boost::optional<typename SComplexT::Cell> > {};
@@ -69,7 +50,6 @@ public:
     {
         max_d = getMaxDim();
 
-// ???
 	size_t complexSize = _complex.size();
         morse.resize(complexSize);
         akq.resize(complexSize);
@@ -317,6 +297,7 @@ public:
         {
             return typename Traits::template GetCoreductionPair<ArgT>::result_type(dummyCell3);
         }
+
         return typename Traits::template GetCoreductionPair<ArgT>::result_type();
     }
 

@@ -33,7 +33,6 @@ using namespace std;
 #include <capd/homologicalAlgebra/cubSetFunctors.hpp>
 #include <capd/homologicalAlgebra/ReducibleFreeChainComplex.hpp>
 
-
 ofstreamcout fcout; // ?
 
 typedef int ScalarType;
@@ -171,6 +170,7 @@ int main(int n, char **v)
 		cerr << "using the supplied number of subdivisions (simple, not barycentric for now)!\n";
 		subdivs = atoi(v[3]);
 	}
+
 
 	Stopwatch all;
 
