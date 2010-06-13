@@ -6,7 +6,7 @@
 #include <redHom/complex/scomplex/SComplexBuilderFromSimplices.hpp>
 #include <redHom/algorithm/Algorithms.hpp>
 
-#include <redHom/SimplexSubdivision.hpp>
+#include <redHom/complex/simplicial/SimplexSubdivision.hpp>
 
 
 #include <boost/test/unit_test.hpp>

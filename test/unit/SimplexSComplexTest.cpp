@@ -27,7 +27,7 @@ typedef ReducibleFreeChainComplex<FreeModuleType,int> ReducibleFreeChainComplexT
 
 #include "redHom/complex/simplicial/Simplex.hpp"
 #include "redHom/complex/simplicial/SimplexSComplex.hpp"
-#include "redHom/SimplexSubdivision.hpp" // make_int_set
+#include "redHom/complex/simplicial/SimplexSubdivision.hpp" // make_int_set
 
 typedef SimplexSComplex::Simplex Simplex;
 typedef SimplexSComplex::CellProxy<Simplex*> SimplexCell;

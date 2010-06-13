@@ -167,6 +167,14 @@ private:
 
 public:
 
+  boost::shared_ptr<Complex> operator()(ifstream& file, int colors, int defaultColor)
+  {
+    BmpSComplexBuilder builder;
+    readCubicalSet(file, builder);
+    
+    return builder.create(colors, defaultColor);
+  }
+
     boost::shared_ptr<Complex> operator()(std::string fileName, int colors, int defaultColor)
     {
         ifstream file;
@@ -177,10 +185,7 @@ public:
             return boost::shared_ptr<Complex>();
         }
 
-        BmpSComplexBuilder builder;
-        readCubicalSet(file, builder);
-
-        return builder.create(colors, defaultColor);
+	return (*this)(file, colors, defaultColor);
     }
 
 

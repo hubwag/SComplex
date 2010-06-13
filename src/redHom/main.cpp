@@ -17,8 +17,12 @@
 #include <redHom/algorithm/Algorithms.hpp>
 #include <redHom/algorithm/strategy/DefaultReduceStrategy_CubSComplex.hpp>
 
+#include <redHom/complex/simplicial/Simplex.hpp>
+#include <redHom/complex/simplicial/SimplexIO.hpp>
+#include <redHom/complex/simplicial/SimplexSComplex.hpp>
 
-enum ComplexMajorId {SComplexCubesMajorId = 0, CubicalMajorId = 1};
+
+enum ComplexMajorId {SComplexCubesMajorId = 0, CubSComplexMajorId = 1, SimplexSComplexMajorId};
 
 typedef boost::tuple<ComplexMajorId, int, boost::any> ComplexTuple;
 
@@ -31,17 +35,18 @@ struct ComplexDescriptor {
 
 
 
-typedef boost::mpl::vector<ComplexDescriptor<CubSComplex<2>, CubicalMajorId, 2>,
-			   ComplexDescriptor<CubSComplex<3>, CubicalMajorId, 3>,
-			   ComplexDescriptor<CubSComplex<4>, CubicalMajorId, 4>
+typedef boost::mpl::vector<ComplexDescriptor<CubSComplex<2>, CubSComplexMajorId, 2>,
+			   ComplexDescriptor<CubSComplex<3>, CubSComplexMajorId, 3>,
+			   ComplexDescriptor<CubSComplex<4>, CubSComplexMajorId, 4>
 			   > CubComplexDescriptors;
 typedef boost::mpl::joint_view<CubComplexDescriptors,
 			       boost::mpl::vector<
-				 ComplexDescriptor<SComplex<SComplexDefaultTraits>, SComplexCubesMajorId, 0>
+				 ComplexDescriptor<SComplex<SComplexDefaultTraits>, SComplexCubesMajorId, 0>,
+				 ComplexDescriptor<SimplexSComplex, SimplexSComplexMajorId, 0>				 
 				 > > ComplexDescriptors;
 
 
-class GenericCubSComplexReader {
+class MultiDimCubSComplexReader {
 
   struct ComplexConstructor {
     ComplexTuple& complex;
@@ -57,7 +62,7 @@ class GenericCubSComplexReader {
 
     template<typename Complex, ComplexMajorId MajorId, int MinorId>
     void operator()(ComplexDescriptor<Complex, MajorId, MinorId>) {
-      if (MajorId == CubicalMajorId && dim == MinorId) {
+      if (MajorId == CubSComplexMajorId && dim == MinorId) {
 	BOOST_ASSERT(boost::get<2>(complex).empty());      
 	complex = ComplexTuple(MajorId, MinorId, 
 			       boost::any(boost::shared_ptr<Complex>(new Complex(repSet))));
@@ -67,14 +72,8 @@ class GenericCubSComplexReader {
   };
 
 public:
-  static ComplexTuple read(const std::string& fileName) {
-    ComplexTuple complex;
-    ifstream file;
-    file.open(fileName.c_str());
-    if (!file) {
-      throw std::logic_error("File not found: " + fileName);
-    }
-
+  static ComplexTuple read(ifstream& file) {
+    ComplexTuple complex;    
 
     CRef<RepSet<ElementaryCube> > repSet(new RepSet<ElementaryCube>());
     RepCubSetBuilder<RepSet<ElementaryCube> > repCubSetBuilder(repSet);
@@ -92,19 +91,26 @@ public:
 class SComplexReaderFromCubes {
 
 public:
-  static ComplexTuple read(const std::string& fileName) {
-    ifstream file;
-    file.open(fileName.c_str());
-    if (!file) {
-      throw std::logic_error("File not found: " + fileName);
-    }
-
+  static ComplexTuple read(ifstream& file) {
     SComplexReader<SComplexDefaultTraits> reader;
     
-    return boost::make_tuple(SComplexCubesMajorId, 0, reader(fileName, 3, 1));
+    return boost::make_tuple(SComplexCubesMajorId, 0, reader(file, 3, 1));
   }
 
 };
+
+
+class SimplexSComplexReader {
+
+public:
+  static ComplexTuple read(ifstream& file) {
+    boost::shared_ptr<SimplexSComplex> complex(new SimplexSComplex());
+    parseDat(file, *complex);
+    return boost::make_tuple(SimplexSComplexMajorId, 0, complex);
+  }
+
+};
+
 
 template<typename ComplexReader, int MAJOR_ID>
 struct ComplexReaderDescriptor {
@@ -112,8 +118,9 @@ struct ComplexReaderDescriptor {
   static const int majorId = MAJOR_ID;
 };
 
-typedef boost::mpl::vector<ComplexReaderDescriptor<GenericCubSComplexReader, CubicalMajorId>,
-			   ComplexReaderDescriptor<SComplexReaderFromCubes, SComplexCubesMajorId>
+typedef boost::mpl::vector<ComplexReaderDescriptor<MultiDimCubSComplexReader, CubSComplexMajorId>,
+			   ComplexReaderDescriptor<SComplexReaderFromCubes, SComplexCubesMajorId>,
+			   ComplexReaderDescriptor<SimplexSComplexReader, SimplexSComplexMajorId>
 			   > ComplexReaderDescriptors;
 
 
@@ -131,7 +138,16 @@ struct ComplexReader {
   void operator()(ComplexReaderDescriptor<Reader, MajorId>) {
     if (MajorId == majorId) {
       BOOST_ASSERT(boost::get<2>(complex).empty());      
-      complex = Reader::read(fileName);
+      ifstream file;
+
+      file.open(fileName.c_str());
+      if (!file) {
+	throw std::logic_error("File not found: " + fileName);
+      }
+
+      complex = Reader::read(file);
+
+      file.close();
     }
   }
 
@@ -227,10 +243,13 @@ namespace {
   ComplexMajorId determineComplexMajorId(const RedHomOptions& options) throw(std::logic_error) {    
     if (options.getFileType() == RedHomOptions::cubical && ! options.isGeneralSComplex()) {
       std::cout << "Using CubSComplex" << std::endl;
-      return CubicalMajorId;
+      return CubSComplexMajorId;
     } else if (options.getFileType() == RedHomOptions::cubical && options.isGeneralSComplex()) {
       std::cout << "Using SComplex for cubes" << std::endl;
       return SComplexCubesMajorId;
+    } else if (options.getFileType() == RedHomOptions::simplicial && !options.isGeneralSComplex()) {
+      std::cout << "Using SimplexSComplex" << std::endl;
+      return SimplexSComplexMajorId;
     }
 
     throw logic_error("Unsupported file reader type");

@@ -16,7 +16,7 @@ ofstreamcout fcout;
 
 
 #include <redHom/complex/simplicial/SimplexIO.hpp>
-#include <redHom/SimplexSubdivision.hpp>
+#include <redHom/complex/simplicial/SimplexSubdivision.hpp>
 
 #include <boost/test/included/unit_test.hpp>
 #include <boost/bind.hpp>
