@@ -6,6 +6,7 @@
 #include <redHom/complex/scomplex/SComplexBuilderFromSimplices.hpp>
 
 #include <redHom/complex/simplicial/SimplexSubdivision.hpp>
+#include <redHom/complex/simplicial/SimplexIO.hpp>
 
 
 #include <boost/test/unit_test.hpp>
@@ -30,28 +31,28 @@ typedef ReducibleFreeChainComplex<FreeModuleType,int> ReducibleFreeChainComplexT
 
 
 
-vector<set<int> > parseDat(istream &stream)
-{
+// vector<set<int> > parseDat(istream &stream)
+// {
   
-  vector<set<int> > simplices;
+//   vector<set<int> > simplices;
 
-  for (string s; std::getline(stream, s); )
-    {
-      if (s.size() == 0 || s[0] == '#')
-	continue;
+//   for (string s; std::getline(stream, s); )
+//     {
+//       if (s.size() == 0 || s[0] == '#')
+// 	continue;
 
-      stringstream ss(s);
+//       stringstream ss(s);
 
-      set<int> simp;
+//       set<int> simp;
 
-      for (int v; ss >> v;)
-	simp.insert(v);
+//       for (int v; ss >> v;)
+// 	simp.insert(v);
 
-      simplices.push_back(simp);
-    }
+//       simplices.push_back(simp);
+//     }
 
-  return simplices;
-}
+//   return simplices;
+// }
 
 BOOST_AUTO_TEST_SUITE(COAKQSuite)
 

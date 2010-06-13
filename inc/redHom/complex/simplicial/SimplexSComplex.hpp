@@ -121,7 +121,7 @@ class CellProxy: public BasicCellProxy<ImplT>
 
         int getDim() const
         {
-            return static_cast<int>(nrs.size());
+            return static_cast<int>(nrs.size()) - 1;
         }
 
         bool operator<(const Simplex& b) const
@@ -402,5 +402,57 @@ public:
     }
 };
 
+
+template<typename iterable_t>
+SimplexSComplex::Simplex* SimplexSComplex::getSimplex(const iterable_t &s)
+{
+    // assert(s.size() > 0);
+
+    for (typename iterable_t::const_iterator it = s.begin(), end = s.end(); it != end; ++it)
+    {
+        int vert = *it;
+
+        if (vert >= base.size() || base[vert] == 0)
+            return 0;
+    }
+
+    typename iterable_t::const_iterator it = s.begin();
+    int vert = *it++;
+
+    if (vert >= base.size())
+        resizeBase(vert);
+
+    Simplex *simplex = base[vert];
+
+    const size_t n = s.size();
+
+    for (size_t i = 1u; i < n; i++)
+    {
+        // assert(simplex->addedCells.size() == simplex->coborder.size());
+        const int new_vert = *it++;
+
+        Simplex *coface = 0;
+
+        const size_t addedCellsSize = simplex->addedCells.size();
+
+        for (size_t j = 0u; j < addedCellsSize; j++)
+        {
+            if (simplex->addedCells[j] == new_vert)
+            {
+                coface = simplex->coborder[j];
+                break;
+            }
+        }
+
+        if (coface == 0)
+        {
+            return 0;
+        }
+
+        simplex = coface;
+    }
+
+    return simplex;
+}
 
 #endif

@@ -22,7 +22,7 @@
 #include <redHom/complex/simplicial/SimplexSComplex.hpp>
 
 
-enum ComplexMajorId {SComplexCubesMajorId = 0, CubSComplexMajorId = 1, SimplexSComplexMajorId};
+enum ComplexMajorId {SComplexSimplicesMajorId, SComplexCubesMajorId, CubSComplexMajorId, SimplexSComplexMajorId};
 
 typedef boost::tuple<ComplexMajorId, int, boost::any> ComplexTuple;
 
@@ -37,11 +37,17 @@ struct ComplexDescriptor {
 
 typedef boost::mpl::vector<ComplexDescriptor<CubSComplex<2>, CubSComplexMajorId, 2>,
 			   ComplexDescriptor<CubSComplex<3>, CubSComplexMajorId, 3>,
-			   ComplexDescriptor<CubSComplex<4>, CubSComplexMajorId, 4>
+			   ComplexDescriptor<CubSComplex<4>, CubSComplexMajorId, 4>,
+			   ComplexDescriptor<CubSComplex<5>, CubSComplexMajorId, 5>,
+			   ComplexDescriptor<CubSComplex<6>, CubSComplexMajorId, 6>,
+			   ComplexDescriptor<CubSComplex<7>, CubSComplexMajorId, 7>,
+			   ComplexDescriptor<CubSComplex<8>, CubSComplexMajorId, 8>,
+			   ComplexDescriptor<CubSComplex<9>, CubSComplexMajorId, 9>
 			   > CubComplexDescriptors;
 typedef boost::mpl::joint_view<CubComplexDescriptors,
 			       boost::mpl::vector<
 				 ComplexDescriptor<SComplex<SComplexDefaultTraits>, SComplexCubesMajorId, 0>,
+				 ComplexDescriptor<SComplex<SComplexDefaultTraits>, SComplexSimplicesMajorId, 0>,
 				 ComplexDescriptor<SimplexSComplex, SimplexSComplexMajorId, 0>				 
 				 > > ComplexDescriptors;
 
@@ -99,6 +105,18 @@ public:
 
 };
 
+class SComplexReaderFromSimplices {
+
+public:
+  static ComplexTuple read(ifstream& file) {
+    std::vector<std::set<int> > simplices = parseDat(file);
+    SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(3);
+    boost::shared_ptr<SComplex<SComplexDefaultTraits> > complex = builder(simplices, 3, 1);
+    
+    return boost::make_tuple(SComplexSimplicesMajorId, 0, complex);
+  }
+
+};
 
 class SimplexSComplexReader {
 
@@ -120,6 +138,7 @@ struct ComplexReaderDescriptor {
 
 typedef boost::mpl::vector<ComplexReaderDescriptor<MultiDimCubSComplexReader, CubSComplexMajorId>,
 			   ComplexReaderDescriptor<SComplexReaderFromCubes, SComplexCubesMajorId>,
+			   ComplexReaderDescriptor<SComplexReaderFromSimplices, SComplexSimplicesMajorId>,
 			   ComplexReaderDescriptor<SimplexSComplexReader, SimplexSComplexMajorId>
 			   > ComplexReaderDescriptors;
 
@@ -250,7 +269,11 @@ namespace {
     } else if (options.getFileType() == RedHomOptions::simplicial && !options.isGeneralSComplex()) {
       std::cout << "Using SimplexSComplex" << std::endl;
       return SimplexSComplexMajorId;
+    } else if (options.getFileType() == RedHomOptions::simplicial && options.isGeneralSComplex()) {
+      std::cout << "Using SComplex for simplices" << std::endl;
+      return SComplexSimplicesMajorId;
     }
+
 
     throw logic_error("Unsupported file reader type");
   }
