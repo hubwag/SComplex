@@ -23,7 +23,11 @@
 #include <redHom/complex/simplicial/SimplexSComplex.hpp>
 
 
-enum ComplexMajorId {SComplexSimplicesMajorId, SComplexCubesMajorId, CubSComplexMajorId, SimplexSComplexMajorId};
+enum ComplexMajorId {SComplexMajorId = 10, 
+		     SComplexSimplicesMajorId, 
+		     SComplexCubesMajorId, 
+		     CubSComplexMajorId, 
+		     SimplexSComplexMajorId};
 
 typedef boost::tuple<ComplexMajorId, int, boost::any> ComplexTuple;
 
@@ -47,6 +51,7 @@ typedef boost::mpl::vector<ComplexDescriptor<CubSComplex<2>, CubSComplexMajorId,
 			   > CubComplexDescriptors;
 typedef boost::mpl::joint_view<CubComplexDescriptors,
 			       boost::mpl::vector<
+				 ComplexDescriptor<SComplex<SComplexDefaultTraits>, SComplexMajorId, 0>,
 				 ComplexDescriptor<SComplex<SComplexDefaultTraits>, SComplexCubesMajorId, 0>,
 				 ComplexDescriptor<SComplex<SComplexDefaultTraits>, SComplexSimplicesMajorId, 0>,
 				 ComplexDescriptor<SimplexSComplex, SimplexSComplexMajorId, 0>				 
@@ -190,10 +195,11 @@ struct ComplexReader {
 
 template<typename Derive>
 class AlgorithmExecutor {
-  ComplexTuple& complex;
   std::string name;
 
 protected:
+  ComplexTuple& complex;
+
   AlgorithmExecutor(ComplexTuple& _complex, const std::string _name):
     complex(_complex), name(_name) {  
   }
@@ -206,7 +212,7 @@ public:
       Stopwatch stopwatch;
       boost::shared_ptr<Complex>& complexPtr = boost::any_cast<boost::shared_ptr<Complex>&>(boost::get<2>(complex));
       
-      std::cout << "Starting: " << name << std::endl;
+      std::cout << "Starting: " << name << " for (" << MajorId << ", " << MinorId << ")" << std::endl;
       ((Derive*)this)->run(*complexPtr);
       std::cout << "Finished: " << name << " in: " << stopwatch << std::endl;
     }
@@ -257,6 +263,24 @@ struct RFCExecutor: AlgorithmExecutor<RFCExecutor> {
     std::cout << "Signature calculated in: " << stopwatchSignature << std::endl;
 
     std::cout << homSignCR() << std::endl;
+  }
+
+};
+
+struct AKQExecutor: AlgorithmExecutor<AKQExecutor> {
+  ComplexTuple& outputComplex;
+
+  AKQExecutor(ComplexTuple& _complex, ComplexTuple& _outputComplex): 
+    AlgorithmExecutor<AKQExecutor>(_complex, "AKQ"), outputComplex(_outputComplex) {}
+
+  template<typename Complex>
+  void run(Complex& complex) {
+    CoreductionAlgorithm<AKQReduceStrategy<Complex> > algorithm(new AKQReduceStrategy<Complex>(complex));
+    algorithm();
+
+    SComplex<SComplexDefaultTraits>* AKQ = algorithm.getStrategy()->getOutputComplex();
+ 
+    outputComplex = boost::make_tuple(SComplexMajorId, 0, boost::shared_ptr<SComplex<SComplexDefaultTraits> >(AKQ));
   }
 
 };
@@ -330,6 +354,12 @@ int main(int argc, char** argv) {
 
     if (options.isCoreduction()) {
       boost::mpl::for_each<ComplexDescriptors>(CoreductionExecutor(complex));
+    }
+
+    if (options.isAKQ()) {
+      ComplexTuple outputComplex;
+      boost::mpl::for_each<ComplexDescriptors>(AKQExecutor(complex, outputComplex));
+      complex = outputComplex;
     }
 
     if (options.isRfcAtEnd()) {

@@ -51,6 +51,7 @@ public:
       ("RFC-at-start", bool_switch(&rfcAtStart), "execute RFC at start")
       ("coreduction", bool_switch(&coreduction), "execute coreduction")
       ("shave", bool_switch(&shave), "execute shave")
+      ("akq", bool_switch(&akq), "execute AKQ")
       ("RFC-at-end", bool_switch(&rfcAtEnd)->default_value(true), "execute RFC at end");
     
     desc.add(complexDesc);
@@ -111,6 +112,10 @@ public:
     return shave;
   }
 
+  bool isAKQ() const {
+    return akq;
+  }
+
 private:
 
   std::string getInputFileKey(int i) const {
@@ -125,6 +130,7 @@ private:
   bool rfcAtEnd;
   bool coreduction;
   bool shave;
+  bool akq;
 
   FileType fileType;
 };
