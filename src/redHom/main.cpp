@@ -6,6 +6,7 @@
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/joint_view.hpp>
 #include <boost/mpl/for_each.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <redHom/complex/scomplex/SComplex.hpp>
 #include <redHom/complex/scomplex/SComplexReader.hpp>
@@ -78,7 +79,7 @@ class MultiDimCubSComplexReader {
   };
 
 public:
-  static ComplexTuple read(ifstream& file) {
+  static ComplexTuple read(ifstream& file, const std::string& fileName) {
     ComplexTuple complex;    
 
     CRef<RepSet<ElementaryCube> > repSet(new RepSet<ElementaryCube>());
@@ -97,7 +98,7 @@ public:
 class SComplexReaderFromCubes {
 
 public:
-  static ComplexTuple read(ifstream& file) {
+  static ComplexTuple read(ifstream& file, const std::string& fileName) {
     SComplexReader<SComplexDefaultTraits> reader;
     
     return boost::make_tuple(SComplexCubesMajorId, 0, reader(file, 3, 1));
@@ -108,8 +109,16 @@ public:
 class SComplexReaderFromSimplices {
 
 public:
-  static ComplexTuple read(ifstream& file) {
-    std::vector<std::set<int> > simplices = parseDat(file);
+  static ComplexTuple read(ifstream& file, const std::string& fileName) {
+    std::vector<std::set<int> > simplices;
+    if (boost::iends_with(fileName, ".dat")) {
+      simplices = parseDat(file);
+    } else if (boost::iends_with(fileName, ".obj")) {
+      simplices = parseObj(file);
+    } else {
+      throw std::logic_error("Unknown file type: " + fileName + " (*.obj and *.dat supported");
+    }
+
     SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(3);
     boost::shared_ptr<SComplex<SComplexDefaultTraits> > complex = builder(simplices, 3, 1);
     
@@ -121,9 +130,16 @@ public:
 class SimplexSComplexReader {
 
 public:
-  static ComplexTuple read(ifstream& file) {
+  static ComplexTuple read(ifstream& file, const std::string& fileName) {
     boost::shared_ptr<SimplexSComplex> complex(new SimplexSComplex());
-    parseDat(file, *complex);
+    if (boost::iends_with(fileName, ".dat")) {
+      parseDat(file, *complex);
+    } else if (boost::iends_with(fileName, ".obj")) {
+      parseObj(file, *complex);
+    } else {
+      throw std::logic_error("Unknown file type: " + fileName + " (*.obj and *.dat supported");
+    }
+
     return boost::make_tuple(SimplexSComplexMajorId, 0, complex);
   }
 
@@ -164,7 +180,7 @@ struct ComplexReader {
 	throw std::logic_error("File not found: " + fileName);
       }
 
-      complex = Reader::read(file);
+      complex = Reader::read(file, fileName);
 
       file.close();
     }
