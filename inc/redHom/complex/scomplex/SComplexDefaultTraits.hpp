@@ -10,7 +10,7 @@ class SComplexDefaultTraits {
 public:
 
   typedef size_t Size;
-  typedef size_t Dim;
+  typedef int Dim;
   typedef size_t Id;
   typedef size_t Color;
 

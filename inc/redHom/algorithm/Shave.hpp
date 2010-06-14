@@ -45,17 +45,17 @@ inline size_t ShaveAlgorithm<StrategyT>::operator()(){
 	 typename SComplex::ColoredIterators::Iterators::DimCells dimCells = strategy->getComplex().iterators(1).dimCells(d);
 	 for (DimIt it = dimCells.begin(),
 	 		  end = dimCells.end();
-	 		it != end; ++it) {
-	 // BOOST_FOREACH(typename DimIt::value_type v,
-	 // 					dimCells) {
-	 //strategy->reduceIfPossible(v);
-		typename DimIt::value_type v = *it;
+	 		it != end; ) {
 		typename StrategyT::Traits::template GetReductionPair<typename DimIt::value_type>::result_type reductionPair =
-		  strategy->getReductionPair(v);
+		  strategy->getReductionPair(*it);
 		if (reductionPair) {
 		  strategy->reduce(*reductionPair);
+		  Cell v = *it; 
+		  ++it;
 		  strategy->reduce(v);
 		  reduced += 2;
+		} else {
+		  ++it;
 		}
 	 }
   }

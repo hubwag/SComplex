@@ -202,7 +202,7 @@ public:
             }
         }
 
-        std::vector<size_t> dims(aces.size());
+        std::vector<OutputComplexType::Dim> dims(aces.size());
 
         std::map<size_t, size_t> from0;
 
