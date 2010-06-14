@@ -93,7 +93,7 @@ public:
 		size_t complexSize = _complex.size();
         morse.resize(complexSize);
         akq.resize(complexSize);
-        kerKing.resize(complexSize, Cell(_complex));
+        kerKing.resize(complexSize, *extractIt);
 
         extractDim = 0; // bottom up
     }
@@ -259,7 +259,6 @@ public:
         BOOST_FOREACH(Triple p, coeffs)
         {
             int coef = p.second;
-
             kap.push_back(boost::make_tuple(from0[p.first.first], from0[p.first.second], coef));
         }
 

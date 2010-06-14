@@ -8,7 +8,6 @@
 #include "DefaultReduceStrategyTraits_CubSComplex.hpp"
 #include "redHom/complex/cubical/CubSComplex.hpp"
 
-
 template<int DIM>
 class DefaultReduceStrategy<CubSComplex<DIM> >: public DefaultReduceStrategyBase<CubSComplex<DIM> >
 {
@@ -21,8 +20,6 @@ public:
     typedef typename DefaultReduceStrategyBase<CubSComplex<DIM> >::Traits Traits;
 
     DefaultReduceStrategy(CubSComplex<DIM>& complex): DefaultReduceStrategyBase<CubSComplex<DIM> >(complex), dynamicCell(complex) {}
-
-
 
     template<typename ArgT>
     typename Traits::template GetCoreductionPair<ArgT>::result_type
