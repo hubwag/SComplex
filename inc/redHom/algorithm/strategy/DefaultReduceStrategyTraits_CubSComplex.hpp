@@ -5,8 +5,6 @@
 #include <functional>
 #include <boost/utility/enable_if.hpp>
 
-#if 0
-
 template<int DIM>
 class DefaultReduceStrategyTraits<CubSComplex<DIM> > {
 public:
@@ -45,7 +43,5 @@ public:
   };
 
 };
-
-#endif
 
 #endif

@@ -15,62 +15,9 @@ using std::set;
 #include "redHom/algorithm/strategy/DefaultReduceStrategy_CubSComplex.hpp"
 #include "redHom/algorithm/strategy/DefaultReduceStrategyTraits_CubSComplex.hpp"
 
-static const bool verboseAKQ = false;
-
 // #define INLINE_CRITICAL_CODE __attribute__ ((noinline))
 #define INLINE_CRITICAL_CODE
 
-/*
-template<typename SComplexT>
-class AKQReduceStrategyTraits : public DefaultReduceStrategyTraits<SComplexT>
-{
-public:
-
-    // template<typename ImplT>
-    // struct Proxy: pu	blic CellProxy<ImplT> {
-    // 	 template<typename ImplT2>
-    // 	 Proxy(const ImplT2& impl): CellProxy<ImplT>(impl) {}
-
-    // 	 Proxy(const SComplexT& c): CellProxy<ImplT>(ImplT(c)) {}
-    // };
-
-    // template<typename ImplT>
-    // struct Proxy<CellProxy<ImplT> >: public CellProxy<ImplT> {
-    // 	 template<typename ImplT2>
-    // 	 Proxy(const ImplT2& impl): CellProxy<ImplT>(impl) {}
-    // };
-
-    // template<typename ImplT>
-    // static Proxy<ImplT*> makeProxy(const CellProxy<ImplT>& impl) {
-    // 	 return Proxy<ImplT*>(impl.getImpl());
-    // }
-
-/ *    template<typename ArgT>
-struct GetReductionPair : public std::unary_function<const ArgT&,
-                boost::optional<typename SComplexT::Cell> > {};
-
-    template<typename ArgT>
-struct GetCoreductionPair : public std::unary_function<const ArgT&,
-                boost::optional<typename SComplexT::Cell> > {};
-
-    struct ForceCoreduction
-    {
-        typedef boost::optional<std::pair<typename SComplexT::Cell,
-        typename SComplexT::Cell> > result_type;
-    };
-
-    struct Extract
-    {
-        typedef boost::optional<typename SComplexT::Cell >  result_type;
-    };
-
-    * /
-
-};
-
-*/
-
-int visitedVertices = 0;
 
 template<typename SComplexT>
 class AKQReduceStrategyBase : public DefaultReduceStrategyBase<SComplexT>
@@ -83,7 +30,7 @@ public:
 
     typedef ::SComplex<SComplexDefaultTraits> OutputComplexType;
 
-    bool isOK(Cell curr, Cell from) // c = origin
+    bool markNullPaths(Cell curr, Cell from)
     {
     	if (akq[curr.getId()] == ACE && curr.getId() != from.getId())
 			return true;
@@ -121,7 +68,7 @@ public:
 			if (morse[to.getId()] < ourMorseValue)
 			{
 				// S.push(std::make_pair(to, accumulatedWeight * toKingCoeff(curr, to, bd)));
-				if (isOK(to, from))
+				if (markNullPaths(to, from))
 				{
 					ok = true;
 				}
@@ -141,16 +88,9 @@ public:
 		extractIt(_complex.iterators(1).dimCells(0).begin()),
 		extractEnd(_complex.iterators(1).dimCells(0).end())
     {
-        std::cout << "CHECKING MAX DIM BRUTALLY! ADD getMaxDim to SCOMPLEX!!!!" << std::endl;
-        std::cout << "SIZE, CARDINALITY OR MAX_ID?" << std::endl;
-
         max_d = this->getMaxDim();
 
-        std::cout << "max_d IS: " << max_d << endl;
-
 		size_t complexSize = _complex.size();
-
-		std::cout << "SIZE IS: " << complexSize << endl;
         morse.resize(complexSize);
         akq.resize(complexSize);
         kerKing.resize(complexSize, Cell(_complex));
@@ -218,7 +158,6 @@ public:
         BOOST_ASSERT(akq[y.getId()] == ACE);
         BOOST_ASSERT(akq[x.getId()] != QUEEN);
 
-		// return 0;
         return this->complex.coincidenceIndex(x, y);
     }
 
@@ -229,7 +168,6 @@ public:
         BOOST_ASSERT(akq[y_star.getId()] == QUEEN);
         BOOST_ASSERT(akq[y.getId()] == KING);
 
-		// return 0;
         return -1 * this->complex.coincidenceIndex(x, y_star) / this->complex.coincidenceIndex(y, y_star);
     }
 
@@ -241,7 +179,6 @@ public:
 
         while (S.size())
         {
-        	++visitedVertices;
             Cell curr = S.top().first;
             int accumulatedWeight = S.top().second;
             S.pop();
@@ -252,11 +189,7 @@ public:
             {
                 // these are aces - small
                 ++numPathsBetween[std::make_pair(c.getId(), curr.getId())];
-                if (verboseAKQ)
-                {
-                    std::cout << "found path from: " << c.getId() << " to " << curr.getId() << std::endl;
-                    std::cout << "between values: " << morse[c.getId()] << "and " << morse[curr.getId()] << " with coef product" << accumulatedWeight << std::endl;
-                }
+
                 coeffs[std::make_pair(c.getId(), curr.getId())] += accumulatedWeight;
 
                 continue;
@@ -298,18 +231,9 @@ public:
 
     void reportPaths()
     {
-        std::cout << " asow bylo: " << aces.size() << std::endl;
-
-        if (verboseAKQ)
-            for (size_t i = 0; i < aces.size(); i++)
-            {
-                std::cout << aces[i].getId() << " ";
-            }
-        std::cout << std::endl;
-
         BOOST_FOREACH(Cell ace, aces)
         {
-            isOK(ace, ace);
+            markNullPaths(ace, ace);
         }
 
         BOOST_FOREACH(Cell ace, aces)
@@ -317,38 +241,7 @@ public:
             followPath(ace);
         }
 
-        std::cout << "\n\n\n";
-
         typedef std::pair<std::pair<int,int>,int> Triple;
-
-        BOOST_FOREACH(Triple p, numPathsBetween)
-        {
-            if (p.second == 1)
-            {
-                std::cout << "There was a single path!" << std::endl;
-                break;
-            }
-        }
-
-        int totalNumPaths = 0;
-        int totalCoeffs = 0;
-
-        if (verboseAKQ)
-        {
-            std::cout << "num paths between: \n";
-            BOOST_FOREACH(Triple p, numPathsBetween)
-            {
-                std::cout << p.first.first << " " << p.first.second << " = " << p.second << std::endl;
-                totalNumPaths += p.second;
-            }
-
-            std::cout << "coefficients: \n";
-            BOOST_FOREACH(Triple p, coeffs)
-            {
-                std::cout << p.first.first << " " << p.first.second << " => " << p.second << std::endl;
-                totalCoeffs += p.second;
-            }
-        }
 
         std::vector<size_t> dims(aces.size());
 
@@ -361,8 +254,6 @@ public:
             from0[ace.getId()] = next;
         }
 
-        std::cout << "constructing general SComplex" << std::endl;
-
         OutputComplexType::KappaMap kap;
 
         BOOST_FOREACH(Triple p, coeffs)
@@ -370,15 +261,7 @@ public:
             int coef = p.second;
 
             kap.push_back(boost::make_tuple(from0[p.first.first], from0[p.first.second], coef));
-
-            if (verboseAKQ)
-                std::cout << from0[p.first.first] << "[d=" <<dims[from0[p.first.first]] << "]" << " : " <<  from0[p.first.second] << "[d="<<dims[from0[p.first.second]] << "]"  << " => " << coef << std::endl;
         }
-        /*
-        std::cout << NumPaths << std::endl;
-        std::cout << totalCoeffs << std::endl;
-        std::cout << visitedVertices << std::endl;
-        */
 
         outputComplex = new OutputComplexType(3, dims, kap, 1);
     }

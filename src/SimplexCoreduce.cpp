@@ -24,6 +24,7 @@ using namespace std;
 #include <capd/auxil/CRef.h>
 
 #include <capd/homologicalAlgebra/embeddingDim.h>
+#include <capd/homologicalAlgebra/Bitmap.hpp>
 
 #include <capd/vectalg/MatrixSlice.h>
 #include <capd/matrixAlgorithms/intMatrixAlgorithms.hpp>
