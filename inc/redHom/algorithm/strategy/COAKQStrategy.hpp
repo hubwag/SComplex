@@ -237,7 +237,7 @@ private:
 
     typedef std::pair<std::pair<int,int>,int> Pair;
 
-    std::vector<size_t> dims(aces.size());
+    std::vector<typename OutputComplexT::Dim> dims(aces.size());
 
     std::map<size_t, size_t> from0;
 

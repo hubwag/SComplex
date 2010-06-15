@@ -71,7 +71,7 @@ public:
 
   void setColor(const Color& color) {
 	 BOOST_ASSERT(color == 2);
-	 BOOST_ASSERT(getColor() == 1);
+	 // BOOST_ASSERT(getColor() == 1);
 	 bitIt.clearBit();
   }
 
@@ -160,7 +160,8 @@ class CubSComplex<DIM>::DynamicBitCoordCellImpl: public BitCoordCellImpl  {
   using BitCoordCellImpl::bitIt;
 
 public:
-  DynamicBitCoordCellImpl(const typename CubSComplex<DIM>::BCubCellSet::BitCoordIterator& b): BitCoordCellImpl(b) {}
+ DynamicBitCoordCellImpl(const BitCoordCellImpl& b): BitCoordCellImpl(b) {}
+ DynamicBitCoordCellImpl(const typename CubSComplex<DIM>::BCubCellSet::BitCoordIterator& b): BitCoordCellImpl(b) {}
 
  DynamicBitCoordCellImpl(const CubSComplex& s): BitCoordCellImpl(s.bCubCellSet) {}
 

@@ -172,17 +172,18 @@ public:
   	 return typename Traits::template GetReductionPair<ArgT>::result_type();
   }
 
-protected:
   SComplex& complex;
+protected:
+
   Cell dummyCell2, dummyCell3;
   bool extracted;
 };
 
 template<typename SComplexT>
 class DefaultReduceStrategy: public DefaultReduceStrategyBase<SComplexT> {
-
 public:
   DefaultReduceStrategy(SComplexT& _complex): DefaultReduceStrategyBase<SComplexT>(_complex) {}
+
 };
 
 #endif

@@ -26,7 +26,7 @@ template<int DIM>
 boost::tuple<int, int, int, std::string>  CrHomS(std::string fileName) {
 	 boost::tuple<int, int, int, std::string> result;
 	 using boost::tuples::get;
-
+	 
   Stopwatch swTot;
   BOOST_TEST_MESSAGE(" --- Reading cubical cellular set ");
 
@@ -37,17 +37,17 @@ boost::tuple<int, int, int, std::string>  CrHomS(std::string fileName) {
 
   Stopwatch swComp,swRed;
 
-  //(ShaveAlgorithmFactory::createDefault(*complex))();
+  //(ShaveAlgorithmFactory::createDefault(*complex))();  
   BOOST_TEST_MESSAGE(" --- Shave reduced the size to " << complex->cardinality() << " in " << swRed);
   get<1>(result) = complex->cardinality();
-
+  
   Stopwatch swCoRed;
 
   (*CoreductionAlgorithmFactory::createDefault(*complex))();
 
   BOOST_TEST_MESSAGE(" --- Coreduction reduced the size to " << complex->cardinality() << " in " << swCoRed);
   get<2>(result) = complex->cardinality();
-
+  
   CRef<ReducibleFreeChainComplexType> RFCComplexCR=
     (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<CubSComplex<DIM>, ReducibleFreeChainComplexType>(*complex))();
   BOOST_TEST_MESSAGE(" --- RFCC constructed  ");

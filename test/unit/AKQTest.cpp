@@ -20,11 +20,11 @@ ofstreamcout fcout;
 
 #include <boost/test/included/unit_test.hpp>
 #include <boost/bind.hpp>
-#include <boost/lambda/lambda.hpp>
-#include <boost/assign/list_of.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_io.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
+#include <boost/lambda/lambda.hpp>
+#include <boost/assign/list_of.hpp>
 
 #include <algorithm>
 #include <string>
@@ -34,7 +34,6 @@ ofstreamcout fcout;
 using namespace boost;
 using namespace boost::assign;
 using namespace std;
-
 
 typedef ElementaryCell ElementaryCellType;
 typedef int ScalarType;
