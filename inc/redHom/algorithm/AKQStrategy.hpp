@@ -32,19 +32,17 @@ public:
 
     typedef ::SComplex<SComplexDefaultTraits> OutputComplexType;
 
+  std::vector<bool> hasKing;
     AKQReduceStrategy(SComplex& _complex) :
-		DefaultReduceStrategy<SComplex>(_complex),
-		extractIt(_complex.iterators(1).dimCells(0).begin()),
-		extractEnd(_complex.iterators(1).dimCells(0).end())
+		DefaultReduceStrategy<SComplex>(_complex)
     {
       max_d = complex.getDim();
-
+      extractDim = 0;
       size_t complexSize = _complex.size();
         morse.resize(complexSize);
         akq.resize(complexSize);
         kerKing.resize(complexSize, Cell(complex));
-
-        extractDim = 0; // bottom up
+        hasKing.resize(complexSize, false);
     }
 
     bool markNullPaths(Cell curr, Cell from)
@@ -70,7 +68,7 @@ public:
 		// case 2: to king
 		BOOST_FOREACH(Cell bd, complex.iterators().bdCells(curr))
 		{
-			if (akq[bd.getId()] != QUEEN)
+		  if (akq[bd.getId()] != QUEEN || ! hasKing[bd.getId()])
 				continue;
 
 			Cell to = kerKing[bd.getId()];
@@ -131,6 +129,7 @@ public:
         morse[kId] = v;
         morse[qId] = v;
         kerKing[kId] = king;
+	hasKing[kId] = true;
     }
 
     template<typename ImplT1, typename ImplT2>
@@ -207,7 +206,7 @@ public:
             // case 2: to king
             BOOST_FOREACH(Cell bd, complex.iterators().bdCells(curr))
             {
-                if (akq[bd.getId()] != QUEEN)
+	      if (akq[bd.getId()] != QUEEN || ! hasKing[bd.getId()] )
                     continue;
 
                 Cell to = kerKing[bd.getId()];
@@ -278,15 +277,10 @@ public:
 
     typename Traits::Extract::result_type extract()
     {
-		for (; extractDim <= max_d; )
-		{
-		  extractIt  = complex.iterators(1).dimCells(extractDim).begin();;
-		  extractEnd = complex.iterators(1).dimCells(extractDim).end();;
-
-			while(extractIt != extractEnd && extractIt->getColor() != 1)
-			{
-				++extractIt;
-			}
+      for (; extractDim <= max_d;)
+	{
+	  typename SComplex::ColoredIterators::Iterators::DimCells::iterator extractIt   = complex.iterators(1).dimCells(extractDim).begin(),
+	    extractEnd = complex.iterators(1).dimCells(extractDim).end();
 
 			if (extractIt != extractEnd)
 			{
@@ -301,13 +295,9 @@ public:
 
 				// we increment the iterator here!
 				return typename Traits::Extract::result_type::value_type(*extractIt);
+			} else {
+			  ++extractDim;
 			}
-
-			if (++extractDim > max_d)
-				break;
-
-			extractIt = complex.iterators(1).dimCells(extractDim).begin();
-			extractEnd = complex.iterators(1).dimCells(extractDim).end();
 		}
 
         reportPaths();
@@ -325,17 +315,12 @@ public:
     }
 
 protected:
-
-	typename SComplex::ColoredIterators::Iterators::DimCells::iterator extractIt;
-	typename SComplex::ColoredIterators::Iterators::DimCells::iterator extractEnd;
-
-  int extractDim;
     std::vector<int> morse;
     std::vector<AKQType> akq;
     std::vector<Cell> kerKing;
     std::vector<Cell> aces;
 
-    int max_d;
+  typename SComplexT::Dim  extractDim, max_d;
     std::map<std::pair<int,int>, int> coeffs;
     std::map<std::pair<int,int>, int> numPathsBetween; // only between aces - small
 
