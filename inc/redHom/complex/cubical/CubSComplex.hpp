@@ -213,7 +213,7 @@ inline int CubSComplex<DIM>::coincidenceIndex(const CellProxy<ImplT1> &_a, const
   const typename CubSComplex::BCubCellSet::BitCoordIterator& a = _a.getBitCoordIt();
   const typename CubSComplex::BCubCellSet::BitCoordIterator& b = _b.getBitCoordIt();
 
-  for (size_t i = 0, end = bCubCellSet.embDim(); i < end; ++i) {
+  for (Dim i = 0, end = DIM; i < end; ++i) {
   	 if (! (a[i]/2 == b[i]/2 || a[i]/2 + (a[i]%2) == b[i]/2)) {
   		return 0; // b[i] left side doesn't intersect a[i] interval
   	 }

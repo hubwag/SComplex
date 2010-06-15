@@ -323,6 +323,8 @@ namespace {
 int main(int argc, char** argv) {
 
   try {
+    fcout.open("capd-report.txt");
+    fcout.turnOn();
 
     Stopwatch totalStopwatch;
 
