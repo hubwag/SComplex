@@ -134,7 +134,7 @@ protected:
 
     void followPath(Cell c)
     {
-        std::stack<std::pair<Cell, int> > S; // no cycles!
+        std::stack<std::pair<Cell, int> > S;
 
         S.push(std::make_pair(c, 1));
 
@@ -148,11 +148,7 @@ protected:
 
             if (curr.getId() != c.getId() && akq[curr.getId()] == ACE)
             {
-                // these are aces - small
-                // ++numPathsBetween[std::make_pair(c.getId(), curr.getId())];
-
                 coeffs[std::make_pair(c.getId(), curr.getId())] += accumulatedWeight;
-
                 continue;
             }
 
@@ -237,7 +233,6 @@ protected:
 
     void reportPaths()
     {
-
         BOOST_FOREACH(Cell ace, aces)
         {
             markNullPaths(ace, ace);
@@ -280,9 +275,6 @@ protected:
 	int extractDim;
     int maxExtractDim;
     std::map<std::pair<int,int>, int> coeffs;
-
-    // unused for now
-    std::map<std::pair<int,int>, int> numPathsBetween; // only between aces - small
 
     OutputComplexType *outputComplex;
 };
