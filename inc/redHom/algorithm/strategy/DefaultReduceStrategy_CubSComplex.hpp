@@ -11,11 +11,9 @@
 template<int DIM>
 class DefaultReduceStrategy<CubSComplex<DIM> >: public DefaultReduceStrategyBase<CubSComplex<DIM> >
 {
+protected:
     typename CubSComplex<DIM>::DynamicCell dynamicCell;
-    //using typename DefaultReduceStrategyBase<CubSComplex<DIM> >::Traits;
-
     using DefaultReduceStrategyBase<CubSComplex<DIM> >::complex;
-
 public:
     typedef typename DefaultReduceStrategyBase<CubSComplex<DIM> >::Traits Traits;
 
