@@ -172,9 +172,8 @@ public:
   	 return typename Traits::template GetReductionPair<ArgT>::result_type();
   }
 
-  SComplex& complex;
 protected:
-
+  SComplex& complex;
   Cell dummyCell2, dummyCell3;
   bool extracted;
 };
