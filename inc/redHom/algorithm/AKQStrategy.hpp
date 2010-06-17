@@ -6,6 +6,9 @@
 #include <utility>
 #include <stack>
 
+#include <map>
+#include <vector>
+
 #include "redHom/complex/scomplex/SComplex.hpp"
 #include "redHom/complex/scomplex/SComplexDefaultTraits.hpp"
 
@@ -24,6 +27,10 @@ public:
     enum AKQType {UNSET, KING, QUEEN, ACE};
 
     typedef std::map<int,int> PathsInfo;
+
+    std::vector<int> nullPathMemo;
+    std::vector<PathsInfo> followMemoTable;
+
     typedef ::SComplex<SComplexDefaultTraits> OutputComplexType;
     typedef SComplexT SComplex;
     typedef DefaultReduceStrategyTraits<SComplex> Traits;
@@ -197,13 +204,9 @@ protected:
         }
     }
 
-    vector<int> nullPathMemo;
-    vector<PathsInfo> followMemoTable;
-
-    PathsInfo followPathMemo(Cell curr, Cell from)
+    const PathsInfo& followPathMemo(Cell curr, Cell from)
     {
     	PathsInfo &coeffs = followMemoTable[curr.getId()];
-    	//PathsInfo coeffs = notSet;
 
     	if (coeffs != notSet)
 			return coeffs;
@@ -245,7 +248,7 @@ protected:
 			{
 				int newCoeff = toKingCoeff(curr, to, bd);
 
-				map<int,int> fromHere = followPathMemo(to, from);
+				PathsInfo fromHere = followPathMemo(to, from);
 
 				for (PathsInfo::const_iterator it = fromHere.begin(); it != fromHere.end(); ++it)
 				{
@@ -266,16 +269,12 @@ protected:
     	if (akq[curr.getId()] == ACE && curr.getId() != from.getId())
 			return true;
 
-		// std::cout << curr.getId() << " d: " << curr.getDim() << " m: " << morse[curr.getId()] << std::endl;
-
     	if (akq[curr.getId()] == UNSET)
     		return false;
 
         int ourMorseValue = morse[curr.getId()];
 
         ok = false;
-
-		// bool ok = false;
 
         // case 1: to ace
 		BOOST_FOREACH(Cell to, this->complex.iterators().bdCells(curr))
@@ -320,25 +319,24 @@ protected:
 
     void reportPaths()
     {
+    	/*
         BOOST_FOREACH(Cell ace, aces)
         {
-            markNullPaths(ace, ace);
+		    markNullPaths(ace, ace);
         }
 
         BOOST_FOREACH(Cell ace, aces)
         {
-			//followPath(ace);
-            // cout << "\n\n";
-            //break;
+			followPath(ace);
         }
+        */
 
-		//if(false)
         BOOST_FOREACH(Cell ace, aces)
         {
             PathsInfo cf = followPathMemo(ace, ace);
             for (PathsInfo::const_iterator it = cf.begin(); it != cf.end(); ++it)
             {
-				coeffs[make_pair(ace.getId(), it->first)] += it->second;
+				coeffs[std::make_pair(ace.getId(), it->first)] += it->second;
             }
         }
 
@@ -370,6 +368,8 @@ protected:
     std::vector<AKQType> akq;
     std::vector<Cell> kerKing;
     std::vector<Cell> aces;
+
+
 
 	int extractDim;
     int maxExtractDim;
