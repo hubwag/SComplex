@@ -61,14 +61,12 @@ typedef boost::mpl::joint_view<CubComplexDescriptors,
 class MultiDimCubSComplexReader {
 
   struct ComplexConstructor {
-    ComplexTuple& complex;
     const int dim;
-    RepSet<ElementaryCube>& repSet;
+    std::ifstream& file;
+    ComplexTuple& complex;
 
-    ComplexConstructor(int _dim, ComplexTuple& _complex, 
-		  RepSet<ElementaryCube>& _repSet): 
-
-      dim(_dim), complex(_complex), repSet(_repSet) {
+    ComplexConstructor(int _dim,  std::ifstream& _file, ComplexTuple& _complex): 
+      dim(_dim), file(_file), complex(_complex) {
       BOOST_ASSERT(boost::get<2>(complex).empty());
     }
 
@@ -76,8 +74,14 @@ class MultiDimCubSComplexReader {
     void operator()(ComplexDescriptor<Complex, MajorId, MinorId>) {
       if (MajorId == CubSComplexMajorId && dim == MinorId) {
 	BOOST_ASSERT(boost::get<2>(complex).empty());      
+
+	typedef typename Complex::BCubCellSet CubCellSet;
+	CRef<CubCellSet> cubCellSetCR(new CubCellSet());
+	BmpCubCelSetBuilder<CubCellSet> csb(cubCellSetCR);
+	readCubicalSet(file, csb);
+
 	complex = ComplexTuple(MajorId, MinorId, 
-			       boost::any(boost::shared_ptr<Complex>(new Complex(repSet))));
+			       boost::any(boost::shared_ptr<Complex>(new Complex(cubCellSetCR))));
       }
     }
 
@@ -86,13 +90,14 @@ class MultiDimCubSComplexReader {
 public:
   static ComplexTuple read(ifstream& file, const std::string& fileName) {
     ComplexTuple complex;    
+    
+    CubSetBuilder csb;
+    readCubicalSet(file,csb,true); //true means only get dim and type
+    file.seekg(0);
 
-    CRef<RepSet<ElementaryCube> > repSet(new RepSet<ElementaryCube>());
-    RepCubSetBuilder<RepSet<ElementaryCube> > repCubSetBuilder(repSet);
+    unsigned int embDim=csb.getDim();
 
-    readCubicalSet(file, repCubSetBuilder);
-
-    ComplexConstructor constructor(repCubSetBuilder.getDim(), complex, repSet());
+    ComplexConstructor constructor(embDim, file, complex);
     boost::mpl::for_each<CubComplexDescriptors>(constructor);
 
     return complex;

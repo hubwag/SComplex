@@ -13,8 +13,8 @@
 template<int DIM>
 class CubSComplex {
   class CellImpl;
-  typedef unsigned long int cluster;
-  typedef BitSetT<BitmapT<cluster> > BitSet;
+
+  typedef BitSetT<BitmapT<unsigned long int> > BitSet;
   typedef EuclBitSetT<BitSet, DIM> EuclBitSet;
   
 public:
@@ -103,6 +103,7 @@ public:
   typedef ColoredIteratorsImpl<true> ColoredConstIterators;
   
   explicit CubSComplex(RepSet<ElementaryCube>& repSet);
+  explicit CubSComplex(const CRef<BCubCellSet>& __bCubCellSet);
 
   size_t cardinality() {  return bCubCellSet.cardinality(); }
   size_t size() const { return const_cast<BCubCellSet&>(bCubCellSet).getBmpSizeInBits(); }
@@ -132,7 +133,8 @@ public:
   
 protected:
   //  boost::shared_ptr<RepSet<ElementaryCube> > repSet;
-  BCubCellSet bCubCellSet;
+  CRef<BCubCellSet> _bCubCellSet;
+  BCubCellSet& bCubCellSet;
   
 };
 
@@ -145,8 +147,17 @@ protected:
 
 template<int DIM>
 inline CubSComplex<DIM>::CubSComplex(RepSet<ElementaryCube>& _repSet): 
-  //repSet(_repSet),
-  bCubCellSet(_repSet) {
+  _bCubCellSet(new BCubCellSet(_repSet)),
+  bCubCellSet(_bCubCellSet()) {
+
+  bCubCellSet.addEmptyCollar();
+}
+
+template<int DIM>
+inline CubSComplex<DIM>::CubSComplex(const CRef<BCubCellSet>& __bCubCellSet): 
+  _bCubCellSet(__bCubCellSet),
+  bCubCellSet(_bCubCellSet()) {
+
   bCubCellSet.addEmptyCollar();
 }
 
