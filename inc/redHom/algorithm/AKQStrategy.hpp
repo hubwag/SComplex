@@ -14,6 +14,7 @@
 
 #include <redHom/algorithm/Algorithms.hpp>
 #include "redHom/algorithm/strategy/DefaultReduceStrategy.hpp"
+#include "redHom/algorithm/strategy/DefaultReduceStrategy_CubSComplex.hpp"
 #include "redHom/algorithm/Coreduction.hpp"
 
 template<typename SComplexT>
@@ -59,7 +60,7 @@ public:
     }
 
     template<typename CellT1, typename CellT2>
-	void coreduce(CellT1 a, CellT2 b)
+	void coreduce(CellT1& a, CellT2& b)
     {
         BOOST_ASSERT(a.getDim() != b.getDim());
 
@@ -114,7 +115,7 @@ protected:
     int calcMorseValue(const cellT1 &c)
     {
         int val = 0;
-        BOOST_FOREACH(Cell el, complex.iterators().bdCells(c))
+        BOOST_FOREACH(typename SComplex::Iterators::BdCells::iterator::value_type el, complex.iterators().bdCells(c))
         {
             val = max(val, morse[el.getId()]);
         }
@@ -133,7 +134,8 @@ protected:
         kerKing[queen.getId()] = king;
     }
 
-    int toAceCoeff(Cell x, Cell y)
+    template<typename T1, typename T2>
+    int toAceCoeff(T1& x, T2& y)
     {
         BOOST_ASSERT(akq[y.getId()] == ACE);
         BOOST_ASSERT(akq[x.getId()] != QUEEN);
@@ -141,7 +143,8 @@ protected:
         return complex.coincidenceIndex(x, y);
     }
 
-    int toKingCoeff(Cell x, Cell y, Cell y_star)
+  template<typename T1, typename T2, typename T3>
+    int toKingCoeff(T1& x, T2& y, T3& y_star)
     {
         BOOST_ASSERT(akq[x.getId()] != QUEEN);
         BOOST_ASSERT(akq[y_star.getId()] == QUEEN);
@@ -150,7 +153,8 @@ protected:
         return -1 * complex.coincidenceIndex(x, y_star) / complex.coincidenceIndex(y, y_star);
     }
 
-    void followPath(Cell c)
+    template<typename T1>
+    void followPath(T1& c)
     {
         std::stack<std::pair<Cell, int> > S;
 
@@ -175,7 +179,7 @@ protected:
             int ourMorseValue = morse[curr.getId()];
 
             // case 1: to ace
-            BOOST_FOREACH(Cell to, complex.iterators().bdCells(curr))
+            BOOST_FOREACH(typename SComplex::Iterators::BdCells::iterator::value_type to, complex.iterators().bdCells(curr))
             {
                 if (akq[to.getId()] == ACE && morse[to.getId()] < ourMorseValue)
                 {
@@ -186,12 +190,12 @@ protected:
             }
 
             // case 2: to king
-            BOOST_FOREACH(Cell bd, complex.iterators().bdCells(curr))
+            BOOST_FOREACH(typename SComplex::Iterators::BdCells::iterator::value_type bd, complex.iterators().bdCells(curr))
             {
                 if (akq[bd.getId()] != QUEEN)
                     continue;
 
-                Cell to = kerKing[bd.getId()];
+                Cell& to = kerKing[bd.getId()];
 
                 if (akq[to.getId()] == KING && morse[to.getId()] < ourMorseValue)
                 {
@@ -203,7 +207,8 @@ protected:
         }
     }
 
-  const PathsInfo& followPathMemo(Cell curr, Cell from)
+  template<typename T1, typename T2>
+  const PathsInfo& followPathMemo(T1& curr, T2& from)
     {
     	PathsInfo &coeffs = followMemoTable[curr.getId()];
 
@@ -220,7 +225,7 @@ protected:
         int ourMorseValue = morse[curr.getId()];
 
         // case 1: to ace
-		BOOST_FOREACH(Cell to, this->complex.iterators().bdCells(curr))
+		BOOST_FOREACH(typename SComplex::Iterators::BdCells::iterator::value_type to, this->complex.iterators().bdCells(curr))
 		{
 			if (akq[to.getId()] == ACE && morse[to.getId()] < ourMorseValue)
 			{
@@ -229,12 +234,12 @@ protected:
 			}
 		}
 		// case 2: to king
-		BOOST_FOREACH(Cell bd, this->complex.iterators().bdCells(curr))
+		BOOST_FOREACH(typename SComplex::Iterators::BdCells::iterator::value_type bd, this->complex.iterators().bdCells(curr))
 		{
 			if (akq[bd.getId()] != QUEEN)
 				continue;
 
-			Cell to = kerKing[bd.getId()];
+			Cell& to = kerKing[bd.getId()];
 
 			if (akq[to.getId()] != KING)
 			{
@@ -259,7 +264,8 @@ protected:
 		return coeffs;
     }
 
-    bool markNullPaths(Cell curr, Cell from)
+    template<typename T1, typename T2>
+    bool markNullPaths(T1& curr, T2& from)
     {
     	int& ok = nullPathMemo[curr.getId()];
     	if (ok != -1)
@@ -276,7 +282,7 @@ protected:
         ok = false;
 
         // case 1: to ace
-		BOOST_FOREACH(Cell to, this->complex.iterators().bdCells(curr))
+		BOOST_FOREACH(typename SComplex::Iterators::BdCells::iterator::value_type to, this->complex.iterators().bdCells(curr))
 		{
 			if (akq[to.getId()] == ACE && morse[to.getId()] < ourMorseValue)
 			{
@@ -285,12 +291,12 @@ protected:
 			}
 		}
 		// case 2: to king
-		BOOST_FOREACH(Cell bd, this->complex.iterators().bdCells(curr))
+		BOOST_FOREACH(typename SComplex::Iterators::BdCells::iterator::value_type bd, this->complex.iterators().bdCells(curr))
 		{
 			if (akq[bd.getId()] != QUEEN)
 				continue;
 
-			Cell to = kerKing[bd.getId()];
+			Cell& to = kerKing[bd.getId()];
 
 			if (akq[to.getId()] != KING)
 			{
