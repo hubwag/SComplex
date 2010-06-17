@@ -6,32 +6,51 @@
 #include <utility>
 #include <stack>
 
+#include <map>
+#include <vector>
+
 #include "redHom/complex/scomplex/SComplex.hpp"
 #include "redHom/complex/scomplex/SComplexDefaultTraits.hpp"
 
+#include <redHom/algorithm/Algorithms.hpp>
 #include "redHom/algorithm/strategy/DefaultReduceStrategy.hpp"
+#include "redHom/algorithm/Coreduction.hpp"
 
 template<typename SComplexT>
 class AKQReduceStrategy : public DefaultReduceStrategy<SComplexT>
 {
 protected:
   using DefaultReduceStrategyBase<SComplexT>::complex;
+
 public:
     enum AKQType {UNSET, KING, QUEEN, ACE};
+
+    typedef std::map<int,int> PathsInfo;
+
+    std::vector<int> nullPathMemo;
+    std::vector<PathsInfo> followMemoTable;
 
     typedef ::SComplex<SComplexDefaultTraits> OutputComplexType;
     typedef SComplexT SComplex;
     typedef DefaultReduceStrategyTraits<SComplex> Traits;
     typedef typename SComplex::Cell Cell;
 
+    PathsInfo notSet;
+
     AKQReduceStrategy(SComplex& _complex): DefaultReduceStrategy<SComplex>(_complex)
     {
         maxExtractDim = _complex.getDim();
         extractDim = 0;
 
-        morse.resize(_complex.size());
-        akq.resize(_complex.size());
-        kerKing.resize(_complex.size(), Cell(this->complex));
+        int csize = _complex.size();
+
+        morse.resize(csize, 0);
+        nullPathMemo.resize(csize, -1);
+
+        notSet[-1] = -1;
+        followMemoTable.resize(csize, notSet);
+        akq.resize(csize);
+        kerKing.resize(csize, Cell(this->complex));
     }
 
     SComplex& getComplex() const
@@ -143,6 +162,8 @@ protected:
             int accumulatedWeight = S.top().second;
             S.pop();
 
+            // std::cout << curr.getId() << " d: " << curr.getDim() << " m: " << morse[curr.getId()] << std::endl;
+
             BOOST_ASSERT(akq[curr.getId()] != QUEEN);
 
             if (curr.getId() != c.getId() && akq[curr.getId()] == ACE)
@@ -158,6 +179,8 @@ protected:
             {
                 if (akq[to.getId()] == ACE && morse[to.getId()] < ourMorseValue)
                 {
+                	//std::cout << curr.getId() << " d: " << curr.getDim() << " m: " << morse[curr.getId()] << "=>";
+                	//std::cout << to.getId() << " d: " << to.getDim() << " m: " << morse[to.getId()] << std::endl;
                     S.push(std::make_pair(to, accumulatedWeight * toAceCoeff(curr, to)));
                 }
             }
@@ -172,14 +195,76 @@ protected:
 
                 if (akq[to.getId()] == KING && morse[to.getId()] < ourMorseValue)
                 {
+                	//std::cout << curr.getId() << " d: " << curr.getDim() << " m: " << morse[curr.getId()] << "=>";
+                	//std::cout << to.getId() << " d: " << to.getDim() << " m: " << morse[to.getId()] << std::endl;
                     S.push(std::make_pair(to, accumulatedWeight * toKingCoeff(curr, to, bd)));
                 }
             }
         }
     }
 
+  const PathsInfo& followPathMemo(Cell curr, Cell from)
+    {
+    	PathsInfo &coeffs = followMemoTable[curr.getId()];
+
+    	if (coeffs != notSet)
+	  return coeffs;
+	
+    	if (akq[curr.getId()] == UNSET)
+	  return emptyPathsInfo;
+
+    	BOOST_ASSERT(akq[curr.getId()] != ACE || curr.getId() == from.getId());
+
+		coeffs.clear();
+
+        int ourMorseValue = morse[curr.getId()];
+
+        // case 1: to ace
+		BOOST_FOREACH(Cell to, this->complex.iterators().bdCells(curr))
+		{
+			if (akq[to.getId()] == ACE && morse[to.getId()] < ourMorseValue)
+			{
+				int newCoeff = toAceCoeff(curr, to);
+				coeffs[to.getId()] += newCoeff;
+			}
+		}
+		// case 2: to king
+		BOOST_FOREACH(Cell bd, this->complex.iterators().bdCells(curr))
+		{
+			if (akq[bd.getId()] != QUEEN)
+				continue;
+
+			Cell to = kerKing[bd.getId()];
+
+			if (akq[to.getId()] != KING)
+			{
+				continue;
+			}
+
+			BOOST_ASSERT(akq[to.getId()] == KING);
+
+			if (morse[to.getId()] < ourMorseValue)
+			{
+				int newCoeff = toKingCoeff(curr, to, bd);
+
+				PathsInfo fromHere = followPathMemo(to, from);
+
+				for (PathsInfo::const_iterator it = fromHere.begin(); it != fromHere.end(); ++it)
+				{
+					coeffs[it->first] += it->second*newCoeff;
+				}
+			}
+		}
+
+		return coeffs;
+    }
+
     bool markNullPaths(Cell curr, Cell from)
     {
+    	int& ok = nullPathMemo[curr.getId()];
+    	if (ok != -1)
+			return static_cast<bool>(ok); // true or false
+
     	if (akq[curr.getId()] == ACE && curr.getId() != from.getId())
 			return true;
 
@@ -188,7 +273,7 @@ protected:
 
         int ourMorseValue = morse[curr.getId()];
 
-		bool ok = false;
+        ok = false;
 
         // case 1: to ace
 		BOOST_FOREACH(Cell to, this->complex.iterators().bdCells(curr))
@@ -196,6 +281,7 @@ protected:
 			if (akq[to.getId()] == ACE && morse[to.getId()] < ourMorseValue)
 			{
 				ok = true;
+				break;
 			}
 		}
 		// case 2: to king
@@ -232,14 +318,25 @@ protected:
 
     void reportPaths()
     {
+    	/*
         BOOST_FOREACH(Cell ace, aces)
         {
-            markNullPaths(ace, ace);
+		    markNullPaths(ace, ace);
         }
 
         BOOST_FOREACH(Cell ace, aces)
         {
-            followPath(ace);
+			followPath(ace);
+        }
+        */
+
+        BOOST_FOREACH(Cell ace, aces)
+        {
+            PathsInfo cf = followPathMemo(ace, ace);
+            for (PathsInfo::const_iterator it = cf.begin(); it != cf.end(); ++it)
+            {
+				coeffs[std::make_pair(ace.getId(), it->first)] += it->second;
+            }
         }
 
         typedef std::pair<std::pair<int,int>,int> Triple;
@@ -271,10 +368,12 @@ protected:
     std::vector<Cell> kerKing;
     std::vector<Cell> aces;
 
+
+
 	int extractDim;
     int maxExtractDim;
     std::map<std::pair<int,int>, int> coeffs;
-
+    PathsInfo emptyPathsInfo;
     OutputComplexType *outputComplex;
 };
 
