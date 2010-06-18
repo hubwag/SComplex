@@ -1,5 +1,5 @@
-#ifndef ALGS_AKQ_REDUCE_STRATEGY_HPP_
-#define ALGS_AKQ_REDUCE_STRATEGY_HPP_
+#ifndef ALGS_Optimistic_AKQ_REDUCE_STRATEGY_HPP_
+#define ALGS_Optimistic_AKQ_REDUCE_STRATEGY_HPP_
 
 #include <boost/optional.hpp>
 #include <boost/foreach.hpp>
@@ -22,7 +22,7 @@
 #include "redHom/algorithm/CellDimIndexer.hpp"
 
 template<typename SComplexT>
-class AKQReduceStrategy : public DefaultReduceStrategy<SComplexT>
+class OptimisticAKQReduceStrategy : public DefaultReduceStrategy<SComplexT>
 {
 protected:
     using DefaultReduceStrategyBase<SComplexT>::complex;
@@ -31,36 +31,35 @@ protected:
 public:
     enum AKQType {UNSET, KING, QUEEN, ACE};
 
-    typedef std::map<int,int> PathsInfo;
+
 
     typedef ::SComplex<SComplexDefaultTraits> OutputComplexType;
     typedef SComplexT SComplex;
     typedef DefaultReduceStrategyTraits<SComplex> Traits;
     typedef typename SComplex::Cell Cell;
 
-    typedef CellDimIndexer<Cell> DimIndexerType;
-    DimIndexerType dimIndexer;
-    typename DimIndexerType::iterator extractIt;
-    typename DimIndexerType::iterator extractEnd;
+	typedef CellDimIndexer<Cell> DimIndexerType;
+	DimIndexerType dimIndexer;
+	typename DimIndexerType::iterator extractIt;
+	typename DimIndexerType::iterator extractEnd;
 
-    AKQReduceStrategy(SComplex& _complex): DefaultReduceStrategy<SComplex>(_complex)
+    OptimisticAKQReduceStrategy(SComplex& _complex): DefaultReduceStrategy<SComplex>(_complex)
     {
         // maxExtractDim = _complex.getDim();
         maxExtractDim = getMaxDim();
         extractDim = 0;
 
         int csize = _complex.size();
+
         morse.resize(csize, 0);
+        nullPathMemo.resize(csize, -1);
 
         dimIndexer = DimIndexerType(this->complex.iterators(1).allCells().begin(),
-                                    this->complex.iterators(1).allCells().end(),
-                                    maxExtractDim);
+			this->complex.iterators(1).allCells().end(),
+			maxExtractDim);
 
-        extractIt = dimIndexer.begin();
-        extractEnd = dimIndexer.end();
-
-        notSet[-1] = -1;
-        followMemoTable.resize(csize, notSet);
+		extractIt = dimIndexer.begin();
+		extractEnd = dimIndexer.end();
 
         akq.resize(csize);
         kerKing.resize(csize, Cell(this->complex));
@@ -91,22 +90,21 @@ public:
 
     typename Traits::Extract::result_type extract()
     {
-        while (extractIt != extractEnd && extractIt->getColor() != 1)
-            ++extractIt;
+		while(extractIt != extractEnd && extractIt->getColor() != 1)
+			++extractIt;
 
-        if (extractIt != extractEnd)
-        {
-            BOOST_ASSERT(extractIt->getColor() == 1);
+		if (extractIt != extractEnd)
+		{
+			BOOST_ASSERT(extractIt->getColor() == 1);
 
-            int v = (extractIt->getDim() == 0) ? 0 : calcMorseValue(*extractIt);
+			int v = (extractIt->getDim() == 0) ? 0 : calcMorseValue(*extractIt);
 
-            morse[extractIt->getId()] = v;
-            aces.push_back(*extractIt);
-            akq[extractIt->getId()] = ACE;
+			morse[extractIt->getId()] = v;
+			aces.push_back(*extractIt);
+			akq[extractIt->getId()] = ACE;
 
-            return typename Traits::Extract::result_type::value_type(*extractIt);
-        }
-
+			return typename Traits::Extract::result_type::value_type(*extractIt);
+		}
 
         reportPaths();
         return typename Traits::Extract::result_type();
@@ -212,29 +210,29 @@ protected:
     }
 
     template<typename T1, typename T2>
-    const PathsInfo& followPathMemo(T1& curr, T2& from)
+    bool markNullPaths(T1& curr, T2& from)
     {
-        PathsInfo &coeffs = followMemoTable[curr.getId()];
+        int& ok = nullPathMemo[curr.getId()];
+        if (ok != -1)
+            return static_cast<bool>(ok); // true or false
 
-        if (coeffs != notSet)
-            return coeffs;
+        if (akq[curr.getId()] == ACE && curr.getId() != from.getId())
+            return true;
 
         if (akq[curr.getId()] == UNSET)
-            return emptyPathsInfo;
-
-        BOOST_ASSERT(akq[curr.getId()] != ACE || curr.getId() == from.getId());
-
-        coeffs.clear();
+            return false;
 
         int ourMorseValue = morse[curr.getId()];
+
+        ok = false;
 
         // case 1: to ace
         BOOST_FOREACH(typename SComplex::Iterators::BdCells::iterator::value_type to, this->complex.iterators().bdCells(curr))
         {
             if (akq[to.getId()] == ACE && morse[to.getId()] < ourMorseValue)
             {
-                int newCoeff = toAceCoeff(curr, to);
-                coeffs[to.getId()] += newCoeff;
+                ok = true;
+                break;
             }
         }
         // case 2: to king
@@ -254,29 +252,31 @@ protected:
 
             if (morse[to.getId()] < ourMorseValue)
             {
-                int newCoeff = toKingCoeff(curr, to, bd);
-
-                const PathsInfo &fromHere = followPathMemo(to, from);
-
-                for (PathsInfo::const_iterator it = fromHere.begin(); it != fromHere.end(); ++it)
+                if (markNullPaths(to, from))
                 {
-                    coeffs[it->first] += it->second*newCoeff;
+                    ok = true;
                 }
             }
         }
 
-        return coeffs;
+        if (!ok && akq[curr.getId()] != ACE)
+        {
+            akq[curr.getId()] = UNSET;
+        }
+
+        return ok;
     }
 
     void reportPaths()
     {
         BOOST_FOREACH(Cell ace, aces)
         {
-            const PathsInfo &cf = followPathMemo(ace, ace);
-            for (PathsInfo::const_iterator it = cf.begin(); it != cf.end(); ++it)
-            {
-                coeffs[std::make_pair(ace.getId(), it->first)] += it->second;
-            }
+            markNullPaths(ace, ace);
+        }
+
+        BOOST_FOREACH(Cell ace, aces)
+        {
+        	followPath(ace);
         }
 
         typedef std::pair<std::pair<int,int>,int> Triple;
@@ -308,14 +308,13 @@ protected:
     std::vector<Cell> kerKing;
     std::vector<Cell> aces;
 
-    std::vector<PathsInfo> followMemoTable;
+    std::vector<int> nullPathMemo;
 
     int extractDim;
     int maxExtractDim;
     std::map<std::pair<int,int>, int> coeffs;
 
-    PathsInfo notSet;
-    PathsInfo emptyPathsInfo;
+
     OutputComplexType *outputComplex;
 };
 
