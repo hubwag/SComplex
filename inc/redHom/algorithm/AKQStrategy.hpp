@@ -57,8 +57,14 @@ public:
 
         morse.resize(csize, 0);
 
-        infosUsed = 0;
+        kingsUsed = 0;
 
+        {
+        Cell king(_complex);
+        kingPool.resize(card/2 + 10, king); std::cout << __LINE__ << " [kingPool allocation] @ " << total << std::endl;
+        }
+
+        infosUsed = 0;
         {
         PathsInfo pi;
         pathsInfoPool.resize(card, pi); std::cout << __LINE__ << " [pathsInfoPool allocation] @ " << total << std::endl;
@@ -76,7 +82,9 @@ public:
         followMemoTable.resize(csize, 0); std::cout << __LINE__ << " @ " << total << std::endl;
 
         akq.resize(csize); std::cout << __LINE__ << "[AKQ resize] @ " << total << std::endl;
-        kerKing.resize(csize, Cell(this->complex)); std::cout << __LINE__ << " [herKing allocation] @ " << total << std::endl;
+        // kerKing.resize(csize, Cell(this->complex)); std::cout << __LINE__ << " [herKing allocation] @ " << total << std::endl;
+
+		kerKing.resize(csize, 0); std::cout << __LINE__ << " [herKing allocation] @ " << total << std::endl;
 
         std::cout << "Init done in " << total << std::endl;
     }
@@ -154,7 +162,7 @@ protected:
         int v = calcMorseValue(king);
         morse[king.getId()] = v;
         morse[queen.getId()] = v;
-        kerKing[queen.getId()] = king;
+        kerKing[queen.getId()] = &(kingPool[kingsUsed++] = king);
     }
 
     template<typename T1, typename T2>
@@ -209,7 +217,7 @@ protected:
             if (akq[bd.getId()] != QUEEN)
                 continue;
 
-            Cell& to = kerKing[bd.getId()];
+            Cell& to = *(kerKing[bd.getId()]);
 
             if (akq[to.getId()] != KING)
             {
@@ -276,10 +284,15 @@ protected:
 
     std::vector<int> morse;
     std::vector<AKQType> akq;
-    std::vector<Cell> kerKing;
-    std::vector<Cell> aces;
-    int infosUsed;
+    /// std::vector<boost::optional<Cell> > kerKing;
 
+    int kingsUsed;
+    std::vector<Cell> kingPool;
+    std::vector<Cell*> kerKing;
+
+    std::vector<Cell> aces;
+
+    int infosUsed;
     std::vector<PathsInfo> pathsInfoPool;
 
     std::vector<PathsInfo*> followMemoTable;
