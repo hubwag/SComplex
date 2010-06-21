@@ -3,6 +3,8 @@
 
 #include <boost/optional.hpp>
 #include <boost/foreach.hpp>
+#include <boost/iterator/filter_iterator.hpp>
+
 #include <utility>
 #include <stack>
 
@@ -17,39 +19,48 @@
 #include "redHom/algorithm/strategy/DefaultReduceStrategy_CubSComplex.hpp"
 #include "redHom/algorithm/Coreduction.hpp"
 
+#include "redHom/algorithm/CellDimIndexer.hpp"
+
 template<typename SComplexT>
 class AKQReduceStrategy : public DefaultReduceStrategy<SComplexT>
 {
 protected:
-  using DefaultReduceStrategyBase<SComplexT>::complex;
+    using DefaultReduceStrategyBase<SComplexT>::complex;
 
 public:
     enum AKQType {UNSET, KING, QUEEN, ACE};
 
     typedef std::map<int,int> PathsInfo;
 
-    std::vector<int> nullPathMemo;
-    std::vector<PathsInfo> followMemoTable;
-
     typedef ::SComplex<SComplexDefaultTraits> OutputComplexType;
     typedef SComplexT SComplex;
     typedef DefaultReduceStrategyTraits<SComplex> Traits;
     typedef typename SComplex::Cell Cell;
 
-    PathsInfo notSet;
+    typedef CellDimIndexer<Cell> DimIndexerType;
+    DimIndexerType dimIndexer;
+    typename DimIndexerType::iterator extractIt;
+    typename DimIndexerType::iterator extractEnd;
 
     AKQReduceStrategy(SComplex& _complex): DefaultReduceStrategy<SComplex>(_complex)
     {
+        // maxExtractDim = _complex.getDim();
         maxExtractDim = _complex.getDim();
         extractDim = 0;
 
         int csize = _complex.size();
-
         morse.resize(csize, 0);
-        nullPathMemo.resize(csize, -1);
+
+        dimIndexer = DimIndexerType(this->complex.iterators(1).allCells().begin(),
+                                    this->complex.iterators(1).allCells().end(),
+                                    maxExtractDim);
+
+        extractIt = dimIndexer.begin();
+        extractEnd = dimIndexer.end();
 
         notSet[-1] = -1;
         followMemoTable.resize(csize, notSet);
+
         akq.resize(csize);
         kerKing.resize(csize, Cell(this->complex));
     }
@@ -60,7 +71,7 @@ public:
     }
 
     template<typename CellT1, typename CellT2>
-	void coreduce(CellT1& a, CellT2& b)
+    void coreduce(CellT1& a, CellT2& b)
     {
         BOOST_ASSERT(a.getDim() != b.getDim());
 
@@ -79,26 +90,22 @@ public:
 
     typename Traits::Extract::result_type extract()
     {
-        for (; extractDim <= maxExtractDim; extractDim++)
+        while (extractIt != extractEnd && extractIt->getColor() != 1)
+            ++extractIt;
+
+        if (extractIt != extractEnd)
         {
-            typename SComplex::ColoredIterators::Iterators::DimCells dimCells = complex.iterators(1).dimCells(extractDim);
-            typename SComplex::ColoredIterators::Iterators::DimCells::iterator end = dimCells.end(),
-                    it = dimCells.begin();
+            BOOST_ASSERT(extractIt->getColor() == 1);
 
-            if (it != end)
-            {
-                int v = 0;
+            int v = (extractIt->getDim() == 0) ? 0 : calcMorseValue(*extractIt);
 
-                if (extractDim != 0)
-                    v = calcMorseValue(*it);
+            morse[extractIt->getId()] = v;
+            aces.push_back(*extractIt);
+            akq[extractIt->getId()] = ACE;
 
-                morse[it->getId()] = v;
-                aces.push_back(*it);
-                akq[it->getId()] = ACE;
-
-                return typename Traits::Extract::result_type::value_type(*it);
-            }
+            return typename Traits::Extract::result_type::value_type(*extractIt);
         }
+
 
         reportPaths();
         return typename Traits::Extract::result_type();
@@ -111,7 +118,7 @@ public:
 
 protected:
 
-	template<typename cellT1>
+    template<typename cellT1>
     int calcMorseValue(const cellT1 &c)
     {
         int val = 0;
@@ -143,7 +150,7 @@ protected:
         return complex.coincidenceIndex(x, y);
     }
 
-  template<typename T1, typename T2, typename T3>
+    template<typename T1, typename T2, typename T3>
     int toKingCoeff(T1& x, T2& y, T3& y_star)
     {
         BOOST_ASSERT(akq[x.getId()] != QUEEN);
@@ -183,8 +190,6 @@ protected:
             {
                 if (akq[to.getId()] == ACE && morse[to.getId()] < ourMorseValue)
                 {
-                	//std::cout << curr.getId() << " d: " << curr.getDim() << " m: " << morse[curr.getId()] << "=>";
-                	//std::cout << to.getId() << " d: " << to.getDim() << " m: " << morse[to.getId()] << std::endl;
                     S.push(std::make_pair(to, accumulatedWeight * toAceCoeff(curr, to)));
                 }
             }
@@ -199,149 +204,77 @@ protected:
 
                 if (akq[to.getId()] == KING && morse[to.getId()] < ourMorseValue)
                 {
-                	//std::cout << curr.getId() << " d: " << curr.getDim() << " m: " << morse[curr.getId()] << "=>";
-                	//std::cout << to.getId() << " d: " << to.getDim() << " m: " << morse[to.getId()] << std::endl;
                     S.push(std::make_pair(to, accumulatedWeight * toKingCoeff(curr, to, bd)));
                 }
             }
         }
     }
 
-  template<typename T1, typename T2>
-  const PathsInfo& followPathMemo(T1& curr, T2& from)
-    {
-    	PathsInfo &coeffs = followMemoTable[curr.getId()];
-
-    	if (coeffs != notSet)
-	  return coeffs;
-	
-    	if (akq[curr.getId()] == UNSET)
-	  return emptyPathsInfo;
-
-    	BOOST_ASSERT(akq[curr.getId()] != ACE || curr.getId() == from.getId());
-
-		coeffs.clear();
-
-        int ourMorseValue = morse[curr.getId()];
-
-        // case 1: to ace
-		BOOST_FOREACH(typename SComplex::Iterators::BdCells::iterator::value_type to, this->complex.iterators().bdCells(curr))
-		{
-			if (akq[to.getId()] == ACE && morse[to.getId()] < ourMorseValue)
-			{
-				int newCoeff = toAceCoeff(curr, to);
-				coeffs[to.getId()] += newCoeff;
-			}
-		}
-		// case 2: to king
-		BOOST_FOREACH(typename SComplex::Iterators::BdCells::iterator::value_type bd, this->complex.iterators().bdCells(curr))
-		{
-			if (akq[bd.getId()] != QUEEN)
-				continue;
-
-			Cell& to = kerKing[bd.getId()];
-
-			if (akq[to.getId()] != KING)
-			{
-				continue;
-			}
-
-			BOOST_ASSERT(akq[to.getId()] == KING);
-
-			if (morse[to.getId()] < ourMorseValue)
-			{
-				int newCoeff = toKingCoeff(curr, to, bd);
-
-				PathsInfo fromHere = followPathMemo(to, from);
-
-				for (PathsInfo::const_iterator it = fromHere.begin(); it != fromHere.end(); ++it)
-				{
-					coeffs[it->first] += it->second*newCoeff;
-				}
-			}
-		}
-
-		return coeffs;
-    }
-
     template<typename T1, typename T2>
-    bool markNullPaths(T1& curr, T2& from)
+    const PathsInfo& followPathMemo(T1& curr, T2& from)
     {
-    	int& ok = nullPathMemo[curr.getId()];
-    	if (ok != -1)
-			return static_cast<bool>(ok); // true or false
+        PathsInfo &coeffs = followMemoTable[curr.getId()];
 
-    	if (akq[curr.getId()] == ACE && curr.getId() != from.getId())
-			return true;
+        if (coeffs != notSet)
+            return coeffs;
 
-    	if (akq[curr.getId()] == UNSET)
-    		return false;
+        if (akq[curr.getId()] == UNSET)
+            return emptyPathsInfo;
+
+        BOOST_ASSERT(akq[curr.getId()] != ACE || curr.getId() == from.getId());
+
+        coeffs.clear();
 
         int ourMorseValue = morse[curr.getId()];
 
-        ok = false;
-
         // case 1: to ace
-		BOOST_FOREACH(typename SComplex::Iterators::BdCells::iterator::value_type to, this->complex.iterators().bdCells(curr))
-		{
-			if (akq[to.getId()] == ACE && morse[to.getId()] < ourMorseValue)
-			{
-				ok = true;
-				break;
-			}
-		}
-		// case 2: to king
-		BOOST_FOREACH(typename SComplex::Iterators::BdCells::iterator::value_type bd, this->complex.iterators().bdCells(curr))
-		{
-			if (akq[bd.getId()] != QUEEN)
-				continue;
+        BOOST_FOREACH(typename SComplex::Iterators::BdCells::iterator::value_type to, this->complex.iterators().bdCells(curr))
+        {
+            if (akq[to.getId()] == ACE && morse[to.getId()] < ourMorseValue)
+            {
+                int newCoeff = toAceCoeff(curr, to);
+                coeffs[to.getId()] += newCoeff;
+            }
+        }
+        // case 2: to king
+        BOOST_FOREACH(typename SComplex::Iterators::BdCells::iterator::value_type bd, this->complex.iterators().bdCells(curr))
+        {
+            if (akq[bd.getId()] != QUEEN)
+                continue;
 
-			Cell& to = kerKing[bd.getId()];
+            Cell& to = kerKing[bd.getId()];
 
-			if (akq[to.getId()] != KING)
-			{
-				continue;
-			}
+            if (akq[to.getId()] != KING)
+            {
+                continue;
+            }
 
-			BOOST_ASSERT(akq[to.getId()] == KING);
+            BOOST_ASSERT(akq[to.getId()] == KING);
 
-			if (morse[to.getId()] < ourMorseValue)
-			{
-				if (markNullPaths(to, from))
-				{
-					ok = true;
-				}
-			}
-		}
+            if (morse[to.getId()] < ourMorseValue)
+            {
+                int newCoeff = toKingCoeff(curr, to, bd);
 
-		if (!ok && akq[curr.getId()] != ACE)
-		{
-			akq[curr.getId()] = UNSET;
-		}
+                const PathsInfo &fromHere = followPathMemo(to, from);
 
-		return ok;
+                for (PathsInfo::const_iterator it = fromHere.begin(); it != fromHere.end(); ++it)
+                {
+                    coeffs[it->first] += it->second*newCoeff;
+                }
+            }
+        }
+
+        return coeffs;
     }
 
     void reportPaths()
     {
-    	/*
         BOOST_FOREACH(Cell ace, aces)
         {
-		    markNullPaths(ace, ace);
-        }
-
-        BOOST_FOREACH(Cell ace, aces)
-        {
-			followPath(ace);
-        }
-        */
-
-        BOOST_FOREACH(Cell ace, aces)
-        {
-            PathsInfo cf = followPathMemo(ace, ace);
+            const PathsInfo &cf = followPathMemo(ace, ace);
             for (PathsInfo::const_iterator it = cf.begin(); it != cf.end(); ++it)
             {
-				coeffs[std::make_pair(ace.getId(), it->first)] += it->second;
+                coeffs[std::make_pair(ace.getId(), it->first)] += it->second;
             }
         }
 
@@ -374,11 +307,13 @@ protected:
     std::vector<Cell> kerKing;
     std::vector<Cell> aces;
 
+    std::vector<PathsInfo> followMemoTable;
 
-
-	int extractDim;
+    int extractDim;
     int maxExtractDim;
     std::map<std::pair<int,int>, int> coeffs;
+
+    PathsInfo notSet;
     PathsInfo emptyPathsInfo;
     OutputComplexType *outputComplex;
 };
