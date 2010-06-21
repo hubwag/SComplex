@@ -45,25 +45,40 @@ public:
 
     AKQReduceStrategy(SComplex& _complex): DefaultReduceStrategy<SComplex>(_complex)
     {
-        // maxExtractDim = _complex.getDim();
-        maxExtractDim = getMaxDim();
+        Stopwatch total;
+    	std::cout << "Starting init\n";
+
+        maxExtractDim = getMaxDim(); std::cout << __LINE__ << " @ " << total << std::endl;
+
         extractDim = 0;
 
-        int csize = _complex.size();
+        int csize = _complex.size(); std::cout << __LINE__ << " @ " << total << std::endl;
+        int card = distance(_complex.iterators(1).allCells().begin(), _complex.iterators(1).allCells().end());
+
         morse.resize(csize, 0);
+
+        infosUsed = 0;
+
+        {
+        PathsInfo pi;
+        pathsInfoPool.resize(card, pi); std::cout << __LINE__ << " [pathsInfoPool allocation] @ " << total << std::endl;
+        }
 
         dimIndexer = DimIndexerType(this->complex.iterators(1).allCells().begin(),
                                     this->complex.iterators(1).allCells().end(),
                                     maxExtractDim);
 
-        extractIt = dimIndexer.begin();
-        extractEnd = dimIndexer.end();
+		std::cout << __LINE__ << " @ " << total << std::endl;
 
-        notSet[-1] = -1;
-        followMemoTable.resize(csize, notSet);
+        extractIt = dimIndexer.begin(); std::cout << __LINE__ << " @ " << total << std::endl;
+        extractEnd = dimIndexer.end(); std::cout << __LINE__ << " @ " << total << std::endl;
 
-        akq.resize(csize);
-        kerKing.resize(csize, Cell(this->complex));
+        followMemoTable.resize(csize, 0); std::cout << __LINE__ << " @ " << total << std::endl;
+
+        akq.resize(csize); std::cout << __LINE__ << "[AKQ resize] @ " << total << std::endl;
+        kerKing.resize(csize, Cell(this->complex)); std::cout << __LINE__ << " [herKing allocation] @ " << total << std::endl;
+
+        std::cout << "Init done in " << total << std::endl;
     }
 
     SComplex& getComplex() const
@@ -161,70 +176,21 @@ protected:
         return -1 * complex.coincidenceIndex(x, y_star) / complex.coincidenceIndex(y, y_star);
     }
 
-    template<typename T1>
-    void followPath(T1& c)
-    {
-        std::stack<std::pair<Cell, int> > S;
-
-        S.push(std::make_pair(c, 1));
-
-        while (S.size())
-        {
-            Cell curr = S.top().first;
-            int accumulatedWeight = S.top().second;
-            S.pop();
-
-            // std::cout << curr.getId() << " d: " << curr.getDim() << " m: " << morse[curr.getId()] << std::endl;
-
-            BOOST_ASSERT(akq[curr.getId()] != QUEEN);
-
-            if (curr.getId() != c.getId() && akq[curr.getId()] == ACE)
-            {
-                coeffs[std::make_pair(c.getId(), curr.getId())] += accumulatedWeight;
-                continue;
-            }
-
-            int ourMorseValue = morse[curr.getId()];
-
-            // case 1: to ace
-            BOOST_FOREACH(typename SComplex::Iterators::BdCells::iterator::value_type to, complex.iterators().bdCells(curr))
-            {
-                if (akq[to.getId()] == ACE && morse[to.getId()] < ourMorseValue)
-                {
-                    S.push(std::make_pair(to, accumulatedWeight * toAceCoeff(curr, to)));
-                }
-            }
-
-            // case 2: to king
-            BOOST_FOREACH(typename SComplex::Iterators::BdCells::iterator::value_type bd, complex.iterators().bdCells(curr))
-            {
-                if (akq[bd.getId()] != QUEEN)
-                    continue;
-
-                Cell& to = kerKing[bd.getId()];
-
-                if (akq[to.getId()] == KING && morse[to.getId()] < ourMorseValue)
-                {
-                    S.push(std::make_pair(to, accumulatedWeight * toKingCoeff(curr, to, bd)));
-                }
-            }
-        }
-    }
-
     template<typename T1, typename T2>
     const PathsInfo& followPathMemo(T1& curr, T2& from)
     {
-        PathsInfo &coeffs = followMemoTable[curr.getId()];
+    	PathsInfo *&coeffs = followMemoTable[curr.getId()];
 
-        if (coeffs != notSet)
-            return coeffs;
+    	if (coeffs != 0)
+            return *coeffs;
 
         if (akq[curr.getId()] == UNSET)
             return emptyPathsInfo;
 
         BOOST_ASSERT(akq[curr.getId()] != ACE || curr.getId() == from.getId());
 
-        coeffs.clear();
+        // coeffs = new PathsInfo();'
+        coeffs = &pathsInfoPool[infosUsed++];
 
         int ourMorseValue = morse[curr.getId()];
 
@@ -234,7 +200,7 @@ protected:
             if (akq[to.getId()] == ACE && morse[to.getId()] < ourMorseValue)
             {
                 int newCoeff = toAceCoeff(curr, to);
-                coeffs[to.getId()] += newCoeff;
+                (*coeffs)[to.getId()] += newCoeff;
             }
         }
         // case 2: to king
@@ -260,16 +226,19 @@ protected:
 
                 for (PathsInfo::const_iterator it = fromHere.begin(); it != fromHere.end(); ++it)
                 {
-                    coeffs[it->first] += it->second*newCoeff;
+                    (*coeffs)[it->first] += it->second*newCoeff;
                 }
             }
         }
 
-        return coeffs;
+        return *coeffs;
     }
 
     void reportPaths()
     {
+		Stopwatch total;
+    	std::cout << "Starting memoized coefficient calculation\n";
+
         BOOST_FOREACH(Cell ace, aces)
         {
             const PathsInfo &cf = followPathMemo(ace, ace);
@@ -278,6 +247,8 @@ protected:
                 coeffs[std::make_pair(ace.getId(), it->first)] += it->second;
             }
         }
+
+        std::cout << "done in " << total << std::endl;
 
         typedef std::pair<std::pair<int,int>,int> Triple;
 
@@ -307,14 +278,16 @@ protected:
     std::vector<AKQType> akq;
     std::vector<Cell> kerKing;
     std::vector<Cell> aces;
+    int infosUsed;
 
-    std::vector<PathsInfo> followMemoTable;
+    std::vector<PathsInfo> pathsInfoPool;
+
+    std::vector<PathsInfo*> followMemoTable;
 
     int extractDim;
     int maxExtractDim;
     std::map<std::pair<int,int>, int> coeffs;
 
-    PathsInfo notSet;
     PathsInfo emptyPathsInfo;
     OutputComplexType *outputComplex;
 };

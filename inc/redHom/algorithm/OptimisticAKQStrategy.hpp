@@ -31,25 +31,28 @@ protected:
 public:
     enum AKQType {UNSET, KING, QUEEN, ACE};
 
-
-
     typedef ::SComplex<SComplexDefaultTraits> OutputComplexType;
     typedef SComplexT SComplex;
     typedef DefaultReduceStrategyTraits<SComplex> Traits;
     typedef typename SComplex::Cell Cell;
 
 	typedef CellDimIndexer<Cell> DimIndexerType;
-	DimIndexerType dimIndexer;
 	typename DimIndexerType::iterator extractIt;
 	typename DimIndexerType::iterator extractEnd;
 
     OptimisticAKQReduceStrategy(SComplex& _complex): DefaultReduceStrategy<SComplex>(_complex)
     {
         // maxExtractDim = _complex.getDim();
+
+		Stopwatch total;
+    	std::cout << "Starting init\n";
+
         maxExtractDim = getMaxDim();
         extractDim = 0;
 
         int csize = _complex.size();
+
+        bdSize.resize(csize);
 
         morse.resize(csize, 0);
         nullPathMemo.resize(csize, -1);
@@ -63,6 +66,8 @@ public:
 
         akq.resize(csize);
         kerKing.resize(csize, Cell(this->complex));
+
+        std::cout << "Init done in " << total << std::endl;
     }
 
     SComplex& getComplex() const
@@ -78,10 +83,12 @@ public:
         if (a.getDim() > b.getDim())
         {
             kingGetsMarried(a, b);
+            --bdSize[a.getId()];
         }
         else
         {
             kingGetsMarried(b, a);
+            --bdSize[b.getId()];
         }
 
         a.template setColor<2>();
@@ -171,8 +178,6 @@ protected:
             Cell curr = S.top().first;
             int accumulatedWeight = S.top().second;
             S.pop();
-
-            // std::cout << curr.getId() << " d: " << curr.getDim() << " m: " << morse[curr.getId()] << std::endl;
 
             BOOST_ASSERT(akq[curr.getId()] != QUEEN);
 
@@ -269,15 +274,28 @@ protected:
 
     void reportPaths()
     {
+    	Stopwatch total;
+
+    	std::cout << "Starting coefficient calculation\n";
+
+    	Stopwatch null;
+
         BOOST_FOREACH(Cell ace, aces)
         {
             markNullPaths(ace, ace);
         }
 
+        std::cout << "Null paths removed after: " << null << std::endl;
+
+        Stopwatch follow;
+
         BOOST_FOREACH(Cell ace, aces)
         {
         	followPath(ace);
         }
+
+        std::cout << "All paths followed: " << follow << std::endl;
+        std::cout << "All coefficients in: " << total << std::endl;
 
         typedef std::pair<std::pair<int,int>,int> Triple;
 
@@ -292,6 +310,8 @@ protected:
             from0[ace.getId()] = next;
         }
 
+        std::cout << "After remapping numbers: " << total << std::endl;
+
         OutputComplexType::KappaMap kap;
 
         BOOST_FOREACH(Triple p, coeffs)
@@ -300,7 +320,11 @@ protected:
             kap.push_back(boost::make_tuple(from0[p.first.first], from0[p.first.second], coef));
         }
 
+        std::cout << "After kappa map construction: " << total << std::endl;
+
         outputComplex = new OutputComplexType(3, dims, kap, 1);
+
+        std::cout << "After SComplex allocation: " << total << std::endl;
     }
 
     std::vector<int> morse;
@@ -308,12 +332,15 @@ protected:
     std::vector<Cell> kerKing;
     std::vector<Cell> aces;
 
+    DimIndexerType dimIndexer;
+
     std::vector<int> nullPathMemo;
 
     int extractDim;
     int maxExtractDim;
     std::map<std::pair<int,int>, int> coeffs;
 
+    vector<int> bdSize;
 
     OutputComplexType *outputComplex;
 };
