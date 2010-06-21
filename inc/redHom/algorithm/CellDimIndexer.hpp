@@ -11,16 +11,7 @@ class CellDimIndexer
 	std::vector<std::vector<CellT> > cellsByDim;
 	std::vector<CellT> sortedCells;
 
-	struct IsAvailable
-	{
-		bool operator()(CellT c) const
-		{
-			return c.getColor() == 1;
-		}
-	};
-
 	public:
-
 	typedef typename std::vector<CellT>::const_iterator iterator;
 
 	CellDimIndexer()
@@ -30,6 +21,9 @@ class CellDimIndexer
 	template<typename iterT>
 	CellDimIndexer(iterT begin, iterT end, int maxDim)
 	{
+		Stopwatch total;
+    	std::cout << "Starting CellDimIndexer ctor\n";
+
 		cellsByDim.resize(maxDim + 1, std::vector<CellT>());
 
 		for (; begin != end; ++begin)
@@ -45,6 +39,8 @@ class CellDimIndexer
 				sortedCells.push_back(cellsByDim[d][i]);
 			}
 		}
+
+		std::cout << "CellDimIndexer ctor done in " << total << std::endl;
 	}
 
 	iterator begin()
