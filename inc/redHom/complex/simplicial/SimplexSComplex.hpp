@@ -199,7 +199,7 @@ class CellProxy: public BasicCellProxy<ImplT>
 
     int size()
     {
-        return distance(all_begin(), all_end()); // slow
+        return distance(this->iterators().allCells().begin(), this->iterators().allCells().end());
     }
 
     int cardinality()

@@ -18,13 +18,11 @@ using namespace std;
 #include "redHom/complex/simplicial/Simplex.hpp"
 #include "redHom/complex/simplicial/SimplexSComplex.hpp"
 
-
-
 #include <capd/auxil/Stopwatch.h>
 #include <capd/auxil/CRef.h>
 
 #include <capd/homologicalAlgebra/embeddingDim.h>
-#include <capd/homologicalAlgebra/Bitmap.hpp>
+#include <capd/bitSet/BitmapT.hpp>
 
 #include <capd/vectalg/MatrixSlice.h>
 #include <capd/matrixAlgorithms/intMatrixAlgorithms.hpp>
@@ -85,15 +83,6 @@ void showObj(const string &s, const string &method = "KMS", int subdivs = 0)
 		parseDat(ifs, complex, subdivs);
 	}
 
-	/*
-	vector<set<int> > v = makeSpaceFromWelds(makeKleinWelds());
-
-	BOOST_FOREACH(set<int> e, v)
-	{
-		complex.addSimplex(e);
-	}
-	*/
-
 	cout << "parsed file, cardinality: " << complex.cardinality() << endl;
 	cout << "it took: " << swTot << endl;
 
@@ -107,6 +96,9 @@ void showObj(const string &s, const string &method = "KMS", int subdivs = 0)
 		cout << "calculations completed in: " << swComp << endl;
 		return;
 	} else if (method == "CORED") {
+
+		(ShaveAlgorithm<DefaultReduceStrategy<SimplexSComplex> >(new DefaultReduceStrategy<SimplexSComplex>(complex)))();
+
 		cout << "RUNNING STANDARD REDUCTIONS THEN KMS\n";
 		boost::shared_ptr<CoreductionAlgorithm<DefaultReduceStrategy<SimplexSComplex> > >
 		old = CoreductionAlgorithmFactory::createDefault(complex);
@@ -118,9 +110,11 @@ void showObj(const string &s, const string &method = "KMS", int subdivs = 0)
 		return;
 	}
 
-	// boost::shared_ptr<CoreductionAlgorithm<DefaultReduceStrategy<SimplexSComplex> > >
-	//	old = CoreductionAlgorithmFactory::createDefault(complex);
-	//	(*old)();
+	(ShaveAlgorithm<DefaultReduceStrategy<SimplexSComplex> >(new DefaultReduceStrategy<SimplexSComplex>(complex)))();
+
+	/*boost::shared_ptr<CoreductionAlgorithm<DefaultReduceStrategy<SimplexSComplex> > >
+	old = CoreductionAlgorithmFactory::createDefault(complex);
+	(*old)();*/
 
     boost::shared_ptr<CoreductionAlgorithm<AKQReduceStrategy<SimplexSComplex> > >
     cored = CoreductionAlgorithmFactory::createAKQ(complex);
@@ -142,9 +136,11 @@ int main(int n, char **v)
 	ios_base::sync_with_stdio(false);
 
 	string method = "AKQ";
-	// string file = "c:/users/hub/Downloads/buddha.obj";
+	// string
 	// string file = "c:/users/hub/Downloads/library/knot.dat";
 	string file;
+
+	file = "c:/users/hub/Downloads/randomsimplices(2).dat";
 
 	int subdivs = 0;
 	if (n <= 1)
@@ -152,7 +148,7 @@ int main(int n, char **v)
 		// cerr << "using default file - probably nonexistent...\n";
 		cerr << "usage: filename [AKQ|CORED|MKS] [number_of_subdivisions]" << endl;
 		cerr << "no arguments - quitting\n";
-		exit(1);
+		// exit(1);
 	}
 
 	if (n > 1)
