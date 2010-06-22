@@ -271,6 +271,8 @@ protected:
             from0[ace.getId()] = next;
         }
 
+        std::cout << "mapped ids after" << total << std::endl;
+
         OutputComplexType::KappaMap kap;
 
         BOOST_FOREACH(Triple p, coeffs)
@@ -279,12 +281,15 @@ protected:
             kap.push_back(boost::make_tuple(from0[p.first.first], from0[p.first.second], coef));
         }
 
+        std::cout << "constructed kappa map after" << total << std::endl;
+
         outputComplex = new OutputComplexType(3, dims, kap, 1);
+
+        std::cout << "constructed SComplex map after" << total << std::endl;
     }
 
     std::vector<int> morse;
     std::vector<AKQType> akq;
-    /// std::vector<boost::optional<Cell> > kerKing;
 
     int kingsUsed;
     std::vector<Cell> kingPool;
