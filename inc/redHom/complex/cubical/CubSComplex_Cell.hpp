@@ -23,6 +23,7 @@ protected:
 
 public:
 
+  CellProxy(): BasicCellProxy<CellImplT>() {}
   template<typename CubCellImplT2>
   CellProxy(const CubCellImplT2& _impl): BasicCellProxy<CellImplT>(_impl) {}
 

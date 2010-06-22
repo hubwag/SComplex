@@ -81,9 +81,8 @@ public:
   typedef typename SComplex::Cell Cell;
 
 
-  DefaultReduceStrategyBase(SComplex& _complex): complex(_complex), dummyCell2(_complex),  dummyCell3(_complex)
-  {
-  }
+  DefaultReduceStrategyBase(SComplex& _complex): complex(_complex), dummyCell2(_complex),  dummyCell3(_complex),
+						 extracted(false) {}
 
   SComplex& getComplex() const {
 	 return complex;
@@ -112,14 +111,17 @@ public:
   }
 
   typename Traits::Extract::result_type extract() {
-	 typename SComplex::ColoredIterators::Iterators::DimCells dimCells = complex.iterators(1).dimCells(0);
-  	 typename SComplex::ColoredIterators::Iterators::DimCells::iterator end = dimCells.end(),
-  		it = dimCells.begin();
-
-  	 if (it != end) {
-  		return typename Traits::Extract::result_type::value_type(*it);
-  	 }
-  	 return typename Traits::Extract::result_type();
+    if (!extracted) {
+      extracted = true;
+      typename SComplex::ColoredIterators::Iterators::DimCells dimCells = complex.iterators(1).dimCells(0);
+      typename SComplex::ColoredIterators::Iterators::DimCells::iterator end = dimCells.end(),
+	it = dimCells.begin();
+      
+      if (it != end) {
+	return typename Traits::Extract::result_type::value_type(*it);
+      }
+    }
+    return typename Traits::Extract::result_type();
   }
 
   static typename Traits::ForceCoreduction::result_type forceCoreductionPair() {
@@ -170,28 +172,17 @@ public:
   	 return typename Traits::template GetReductionPair<ArgT>::result_type();
   }
 
-  size_t getMaxDim() {
-	 typename SComplex::Dim maxDim = 0;
-
-	 for (typename SComplex::ColoredIterators::Iterators::AllCells::iterator it = this->complex.iterators(1).allCells().begin(),
-			  end = this->complex.iterators(1).allCells().end();
-			it != end; ++it) {
-		maxDim = std::max(maxDim, it->getDim());
-	 }
-
-	 return maxDim;
-  }
-
 protected:
   SComplex& complex;
   Cell dummyCell2, dummyCell3;
+  bool extracted;
 };
 
 template<typename SComplexT>
 class DefaultReduceStrategy: public DefaultReduceStrategyBase<SComplexT> {
-
 public:
   DefaultReduceStrategy(SComplexT& _complex): DefaultReduceStrategyBase<SComplexT>(_complex) {}
+
 };
 
 #endif

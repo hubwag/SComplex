@@ -2,18 +2,20 @@ cmake_minimum_required(VERSION 2.6)
 
 project(SComplex CXX)
 
-#set(RUNTIME_OUTPUT_DIRECTORY build)
+
+SET(Boost_FIND_REQUIRED TRUE)
+SET(Boost_FIND_QUIETLY TRUE)
+SET(Boost_USE_MULTITHREADED FALSE)
+SET(Boost_USE_STATIC_LIBS TRUE)
 
 SET(Boost_ADDITIONAL_VERSIONS "1.42" "1.42.0")
-find_package(Boost 1.42)
+find_package(Boost 1.42 COMPONENTS program_options)
 
 
 set(CODE ${PROJECT_SOURCE_DIR}/)
 set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/install)
 
 
-set(CMAKE_USE_RELATIVE_PATHS TRUE)
-set(CMAKE_SUPPRESS_REGENERATION TRUE)
 
 enable_testing()
 
@@ -27,10 +29,7 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 link_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 
-#add_library(/home/mj/workspace/capd/lib/capd STATIC IMPORTED)
-
-
-add_subdirectory(${CODE}/src apps)
+add_subdirectory(${CODE}/src src)
 add_subdirectory(${CODE}/test test)
 add_subdirectory(${CODE}/lib lib)
 add_subdirectory(${CODE}/inc inc)

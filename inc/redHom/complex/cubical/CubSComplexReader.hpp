@@ -10,7 +10,7 @@
 template<int DIM>
 class CubSComplexReader
 {
-    class BmpCubSetBuilder
+class BmpCubSetBuilder
     {
         typedef RepSet<ElementaryCube> CubicalSet;
     public:
@@ -86,11 +86,22 @@ class CubSComplexReader
             return cubicalSet.get();
         }
 
+	void finalize() {}
+
+      void setFileType(FileType A_fileType){
+      // provides embedding dimension
+      fileType=A_fileType;
+    }
+
+      FileType getFileType(){
+      return fileType;
+      }
+
     private:
         bool fullCubes;
         int embDim;
         boost::shared_ptr<CubicalSet> cubicalSet;
-        //CubicalSet* cubicalSet;
+	FileType fileType;
     };
 
 public:

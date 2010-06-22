@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <map>
+#include <set>
 #include <boost/iterator/transform_iterator.hpp>
 
 #include "SimplexCell.hpp"
@@ -31,7 +32,7 @@ class CellProxy: public BasicCellProxy<ImplT>
     struct Simplex;
     typedef CellProxy<Simplex*> Cell;
 
-    const Dim& getMaxDim() const
+    const Dim& getDim() const
     {
         return perDimension.rbegin()->first;
     }
@@ -120,7 +121,7 @@ class CellProxy: public BasicCellProxy<ImplT>
 
         int getDim() const
         {
-            return -1 + static_cast<int>(nrs.size());
+            return static_cast<int>(nrs.size()) - 1;
         }
 
         bool operator<(const Simplex& b) const
@@ -301,7 +302,7 @@ public:
         return s.getInt();
     }
 
-    long getInt(const set<int> &s)
+    long getInt(const std::set<int> &s)
     {
         return -1;
     }
@@ -392,7 +393,7 @@ public:
         return (i % 2 == 0) ? 1 : -1; // (-1)**i
     }
 
-    Simplex* addSimplex(const set<int> &s)
+    Simplex* addSimplex(const std::set<int> &s)
     {
         vertex_set faster(s.begin(), s.end());
         Simplex *ret = addSimplex(faster);
@@ -401,38 +402,6 @@ public:
     }
 };
 
-SimplexSComplex::Simplex* SimplexSComplex::createSimplexHierarchy(vertex_set &s)
-{
-    assert(s.size() > 0);
-
-    if (s.size() == 1)
-    {
-        return makeBaseSimplex(s);
-    }
-
-    Simplex* rootSimplex = new Simplex(s.begin(), s.end(), nextId++);
-    simplexAddedEvent(*rootSimplex);
-
-    // set<int> probably can't be used as a drop-in replacement...
-    for (vertex_set::iterator it = s.begin(), end = s.end(); it != end; )
-    {
-        const int &val = *it;
-        vertex_set::iterator new_it = it;
-        ++new_it;
-
-        s.erase(it);
-        Simplex *subSimplex = addSimplex(s);
-        s.insert(it, val);
-
-        rootSimplex->addToBorder(*subSimplex);
-        subSimplex->addToCoborder(*rootSimplex, val);
-        // {val} = root \ sub
-
-        it = new_it;
-    }
-
-    return rootSimplex;
-}
 
 template<typename iterable_t>
 SimplexSComplex::Simplex* SimplexSComplex::getSimplex(const iterable_t &s)

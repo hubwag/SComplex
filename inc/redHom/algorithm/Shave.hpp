@@ -19,7 +19,7 @@ public:
 	 delete strategy;
   }
 
-  void operator()();
+  size_t operator()();
 
 private:
   Strategy* strategy;
@@ -35,27 +35,32 @@ public:
 };
 
 template<typename StrategyT>
-inline void ShaveAlgorithm<StrategyT>::operator()(){
+inline size_t ShaveAlgorithm<StrategyT>::operator()(){
 
-  for(typename SComplex::Dim d = strategy->getMaxDim() - 1; d >= 0; --d){
+  size_t reduced = 0;
+
+  for(typename SComplex::Dim d = strategy->getComplex().getDim(); d >= 0; --d){
 	 typedef typename SComplex::ColoredIterators::Iterators::DimCells::iterator DimIt;
 
 	 typename SComplex::ColoredIterators::Iterators::DimCells dimCells = strategy->getComplex().iterators(1).dimCells(d);
 	 for (DimIt it = dimCells.begin(),
 	 		  end = dimCells.end();
-	 		it != end; ++it) {
-	 // BOOST_FOREACH(typename DimIt::value_type v,
-	 // 					dimCells) {
-	 //strategy->reduceIfPossible(v);
-		typename DimIt::value_type v = *it;
+	 		it != end; ) {
 		typename StrategyT::Traits::template GetReductionPair<typename DimIt::value_type>::result_type reductionPair =
-		  strategy->getReductionPair(v);
+		  strategy->getReductionPair(*it);
 		if (reductionPair) {
 		  strategy->reduce(*reductionPair);
+		  Cell v = *it; 
+		  ++it;
 		  strategy->reduce(v);
+		  reduced += 2;
+		} else {
+		  ++it;
 		}
 	 }
   }
+
+  return reduced;
 }
 
 #endif

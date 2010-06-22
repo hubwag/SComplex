@@ -26,7 +26,6 @@ class AKQReduceStrategy : public DefaultReduceStrategy<SComplexT>
 {
 protected:
     using DefaultReduceStrategyBase<SComplexT>::complex;
-    using DefaultReduceStrategyBase<SComplexT>::getMaxDim;
 
 public:
     enum AKQType {UNSET, KING, QUEEN, ACE};
@@ -46,13 +45,13 @@ public:
     AKQReduceStrategy(SComplex& _complex): DefaultReduceStrategy<SComplex>(_complex)
     {
         Stopwatch total;
-    	std::cout << "Starting init\n";
+    	// std::cout << "Starting init\n";
 
-        maxExtractDim = getMaxDim(); std::cout << __LINE__ << " @ " << total << std::endl;
+        maxExtractDim = _complex.getDim(); // std::cout << __LINE__ << " @ " << total << std::endl;
 
         extractDim = 0;
 
-        int csize = _complex.size(); std::cout << __LINE__ << " @ " << total << std::endl;
+        int csize = _complex.size(); // std::cout << __LINE__ << " @ " << total << std::endl;
         int card = distance(_complex.iterators(1).allCells().begin(), _complex.iterators(1).allCells().end());
 
         morse.resize(csize, 0);
@@ -61,32 +60,32 @@ public:
 
         {
         Cell king(_complex);
-        kingPool.resize(card/2 + 10, king); std::cout << __LINE__ << " [kingPool allocation] @ " << total << std::endl;
+        kingPool.resize(card/2 + 10, king); // std::cout << __LINE__ << " [kingPool allocation] @ " << total << std::endl;
         }
 
         infosUsed = 0;
         {
         PathsInfo pi;
-        pathsInfoPool.resize(card, pi); std::cout << __LINE__ << " [pathsInfoPool allocation] @ " << total << std::endl;
+        pathsInfoPool.resize(card, pi); // std::cout << __LINE__ << " [pathsInfoPool allocation] @ " << total << std::endl;
         }
 
         dimIndexer = DimIndexerType(this->complex.iterators(1).allCells().begin(),
                                     this->complex.iterators(1).allCells().end(),
                                     maxExtractDim);
 
-		std::cout << __LINE__ << " @ " << total << std::endl;
+		// std::cout << __LINE__ << " @ " << total << std::endl;
 
-        extractIt = dimIndexer.begin(); std::cout << __LINE__ << " @ " << total << std::endl;
-        extractEnd = dimIndexer.end(); std::cout << __LINE__ << " @ " << total << std::endl;
+        extractIt = dimIndexer.begin(); // std::cout << __LINE__ << " @ " << total << std::endl;
+        extractEnd = dimIndexer.end(); // std::cout << __LINE__ << " @ " << total << std::endl;
 
-        followMemoTable.resize(csize, 0); std::cout << __LINE__ << " @ " << total << std::endl;
+        followMemoTable.resize(csize, 0); // std::cout << __LINE__ << " @ " << total << std::endl;
 
-        akq.resize(csize); std::cout << __LINE__ << "[AKQ resize] @ " << total << std::endl;
-        // kerKing.resize(csize, Cell(this->complex)); std::cout << __LINE__ << " [herKing allocation] @ " << total << std::endl;
+        akq.resize(csize); // std::cout << __LINE__ << "[AKQ resize] @ " << total << std::endl;
+        // kerKing.resize(csize, Cell(this->complex)); // std::cout << __LINE__ << " [herKing allocation] @ " << total << std::endl;
 
-		kerKing.resize(csize, 0); std::cout << __LINE__ << " [herKing allocation] @ " << total << std::endl;
+		kerKing.resize(csize, 0); // std::cout << __LINE__ << " [herKing allocation] @ " << total << std::endl;
 
-        std::cout << "Init done in " << total << std::endl;
+        // std::cout << "Init done in " << total << std::endl;
     }
 
     SComplex& getComplex() const
@@ -245,7 +244,7 @@ protected:
     void reportPaths()
     {
 		Stopwatch total;
-    	std::cout << "Starting memoized coefficient calculation\n";
+    	// std::cout << "Starting memoized coefficient calculation\n";
 
         BOOST_FOREACH(Cell ace, aces)
         {
@@ -256,7 +255,7 @@ protected:
             }
         }
 
-        std::cout << "done in " << total << std::endl;
+        // std::cout << "done in " << total << std::endl;
 
         typedef std::pair<std::pair<int,int>,int> Triple;
 

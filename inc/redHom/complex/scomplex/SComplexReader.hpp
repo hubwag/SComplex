@@ -54,6 +54,18 @@ private:
             // Dostarcza wymiar wlozenia
             embDim=A_embDim;
         }
+
+	void finalize() {}
+
+         void setFileType(FileType A_fileType){
+	// provides embedding dimension
+       	fileType=A_fileType;
+	  }
+
+      FileType getFileType(){
+	return fileType;
+	  }
+
         void addCell(int coords[])
         {
             // Dostarcza n wspolrzednych kostki, gdzie n to wymiar wlozenia
@@ -79,6 +91,7 @@ private:
                 for (int i=0;i<embDim;++i)
                 {
                     data.push_back(coords[i]/2);
+
                     parity[i]=(coords[i] % 2);
                 }
                 getId(ElementaryCube(&data[0],parity,embDim));
@@ -145,6 +158,7 @@ private:
         typedef std::map<ElementaryCube, int> CubeIds;
         std::set<int> computedBoundaries;
 
+	FileType fileType;
         CubeIds cubeIds;
         typename Complex::KappaMap kappaMap;
         bool fullCubes;
@@ -152,6 +166,14 @@ private:
     };
 
 public:
+
+  boost::shared_ptr<Complex> operator()(ifstream& file, int colors, int defaultColor)
+  {
+    BmpSComplexBuilder builder;
+    readCubicalSet(file, builder);
+    
+    return builder.create(colors, defaultColor);
+  }
 
     boost::shared_ptr<Complex> operator()(std::string fileName, int colors, int defaultColor)
     {
@@ -163,10 +185,7 @@ public:
             return boost::shared_ptr<Complex>();
         }
 
-        BmpSComplexBuilder builder;
-        readCubicalSet(file, builder);
-
-        return builder.create(colors, defaultColor);
+	return (*this)(file, colors, defaultColor);
     }
 
 

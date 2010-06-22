@@ -13,7 +13,7 @@ macro(AddSingleTest file)
   add_executable(${name} ${file})
 
   target_link_libraries(${name} capd)
-  target_link_libraries(${name} ${TestLibraryName})
+  target_link_libraries(${name} ${TestLibraryName} ${PROJECT_NAME})
 
   add_test(${name} ${name} --output_format=${TEST_OUTPUT_FORMAT} --log_level=${TEST_LOG_LEVEL} --report_level=${TEST_REPORT_LEVEL} --run_test=${TEST_RUN})
 

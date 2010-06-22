@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(iterators_AllCells_forEach_test) {
   typedef CubSComplex<3> SComplex;
   boost::shared_ptr<SComplex> s = createComplex();
 	 const int initSize = s->cardinality();
-	 
+
 	 BOOST_CHECK_EQUAL(s->cardinality(), 1536);
 
 	 int cnt = 0;

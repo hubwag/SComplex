@@ -146,19 +146,6 @@ public:
   }
 
 
-  size_t getMaxDim() {
-    typename SComplex::Dim maxDim = 0;
-    for (typename SComplex::ColoredIterators::Iterators::AllCells::iterator it = complex.template iterators<1>().allCells().begin(),
-	   end = complex.template iterators<1>().allCells().end();
-	 it != end; ++it) {
-
-      maxDim = std::max(maxDim, (*it).getDim());
-    }
-	 
-    return maxDim;
-  }
-
-
 private:
 
   template<typename T1, typename T2>
@@ -250,7 +237,7 @@ private:
 
     typedef std::pair<std::pair<int,int>,int> Pair;
 
-    std::vector<size_t> dims(aces.size());
+    std::vector<typename OutputComplexT::Dim> dims(aces.size());
 
     std::map<size_t, size_t> from0;
 

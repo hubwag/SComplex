@@ -26,7 +26,6 @@ class OptimisticAKQReduceStrategy : public DefaultReduceStrategy<SComplexT>
 {
 protected:
     using DefaultReduceStrategyBase<SComplexT>::complex;
-    using DefaultReduceStrategyBase<SComplexT>::getMaxDim;
 
 public:
     enum AKQType {UNSET, KING, QUEEN, ACE};
