@@ -83,6 +83,13 @@ void showObj(const string &s, const string &method = "KMS", int subdivs = 0)
 		parseDat(ifs, complex, subdivs);
 	}
 
+
+	int maxDim = 0;
+	BOOST_FOREACH(SimplexSComplex::Cell c, complex.iterators(1).dimCells(maxDim))
+	{
+		cout << "?";
+	}
+
 	cout << "parsed file, cardinality: " << complex.cardinality() << endl;
 	cout << "it took: " << swTot << endl;
 
