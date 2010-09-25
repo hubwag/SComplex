@@ -31,3 +31,7 @@ AddSingleTest(SimplexSComplexTest.cpp)
 
 AddSingleTest(COAKQTest.cpp)
 AddSingleTest(AKQTest.cpp)
+
+
+AddSingleTest(cellComplexCreationTest.cpp)
+AddSingleTest(cellComplexIteratorTest.cpp)
