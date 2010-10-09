@@ -22,11 +22,13 @@
 #include <redHom/complex/simplicial/SimplexIO.hpp>
 #include <redHom/complex/simplicial/SimplexSComplex.hpp>
 
+#include <redHom/util/saveBoundary.hpp>
 
-enum ComplexMajorId {SComplexMajorId = 10, 
-		     SComplexSimplicesMajorId, 
-		     SComplexCubesMajorId, 
-		     CubSComplexMajorId, 
+
+enum ComplexMajorId {SComplexMajorId = 10,
+		     SComplexSimplicesMajorId,
+		     SComplexCubesMajorId,
+		     CubSComplexMajorId,
 		     SimplexSComplexMajorId};
 
 typedef boost::tuple<ComplexMajorId, int, boost::any> ComplexTuple;
@@ -54,7 +56,7 @@ typedef boost::mpl::joint_view<CubComplexDescriptors,
 				 ComplexDescriptor<SComplex<SComplexDefaultTraits>, SComplexMajorId, 0>,
 				 ComplexDescriptor<SComplex<SComplexDefaultTraits>, SComplexCubesMajorId, 0>,
 				 ComplexDescriptor<SComplex<SComplexDefaultTraits>, SComplexSimplicesMajorId, 0>,
-				 ComplexDescriptor<SimplexSComplex, SimplexSComplexMajorId, 0>				 
+				 ComplexDescriptor<SimplexSComplex, SimplexSComplexMajorId, 0>
 				 > > ComplexDescriptors;
 
 
@@ -65,7 +67,7 @@ class MultiDimCubSComplexReader {
     std::ifstream& file;
     ComplexTuple& complex;
 
-    ComplexConstructor(int _dim,  std::ifstream& _file, ComplexTuple& _complex): 
+    ComplexConstructor(int _dim,  std::ifstream& _file, ComplexTuple& _complex):
       dim(_dim), file(_file), complex(_complex) {
       BOOST_ASSERT(boost::get<2>(complex).empty());
     }
@@ -73,14 +75,14 @@ class MultiDimCubSComplexReader {
     template<typename Complex, ComplexMajorId MajorId, int MinorId>
     void operator()(ComplexDescriptor<Complex, MajorId, MinorId>) {
       if (MajorId == CubSComplexMajorId && dim == MinorId) {
-	BOOST_ASSERT(boost::get<2>(complex).empty());      
+	BOOST_ASSERT(boost::get<2>(complex).empty());
 
 	typedef typename Complex::BCubCellSet CubCellSet;
 	CRef<CubCellSet> cubCellSetCR(new CubCellSet());
 	BmpCubCelSetBuilder<CubCellSet> csb(cubCellSetCR);
 	readCubicalSet(file, csb);
 
-	complex = ComplexTuple(MajorId, MinorId, 
+	complex = ComplexTuple(MajorId, MinorId,
 			       boost::any(boost::shared_ptr<Complex>(new Complex(cubCellSetCR))));
       }
     }
@@ -89,8 +91,8 @@ class MultiDimCubSComplexReader {
 
 public:
   static ComplexTuple read(ifstream& file, const std::string& fileName) {
-    ComplexTuple complex;    
-    
+    ComplexTuple complex;
+
     CubSetBuilder csb;
     readCubicalSet(file,csb,true); //true means only get dim and type
     file.seekg(0);
@@ -110,7 +112,7 @@ class SComplexReaderFromCubes {
 public:
   static ComplexTuple read(ifstream& file, const std::string& fileName) {
     SComplexReader<SComplexDefaultTraits> reader;
-    
+
     return boost::make_tuple(SComplexCubesMajorId, 0, reader(file, 3, 1));
   }
 
@@ -131,7 +133,7 @@ public:
 
     SComplexBuilderFromSimplices<long, SComplexDefaultTraits> builder(3);
     boost::shared_ptr<SComplex<SComplexDefaultTraits> > complex = builder(simplices, 3, 1);
-    
+
     return boost::make_tuple(SComplexSimplicesMajorId, 0, complex);
   }
 
@@ -182,7 +184,7 @@ struct ComplexReader {
   template<typename Reader, int MajorId>
   void operator()(ComplexReaderDescriptor<Reader, MajorId>) {
     if (MajorId == majorId) {
-      BOOST_ASSERT(boost::get<2>(complex).empty());      
+      BOOST_ASSERT(boost::get<2>(complex).empty());
       ifstream file;
 
       file.open(fileName.c_str());
@@ -206,7 +208,7 @@ protected:
   ComplexTuple& complex;
 
   AlgorithmExecutor(ComplexTuple& _complex, const std::string _name):
-    complex(_complex), name(_name) {  
+    complex(_complex), name(_name) {
   }
 
 public:
@@ -216,7 +218,7 @@ public:
     if (boost::get<0>(complex) == MajorId && boost::get<1>(complex) == MinorId) {
       Stopwatch stopwatch;
       boost::shared_ptr<Complex>& complexPtr = boost::any_cast<boost::shared_ptr<Complex>&>(boost::get<2>(complex));
-      
+
       std::cout << "Starting: " << name << " for (" << MajorId << ", " << MinorId << ")" << std::endl;
       ((Derive*)this)->run(*complexPtr);
       std::cout << "Finished: " << name << " in: " << stopwatch << std::endl;
@@ -251,15 +253,29 @@ struct CoreductionExecutor: AlgorithmExecutor<CoreductionExecutor> {
 
 struct RFCExecutor: AlgorithmExecutor<RFCExecutor> {
 
-  RFCExecutor(ComplexTuple& _complex): AlgorithmExecutor<RFCExecutor>(_complex, "RFC") {}
+
+  bool saveMatrices;
+  std::string description;
+
+  RFCExecutor(ComplexTuple& _complex, bool _saveMatrices = false, const string &desc = "")
+  : AlgorithmExecutor<RFCExecutor>(_complex, "RFC"),
+	saveMatrices(_saveMatrices),
+	description(desc)
+	{}
 
   template<typename Complex>
   void run(Complex& complex) {
     typedef FreeModule<int,capd::vectalg::Matrix<int,0,0> > FreeModuleType;
     typedef ReducibleFreeChainComplex<FreeModuleType,int> ReducibleFreeChainComplexType;
-    
+
+    if (saveMatrices) {
+    	int dim = complex.getDim();
+    	for (int d = 1; d <= dim; d++)
+			saveBoundary(complex, d, description);
+    }
+
     Stopwatch stopwatchConstruct;
-    CRef<ReducibleFreeChainComplexType> RFCComplexCR = 
+    CRef<ReducibleFreeChainComplexType> RFCComplexCR =
       (ReducibleFreeChainComplexOverZFromSComplexAlgorithm<Complex, ReducibleFreeChainComplexType>(complex))();
     std::cout << "Constructed Free Chain Compklex in: " << stopwatchConstruct << std::endl;
 
@@ -275,7 +291,7 @@ struct RFCExecutor: AlgorithmExecutor<RFCExecutor> {
 struct AKQExecutor: AlgorithmExecutor<AKQExecutor> {
   ComplexTuple& outputComplex;
 
-  AKQExecutor(ComplexTuple& _complex, ComplexTuple& _outputComplex): 
+  AKQExecutor(ComplexTuple& _complex, ComplexTuple& _outputComplex):
     AlgorithmExecutor<AKQExecutor>(_complex, "AKQ"), outputComplex(_outputComplex) {}
 
   template<typename Complex>
@@ -284,7 +300,7 @@ struct AKQExecutor: AlgorithmExecutor<AKQExecutor> {
     algorithm();
 
     SComplex<SComplexDefaultTraits>* AKQ = algorithm.getStrategy()->getOutputComplex();
- 
+
     outputComplex = boost::make_tuple(SComplexMajorId, 0, boost::shared_ptr<SComplex<SComplexDefaultTraits> >(AKQ));
   }
 
@@ -304,7 +320,7 @@ namespace {
     }
   }
 
-  ComplexMajorId determineComplexMajorId(const RedHomOptions& options) throw(std::logic_error) {    
+  ComplexMajorId determineComplexMajorId(const RedHomOptions& options) throw(std::logic_error) {
     if (options.getFileType() == RedHomOptions::cubical && ! options.isGeneralSComplex()) {
       std::cout << "Using CubSComplex" << std::endl;
       return CubSComplexMajorId;
@@ -342,6 +358,8 @@ int main(int argc, char** argv) {
 
     validateOptions(options);
 
+    string description = options.getInputFile(0); // describes the operations
+
     ComplexTuple complex;
     ComplexMajorId complexMajorId = determineComplexMajorId(options);
     ComplexReader complexReader(complexMajorId, complex, options.getInputFile(0));
@@ -353,26 +371,30 @@ int main(int argc, char** argv) {
 
     if (options.isRfcAtStart()) {
       boost::mpl::for_each<ComplexDescriptors>(RFCExecutor(complex));
+      description += "+frc";
     }
 
     if (options.isShave()) {
       boost::mpl::for_each<ComplexDescriptors>(ShaveExecutor(complex));
+      description += "+shave";
     }
 
     if (options.isCoreduction()) {
       boost::mpl::for_each<ComplexDescriptors>(CoreductionExecutor(complex));
+      description += "+cored";
     }
 
     if (options.isAKQ()) {
       ComplexTuple outputComplex;
       boost::mpl::for_each<ComplexDescriptors>(AKQExecutor(complex, outputComplex));
       complex = outputComplex;
+      description += "+akq";
     }
 
     if (options.isRfcAtEnd()) {
-      boost::mpl::for_each<ComplexDescriptors>(RFCExecutor(complex));
+      boost::mpl::for_each<ComplexDescriptors>(RFCExecutor(complex, true, description));
     }
-    
+
     std::cout << "Total execution: " << totalStopwatch << std::endl;
   } catch (std::exception& ex) {
     std::cerr << "Error: " << ex.what() << std::endl;

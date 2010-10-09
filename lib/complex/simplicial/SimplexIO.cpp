@@ -60,8 +60,15 @@ vector<set<int> > parseObj(istream &stream)
 
         set<int> simp;
 
-        for (int v; ss >> v;)
-            simp.insert(v);
+        for (string v; ss >> v;)
+        {
+        	replace(v.begin(), v.end(), '/', ' ');
+        	stringstream qq(v);
+        	int x;
+        	qq >> x;
+
+            simp.insert(x);
+        }
 
         simplices.push_back(simp);
     }

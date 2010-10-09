@@ -18,20 +18,24 @@ public:
 
 
 
-  RedHomOptions(int ac, char** av, int inputFilesCount=3): desc("Allowed options"), 
+  RedHomOptions(int ac, char** av, int inputFilesCount=3): desc("Allowed options"),
 							   inputFiles(inputFilesCount) {
 
     using namespace boost::program_options;
-    
+
     desc.add_options()
       ("help,h", "produce help message")
+      ;
+
+    desc.add_options()
+      ("mat,m", bool_switch(&matrices), "save boundary matrices to file (sparse format accepted by LinBox)")
       ;
 
     options_description fileDesc;
     fileDesc.add_options()
       ("fileType,f", value<FileType>(&fileType),
        "input file type: c=cubical, s=simplicial");
-    
+
     positional_options_description positionalFileDesc;
 
     for (int i = 0; i < inputFilesCount; ++i) {
@@ -53,14 +57,14 @@ public:
       ("shave", bool_switch(&shave), "execute shave")
       ("akq", bool_switch(&akq), "execute AKQ")
       ("RFC-at-end", bool_switch(&rfcAtEnd)->default_value(true), "execute RFC at end");
-    
+
     desc.add(complexDesc);
     desc.add(algorithmDesc);
     store(command_line_parser(ac, av).options(desc).positional(positionalFileDesc).run(), vm);
-    notify(vm);    
+    notify(vm);
 
   }
- 
+
   bool isHelp() const {
     return vm.count("help");
   }
@@ -116,6 +120,10 @@ public:
     return akq;
   }
 
+  bool isMatrices() const {
+  	return matrices;
+  }
+
 private:
 
   std::string getInputFileKey(int i) const {
@@ -132,11 +140,13 @@ private:
   bool shave;
   bool akq;
 
+  bool matrices;
+
   FileType fileType;
 };
 
 
-void validate(boost::any& v, 
+void validate(boost::any& v,
               const std::vector<std::string>& values,
               RedHomOptions::FileType*, int)
 {
@@ -148,7 +158,7 @@ void validate(boost::any& v,
     // one string, it's an error, and exception will be thrown.
     const std::string& s = validators::get_single_string(values);
 
-    // Do regex match and convert the interesting part to 
+    // Do regex match and convert the interesting part to
     // int.
     if (s == "s" || s == "simplicial") {
       v = boost::any(RedHomOptions::simplicial);
@@ -156,7 +166,7 @@ void validate(boost::any& v,
       v = boost::any(RedHomOptions::cubical);
     } else {
         throw validation_error(validation_error::invalid_option_value);
-    }        
+    }
 }
 
 
